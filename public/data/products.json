@@ -1,0 +1,68 @@
+[
+  {
+    "id": "1",
+    "name": "Glow Renewal Serum",
+    "price": 48.00,
+    "rating": 4.9,
+    "reviewCount": 243,
+    "image": "/products/serum.png",
+    "salesCount": 1250,
+    "createdAt": "2026-03-01T10:00:00.000Z",
+    "badge": ""
+  },
+  {
+    "id": "2",
+    "name": "Barrier Repair Moisturizer",
+    "price": 42.00,
+    "rating": 4.8,
+    "reviewCount": 198,
+    "image": "/products/moisturizer.png",
+    "salesCount": 980,
+    "createdAt": "2026-02-15T10:00:00.000Z",
+    "badge": "Bestseller"
+  },
+  {
+    "id": "3",
+    "name": "Daily Sheer Sunscreen SPF 50",
+    "price": 28.00,
+    "rating": 4.7,
+    "reviewCount": 167,
+    "image": "/products/sunscreen.png",
+    "salesCount": 850,
+    "createdAt": "2026-04-10T10:00:00.000Z",
+    "badge": ""
+  },
+  {
+    "id": "4",
+    "name": "Brightening Essence",
+    "price": 36.00,
+    "rating": 4.9,
+    "reviewCount": 112,
+    "image": "/products/essence.png",
+    "salesCount": 420,
+    "createdAt": "2026-06-01T10:00:00.000Z",
+    "badge": "New"
+  },
+  {
+    "id": "5",
+    "name": "Niacinamide 10% + Zinc",
+    "price": 24.00,
+    "rating": 4.6,
+    "reviewCount": 95,
+    "image": "/products/niacinamide.png",
+    "salesCount": 1100,
+    "createdAt": "2026-01-20T10:00:00.000Z",
+    "badge": ""
+  },
+  {
+    "id": "6",
+    "name": "Clarifying Toner",
+    "price": 32.00,
+    "rating": 4.8,
+    "reviewCount": 84,
+    "image": "/products/toner.png",
+    "salesCount": 150,
+    "createdAt": "2026-06-12T08:30:00.000Z",
+    "badge": "New"
+  }
+]

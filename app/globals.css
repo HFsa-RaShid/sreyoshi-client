@@ -1,26 +1,275 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@font-face {
+  font-family: "Aeonik";
+  src: url("/fonts/Aeonik.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* gggg */
+body {
+  font-family: "Aeonik", sans-serif !important;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.container {
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+/* Mobile Devices */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 20px;
+    padding-right: 20px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.dashboard-container {
+  max-width: 1376px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* Tablet & Smaller Devices */
+@media (max-width: 1424px) {
+  .dashboard-container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+/* Mobile Devices */
+@media (max-width: 640px) {
+  .dashboard-container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+/* text css */
+/* --- Default Typography Classes (Laptop/Desktop) --- */
+.body-medium {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 140%;
+  letter-spacing: -0.02em;
+}
+.body-regular {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 140%;
+}
+.body-sm-medium {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 150%;
+  letter-spacing: -0.01em;
+}
+.body-sm-regular {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 150%;
+  letter-spacing: -0.01em;
+}
+.body-l-regular {
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 140%;
+  letter-spacing: -0.02em;
+}
+.body-l-medium {
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 140%;
+  letter-spacing: -0.02em;
+}
+.body-sm-s {
+  font-weight: 500;
+  font-size: 11.2px;
+  line-height: 150%;
+  letter-spacing: -0.01em;
+}
+.title-medium {
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 120%;
+}
+.title-bold {
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 120%;
+}
+.title-regular {
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 120%;
+}
+.h1 {
+  font-weight: 500;
+  font-size: 80px;
+  line-height: 100%;
+  letter-spacing: -0.05em;
+}
+.h2 {
+  font-weight: 700;
+  font-size: 68px;
+  line-height: 100%;
+  letter-spacing: -0.02em;
+}
+.h3 {
+  font-weight: 500;
+  font-size: 56px;
+  line-height: 100%;
+  letter-spacing: -0.02em;
+}
+.h4 {
+  font-weight: 500;
+  font-size: 40px;
+  line-height: 120%;
+  letter-spacing: -0.02em;
+}
+.h5 {
+  font-weight: 500;
+  font-size: 36px;
+  line-height: 110%;
+  letter-spacing: -0.02em;
+}
+.h6-bold {
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 120%;
+  letter-spacing: -0.02em;
+}
+.h6-medium {
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 120%;
+}
+
+.medium {
+  font-weight: 500;
+  font-style: Medium;
+  font-size: 48px;
+
+  line-height: 100%;
+  letter-spacing: 0%;
+}
+
+.h6-semibold {
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 120%;
+  letter-spacing: -0.02em;
+}
+
+.pricing-price {
+  font-weight: 500;
+  font-size: 31px;
+  line-height: 140%;
+  letter-spacing: -0.02em;
+}
+
+.review-text {
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 120%;
+}
+/* text color */
+
+.primary-text {
+  color: #0e2038;
+}
+.subtext {
+  color: #7f8482;
+}
+.adsfixter-primary-text {
+  color: #f74608;
+}
+.neutral-50 {
+  color: #ffffff;
+}
+.neutral-600 {
+  color: #808080;
+}
+.neutral-900 {
+  color: #111111;
+}
+.title-black {
+  color: #05011c;
+}
+/* bg color */
+.adsfixter-primary {
+  background-color: #f74608;
+}
+
+/* --- Responsive Media Queries (All Devices) --- */
+
+/* Tablet and Small Laptops */
+@media (max-width: 1024px) {
+  .h1 {
+    font-size: 60px;
+  }
+  .h2 {
+    font-size: 50px;
+  }
+  .h3 {
+    font-size: 42px;
+  }
+  .h4 {
+    font-size: 32px;
+  }
+  .h5 {
+    font-size: 28px;
+  }
+}
+
+/* Mobile Devices */
+@media (max-width: 640px) {
+  .h1 {
+    font-size: 42px;
+  }
+  .h2 {
+    font-size: 36px;
+  }
+  .h3 {
+    font-size: 32px;
+  }
+  .h4 {
+    font-size: 28px;
+  }
+  .h5 {
+    font-size: 24px;
+  }
+  .h6,
+  .h6-medium {
+    font-size: 20px;
+  }
+  .title-medium,
+  .title-regular {
+    font-size: 18px;
+  }
+  .body-l-medium,
+  .body-l-regular {
+    font-size: 16px;
+  }
+  .body-medium,
+  .body-regular {
+    font-size: 14px;
+  }
+  .review-text {
+    font-size: 18px;
+  }
+}
+
+@keyframes flowDown {
+  0% {
+    transform: translateY(-60%);
+  }
+  100% {
+    transform: translateY(60%);
+  }
+}
+
+.animate-flow {
+  animation: flowDown 1.8s linear infinite;
 }
