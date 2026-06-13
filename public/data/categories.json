@@ -1,0 +1,96 @@
+[
+  {
+    "id": "makeup",
+    "name": "Makeup",
+    "subCategories": [
+      {
+        "title": "FACE",
+        "items": ["Face Primer", "Concealer", "Foundation", "Compact & Pressed Powder", "Contour", "Loose Powder", "Blush", "Bronzer", "Tinted Moisturizer", "BB & CC cream", "Highlighters", "Makeup Remover", "Setting Spray", "Face Pallete"]
+      },
+      {
+        "title": "EYES",
+        "items": ["Kajal", "Eyeliner", "Mascara", "Eye Shadow", "Eye Brow Enhancers", "Eye Primer", "False Eyelashes", "Eye Makeup Remover", "Under Eye Concealer"]
+      },
+      {
+        "title": "LIPS",
+        "items": ["Lipstick", "Liquid Lipsticks", "Lip Crayon", "Lip Gloss", "Lip Liner", "Lip Plumper", "Lip Stain", "Lip Balm", "Lip Exfoliator"]
+      },
+      {
+        "title": "NAILS",
+        "items": ["Nail Polish", "Nail Art Kits", "Nail Polish Sets", "Nail Care", "Nail Polish Remover", "Manicure & Pedicure Kits"]
+      },
+      {
+        "title": "TOOLS & BRUSHES",
+        "items": ["Face Brush", "Blush Brush", "Eye Brush", "Lip Brush", "Brush Sets", "Eyelash Curlers", "Sponges & Applicators", "Tweezers", "Sharpeners", "Mirrors", "Makeup Pouches"]
+      }
+    ]
+  },
+  {
+    "id": "skin-care",
+    "name": "Skin Care",
+    "subCategories": [
+      {
+        "title": "FACE",
+        "items": ["Cleanser", "Day Cream", "Night Cream", "Day & Night Cream", "Facewash", "Masks & Peels", "Sleeping Mask", "Scrubs & Exfoliators", "Toners & Astringents", "Sheet Mask", "Facial Wipes", "Serums/Oils", "Moisturizer", "Facial Kit", "Spot Remover", "LIP BALMS/LIP CARE"]
+      },
+      {
+        "title": "K- BEAUTY",
+        "items": ["Sunscreen", "Moisturizers", "Serums & Oils", "Essence", "Toners & Astringents", "Sheet Mask", "Face Packs & Peels", "Scrubs & Exfoliators", "Cleanser/Cleansing Oil", "Sleeping mask/Mask", "Face wash/Cleanser", "Hair care", "Eye cream/gel/patch", "Facial Wipes", "Cleansing oil", "Ampoule"]
+      }
+    ]
+  },
+  {
+    "id": "hair-care",
+    "name": "Hair care",
+    "subCategories": [
+      {
+        "title": "HAIR CARE",
+        "items": ["Shampoo", "Conditioner", "Hair Oil", "Hair Cream & Masks", "Hair Serum", "Rebonding Kit", "Value Pack"]
+      },
+      {
+        "title": "HAIR STYLING",
+        "items": ["Hair Color", "Hair Spray", "Gels & Waxes", "Hair Primer"]
+      },
+      {
+        "title": "TOOLS & ACCESSORIES",
+        "items": ["Hair Combs", "Hair straightener", "Hair Dryer", "Hair Band"]
+      }
+    ]
+  },
+  {
+    "id": "body-care",
+    "name": "Body care",
+    "subCategories": [
+      {
+        "title": "HAND & FEET",
+        "items": ["Hand Creams", "Foot Creams"]
+      },
+      {
+        "title": "SUN CARE",
+        "items": ["Sunscreen"]
+      },
+      {
+        "title": "BODY",
+        "items": ["Sunscreen", "Body Butter", "Body Mist/Spray", "Deodorants/Roll-Ons", "Lotions & Creams", "Anti-Stretch Mark Creams", "Body Scrubs"]
+      },
+      {
+        "title": "EYE CARE",
+        "items": ["Eye Cream", "Eye Gel", "Eye Roller", "Under Eye Cream", "Dark Circles / Wrinkles", "Puffiness", "Day/Night Cream", "Eye Makeup Remover"]
+      }
+    ]
+  },
+  {
+    "id": "personal-care",
+    "name": "Personal care",
+    "subCategories": [
+      {
+        "title": "FEMININE HYGIENE",
+        "items": ["Shaving & Hair Removal", "Feminine Cleanser", "Sanitary Napkins"]
+      },
+      {
+        "title": "FEMININE CARE",
+        "items": ["Breast Cream", "Clothing & More"]
+      }
+    ]
+  }
+]

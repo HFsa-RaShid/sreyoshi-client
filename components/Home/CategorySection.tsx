@@ -9,7 +9,7 @@ const categories = [
   { id: 2, name: "Haircare", image: "/Categories/haircare.png", link: "#" },
   { id: 3, name: "Body Care", image: "/Categories/bodycare.png", link: "#" },
   { id: 4, name: "Makeup", image: "/Categories/makeup.png", link: "#" },
-  { id: 5, name: "Makeup", image: "/Categories/makeup.png", link: "#" },
+  { id: 5, name: "personal Care", image: "/Categories/personalCare.png", link: "#" },
 ];
 
 export default function CategorySection() {
