@@ -7,8 +7,11 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Star, Heart, Eye, ShoppingBag, X, ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import productsData from "../../public/data/products.json";
 import categoriesData from "../../public/data/categories.json"; // আপনার প্রোভাইড করা জেসন ডাটা
+import { useApp } from "@/context/AppContext";
+import Link from "next/link";
 
 export default function ShopPage() {
+  const { addToCart, wishlist, toggleWishlist } = useApp();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -374,11 +377,34 @@ export default function ShopPage() {
                       {product.discount}
                     </span>
 
-                    <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                    {/* <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                       <button className="bg-white text-[#1A2E22] p-2 rounded-full shadow-md hover:bg-[#1A2E22] hover:text-white transition-colors"><Heart size={16} /></button>
                       <button className="bg-white text-[#1A2E22] p-2 rounded-full shadow-md hover:bg-[#1A2E22] hover:text-white transition-colors"><Eye size={16} /></button>
                       <button className="bg-white text-[#1A2E22] p-2 rounded-full shadow-md hover:bg-[#1A2E22] hover:text-white transition-colors"><ShoppingBag size={16} /></button>
-                    </div>
+                    </div> */}
+
+                    <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+  {/* লাভ আইকন ফিল ইফেক্ট */}
+  <button 
+    onClick={() => toggleWishlist(product.id)}
+    className={`p-2 rounded-full shadow-md transition-colors ${wishlist.includes(product.id) ? "bg-[#FF3F6C] text-white" : "bg-white text-[#1A2E22] hover:bg-[#1A2E22] hover:text-white"}`}
+  >
+    <Heart size={16} fill={wishlist.includes(product.id) ? "currentColor" : "none"} />
+  </button>
+
+  {/* Eye Icon ক্লিক করলে ডিটেইলস পেজে যাবে */}
+  <Link href={`/product/${product.id}`} className="bg-white text-[#1A2E22] p-2 rounded-full shadow-md hover:bg-[#1A2E22] hover:text-white transition-colors flex items-center justify-center">
+    <Eye size={16} />
+  </Link>
+
+  {/* Cart এ অ্যাড করার বাটন */}
+  <button 
+    onClick={() => addToCart(product)}
+    className="bg-white text-[#1A2E22] p-2 rounded-full shadow-md hover:bg-[#1A2E22] hover:text-white transition-colors"
+  >
+    <ShoppingBag size={16} />
+  </button>
+</div>
                   </div>
 
                   {/* Metadata */}
