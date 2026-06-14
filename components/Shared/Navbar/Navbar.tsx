@@ -45,9 +45,9 @@ export default function Navbar() {
             <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[#8FA887] text-xl">
               🍃
             </span>
-            <span className="font-serif text-3xl font-semibold text-[#1A2E22] tracking-wide mt-1">
+            <Link href="/" className="font-serif text-3xl font-semibold text-[#1A2E22] tracking-wide mt-1">
               Sreyoshi
-            </span>
+            </Link>
           </div>
           <span className="text-[9px] uppercase tracking-[0.25em] text-[#5A655D] font-medium -mt-1">
             Shop. Love. Live.
