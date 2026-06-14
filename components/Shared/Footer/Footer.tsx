@@ -16,9 +16,9 @@ export default function Footer() {
           <div className="lg:col-span-4 flex flex-col gap-4">
             <div className="flex flex-col select-none">
               <div className="flex items-start gap-0.5 relative">
-                <span className="text-[#8FA887] text-lg absolute -top-2">🍃</span>
+                <span className="text-[#8FA887] text-lg absolute -top-3 left-15">🍃</span>
                 <span className="font-serif text-3xl font-semibold text-white tracking-wide mt-1">
-                  verdora
+                  Sreyoshi
                 </span>
               </div>
               <span className="text-[9px] uppercase tracking-[0.25em] text-[#8FA887] font-medium mt-0.5">

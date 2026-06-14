@@ -86,5 +86,49 @@
       "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=600",
       "https://images.unsplash.com/photo-1567894340315-735d7c361db0?q=80&w=600"
     ]
+  },
+  {
+    "id": "p5",
+    "name": "Nephrolepis exaltata",
+    "category": "body-care",
+    "subCategory": "BODY",
+    "skinType": "Sensitive",
+    "price": 45.00,
+    "oldPrice": 50.00,
+    "discount": "10% off",
+    "rating": 5.0,
+    "ratingCount": 48,
+    "salesCount": 150,
+    "createdAt": "2026-06-10T11:45:00Z",
+    "promotion": "On Sale",
+    "availability": "In Stock",
+    "images": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=600",
+      "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=600",
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=600",
+      "https://images.unsplash.com/photo-1567894340315-735d7c361db0?q=80&w=600"
+    ]
+  },
+  {
+    "id": "p6",
+    "name": "Nephrolepis exaltata",
+    "category": "body-care",
+    "subCategory": "BODY",
+    "skinType": "Sensitive",
+    "price": 45.00,
+    "oldPrice": 50.00,
+    "discount": "10% off",
+    "rating": 5.0,
+    "ratingCount": 48,
+    "salesCount": 150,
+    "createdAt": "2026-06-10T11:45:00Z",
+    "promotion": "On Sale",
+    "availability": "In Stock",
+    "images": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=600",
+      "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=600",
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=600",
+      "https://images.unsplash.com/photo-1567894340315-735d7c361db0?q=80&w=600"
+    ]
   }
 ]
