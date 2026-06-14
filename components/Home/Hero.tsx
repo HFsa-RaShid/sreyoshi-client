@@ -236,8 +236,8 @@ export default function HeroSection() {
             />
 
             {/* EXACT MATCH WARM LIGHT OVERLAY */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#F5EFEA] via-[#F5EFEA]/70 via-10%  to-transparent z-10" />
-
+            <div className="absolute inset-0  to-transparent z-10" />
+{/* bg-gradient-to-r from-[#F5EFEA] via-[#F5EFEA]/70 via-10%  */}
             {/* FOREGROUND CONTENT LAYER */}
             <div className="container mx-auto h-full grid grid-cols-1 lg:grid-cols-12 items-center px-6 md:px-12 relative z-20">
               <div className="col-span-1 lg:col-span-7 flex flex-col justify-center">

@@ -2,21 +2,27 @@
 
 import React from "react";
 import Link from "next/link";
-import {  ArrowRight, MapPin, Phone, Mail } from "lucide-react";
+import {
+  FaFacebookF,
+  FaTwitter,
+  FaYoutube,
+  FaInstagram,
+  FaPercent,
+} from "react-icons/fa";
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#1E2E24] text-[#EAE2D8] pt-16 pb-8 px-6 md:px-16 lg:px-24 border-t border-[#2D4A3E] ">
+    <footer className="w-full bg-[#1E2E24] text-white pt-16 pb-8 px-6 md:px-16 lg:px-24 border-t border-[#2D4A3E] font-sans tracking-wide">
       <div className="container mx-auto">
-        
-        {/* TOP SECTION: BRAND, LINKS & NEWSLETTER */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-[#2D4A3E]">
-          
-          {/* 1. BRAND COLUMN (4 Cols) */}
-          <div className="lg:col-span-4 flex flex-col gap-4">
+        {/* TOP SECTION: GRID COLUMNS */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-8 pb-12 border-b border-[#2D4A3E] text-white ">
+          {/* 1. BRAND COLUMN (3 Cols) */}
+          <div className="col-span-2 lg:col-span-3 flex flex-col gap-5">
             <div className="flex flex-col select-none">
               <div className="flex items-start gap-0.5 relative">
-                <span className="text-[#8FA887] text-lg absolute -top-3 left-15">🍃</span>
+                <span className="text-[#8FA887] text-lg absolute -top-3 left-15">
+                  🍃
+                </span>
                 <span className="font-serif text-3xl font-semibold text-white tracking-wide mt-1">
                   Sreyoshi
                 </span>
@@ -25,85 +31,372 @@ export default function Footer() {
                 Shop. Love. Live.
               </span>
             </div>
-            <p className="text-sm text-[#A2AFA4] max-w-sm leading-relaxed mt-2">
-              High performance beauty with clean, powerful ingredients that truly care for your unique skin journey.
-            </p>
-            {/* Social Media Icons */}
-            <div className="flex items-center gap-4 mt-2">
-              {/* <Link href="#" className="p-2 rounded-full bg-[#2D4A3E] text-white hover:bg-[#8FA887] hover:text-[#1E2E24] transition-colors duration-300">
-                <Instagram size={18} />
-              </Link>
-              <Link href="#" className="p-2 rounded-full bg-[#2D4A3E] text-white hover:bg-[#8FA887] hover:text-[#1E2E24] transition-colors duration-300">
-                <Facebook size={18} />
-              </Link>
-              <Link href="#" className="p-2 rounded-full bg-[#2D4A3E] text-white hover:bg-[#8FA887] hover:text-[#1E2E24] transition-colors duration-300">
-                <Twitter size={18} />
-              </Link> */}
-            </div>
-          </div>
 
-          {/* 2. QUICK LINKS (2 Cols) */}
-          <div className="lg:col-span-2 flex flex-col gap-4">
-            <h4 className="text-white font-medium text-base tracking-wide font-serif">Shop</h4>
-            <ul className="flex flex-col gap-2.5 text-sm text-[#A2AFA4]">
-              <li><Link href="#" className="hover:text-white transition-colors">Shop All</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">New Arrivals</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Best Sellers</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Special Deals</Link></li>
+            <ul className="flex flex-col gap-3 text-xs uppercase font-medium tracking-wider ">
+              <li>
+                <Link
+                  href="/our-story"
+                  className="hover:text-white transition-colors"
+                >
+                  Our Story
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/magazine"
+                  className="hover:text-white transition-colors"
+                >
+                  Sreyoshi Magazine
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/careers"
+                  className="hover:text-white transition-colors"
+                >
+                  Join Our Team
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/authenticity"
+                  className="hover:text-white transition-colors"
+                >
+                  Authenticity
+                </Link>
+              </li>
             </ul>
-          </div>
 
-          {/* 3. COMPANY / SUPPORT (2 Cols) */}
-          <div className="lg:col-span-2 flex flex-col gap-4">
-            <h4 className="text-white font-medium text-base tracking-wide font-serif">Our Story</h4>
-            <ul className="flex flex-col gap-2.5 text-sm text-[#A2AFA4]">
-              <li><Link href="#" className="hover:text-white transition-colors">About Us</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Ingredients Glossary</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Sustainability</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">FAQs & Help</Link></li>
-            </ul>
-          </div>
-
-          {/* 4. NEWSLETTER & CONTACT (4 Cols) */}
-          <div className="lg:col-span-4 flex flex-col gap-4">
-            <h4 className="text-white font-medium text-base tracking-wide font-serif">Stay Connected</h4>
-            <p className="text-sm text-[#A2AFA4]">
-              Subscribe to receive updates, access to exclusive deals, and more.
-            </p>
-            
-            {/* Newsletter Input */}
-            <div className="relative w-full mt-1">
-              <input
-                type="email"
-                placeholder="Your email address"
-                className="w-full bg-[#2D4A3E]/40 border border-[#3A5A4A] rounded-lg py-3 pl-4 pr-12 text-sm text-white placeholder-[#728A79] focus:outline-none focus:border-[#8FA887]"
-              />
-              <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md bg-[#8FA887] text-[#1E2E24] hover:bg-white transition-colors">
-                <ArrowRight size={16} />
-              </button>
-            </div>
-
-            {/* Micro Contact Info */}
-            <div className="flex flex-col gap-2 mt-2 text-xs text-[#728A79]">
-              <div className="flex items-center gap-2">
-                <Mail size={14} /> <span>hello@verdora.com</span>
+            {/* Social Connections */}
+            <div className="pt-2">
+              <span className="text-xs text-[#8FA887] uppercase font-semibold  tracking-widest block mb-3">
+                Share Your Love
+              </span>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="#"
+                  className="w-8 h-8 rounded-full border border-[#2D4A3E] flex items-center justify-center hover:bg-[#8FA887] hover:text-[#1E2E24] transition-all"
+                >
+                  <FaFacebookF size={13} />
+                </Link>
+                <Link
+                  href="#"
+                  className="w-8 h-8 rounded-full border border-[#2D4A3E] flex items-center justify-center hover:bg-[#8FA887] hover:text-[#1E2E24] transition-all"
+                >
+                  <FaTwitter size={13} />
+                </Link>
+                <Link
+                  href="#"
+                  className="w-8 h-8 rounded-full border border-[#2D4A3E] flex items-center justify-center hover:bg-[#8FA887] hover:text-[#1E2E24] transition-all"
+                >
+                  <FaYoutube size={13} />
+                </Link>
+                <Link
+                  href="#"
+                  className="w-8 h-8 rounded-full border border-[#2D4A3E] flex items-center justify-center hover:bg-[#8FA887] hover:text-[#1E2E24] transition-all"
+                >
+                  <FaInstagram size={13} />
+                </Link>
+                <Link
+                  href="#"
+                  className="w-8 h-8 rounded-full border border-[#2D4A3E] flex items-center justify-center hover:bg-[#8FA887] hover:text-[#1E2E24] transition-all"
+                >
+                  <FaPercent size={11} />
+                </Link>
               </div>
             </div>
           </div>
 
-        </div>
+          {/* 2. TOP CATEGORIES (2 Cols) */}
+          <div className="col-span-1 lg:col-span-2 flex flex-col gap-4">
+            <h4 className="text-[#8FA887] text-xs uppercase font-bold tracking-widest">
+              Top Categories
+            </h4>
+            <ul className="flex flex-col gap-2.5 text-xs uppercase font-medium">
+              <li>
+                <Link
+                  href="/category/makeup"
+                  className="hover:text-white transition-colors"
+                >
+                  Makeup
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/category/skin"
+                  className="hover:text-white transition-colors"
+                >
+                  Skin
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/category/eye-care"
+                  className="hover:text-white transition-colors"
+                >
+                  Eye Care
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/category/hair"
+                  className="hover:text-white transition-colors"
+                >
+                  Hair
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/category/personal-care"
+                  className="hover:text-white transition-colors"
+                >
+                  Personal Care
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/category/natural"
+                  className="hover:text-white transition-colors"
+                >
+                  Natural
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/category/mom-baby"
+                  className="hover:text-white transition-colors"
+                >
+                  Mom & Baby
+                </Link>
+              </li>
+            </ul>
+          </div>
 
-        {/* BOTTOM SECTION: COPYRIGHT & LEGAL */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#728A79]">
-          <p>© {new Date().getFullYear()} Verdora Beauty. All rights reserved.</p>
-          
-          <div className="flex items-center gap-6">
-            <Link href="#" className="hover:text-[#A2AFA4] transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-[#A2AFA4] transition-colors">Terms of Service</Link>
-            <Link href="#" className="hover:text-[#A2AFA4] transition-colors">Shipping & Returns</Link>
+          {/* 3. QUICK LINKS (2 Cols) */}
+          <div className="col-span-1 lg:col-span-2 flex flex-col gap-4">
+            <h4 className="text-[#8FA887] text-xs uppercase font-bold tracking-widest">
+              Quick Links
+            </h4>
+            <ul className="flex flex-col gap-2.5 text-xs uppercase font-medium">
+              <li>
+                <Link
+                  href="/offers"
+                  className="hover:text-white transition-colors"
+                >
+                  Offers
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/category/mens"
+                  className="hover:text-white transition-colors"
+                >
+                  Mens Products
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/concerns"
+                  className="hover:text-white transition-colors"
+                >
+                  Skin Concerns
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/new-arrivals"
+                  className="hover:text-white transition-colors"
+                >
+                  New Arrival
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/category/makeup"
+                  className="hover:text-white transition-colors"
+                >
+                  Makeup
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* 4. ALL ABOUT BEAUTY (2 Cols) */}
+          <div className="col-span-1 lg:col-span-2 flex flex-col gap-4">
+            <h4 className="text-[#8FA887] text-xs uppercase font-bold tracking-widest">
+              All About Beauty
+            </h4>
+            <ul className="flex flex-col gap-2.5 text-xs uppercase font-medium">
+              <li>
+                <Link
+                  href="/routine"
+                  className="hover:text-white transition-colors"
+                >
+                  Know Your Routine
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/hair-care-101"
+                  className="hover:text-white transition-colors"
+                >
+                  Hair Care 101
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/skin-care-101"
+                  className="hover:text-white transition-colors"
+                >
+                  Skin Care 101
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/makeup-101"
+                  className="hover:text-white transition-colors"
+                >
+                  Makeup 101
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* 5. HELP & PAYMENTS (3 Cols) */}
+          <div className="col-span-1 lg:col-span-3 flex flex-col gap-4">
+            <h4 className="text-[#8FA887] text-xs uppercase font-bold tracking-widest">
+              Help
+            </h4>
+            <ul className="flex flex-col gap-2.5 text-xs uppercase font-medium pb-2">
+              <li>
+                <Link
+                  href="/contact"
+                  className="hover:text-white transition-colors"
+                >
+                  Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/points"
+                  className="hover:text-white transition-colors"
+                >
+                  Points
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/faqs"
+                  className="hover:text-white transition-colors"
+                >
+                  Faqs
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/shipping-delivery"
+                  className="hover:text-white transition-colors"
+                >
+                  Shipping & Delivery
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms-conditions"
+                  className="hover:text-white transition-colors"
+                >
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/refund-policy"
+                  className="hover:text-white transition-colors"
+                >
+                  Refund & Return Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/trade-license"
+                  className="hover:text-white transition-colors"
+                >
+                  Trade License
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy-policy"
+                  className="hover:text-white transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+            </ul>
+
+            {/* Accepted Payments Grid */}
+            <div className="border-t border-[#2D4A3E] pt-4">
+              <span className="text-[10px] uppercase font-semibold text-[#728A79] tracking-widest block mb-2.5">
+                Payments Accepted
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {/* bKash */}
+                <div className="bg-white rounded px-2 py-1 text-[10px] font-bold text-pink-600 flex items-center justify-center h-6 w-11 shadow-sm">
+                  bkash
+                </div>
+                {/* Amex */}
+                <div className="bg-blue-600 text-white rounded px-1 text-[8px] font-bold flex flex-col items-center justify-center leading-none h-6 w-11 shadow-sm">
+                  <span>AMEX</span>
+                </div>
+                {/* Mastercard */}
+                <div className="bg-[#1A1A1A] rounded px-1 flex items-center justify-center gap-0.5 h-6 w-11 shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-[#FF5F00] block"></span>
+                  <span className="w-2 h-2 rounded-full bg-[#EB001B] block -ml-1"></span>
+                </div>
+                {/* Visa */}
+                <div className="bg-white rounded px-1 text-[10px] font-bold text-blue-800 italic flex items-center justify-center h-6 w-11 shadow-sm">
+                  VISA
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
+        {/* BOTTOM SECTION: COMPACT IN-LINE LINKS & COPYRIGHT */}
+        <div className="mt-6 pt-6 flex flex-col items-center gap-4 text-[11px] text-[#728A79] tracking-wider">
+          <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 uppercase font-medium">
+            <Link
+              href="/authenticity"
+              className="hover:text-white transition-colors"
+            >
+              Authenticity
+            </Link>
+            <Link
+              href="/terms-conditions"
+              className="hover:text-white transition-colors"
+            >
+              Terms & Conditions
+            </Link>
+            <Link
+              href="/privacy-policy"
+              className="hover:text-white transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="/refund-policy"
+              className="hover:text-white transition-colors"
+            >
+              Refund & Return Policy
+            </Link>
+            <Link href="/faqs" className="hover:text-white transition-colors">
+              Faqs
+            </Link>
+          </div>
+          <p className="text-center text-[#728A79] mt-2 font-light">
+            Copyright © 2026 Sreyoshi Limited. All Right Reserved
+          </p>
+        </div>
       </div>
     </footer>
   );
