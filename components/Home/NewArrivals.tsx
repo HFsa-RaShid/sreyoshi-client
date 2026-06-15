@@ -5,7 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Star, Plus } from "lucide-react";
 import { useApp } from "@/context/AppContext"; 
-import productsData from "../../public/data/products.json";
+
+// ⚡ তানস্ট্যাক কুয়েরি হুক ইমপোর্ট করা হলো (লোকাল JSON এর পরিবর্তে)
+import { useGetProductsForCustomer } from "@/hooks/useCustomerData";
 import { Product } from "@/Types/types";
 import CarouselButtons from "../Button/CarouselButtons";
 
@@ -13,19 +15,33 @@ export default function NewArrivals() {
   const { addToCart } = useApp();
   const gridContainerRef = useRef<HTMLDivElement>(null);
 
-  
-  const newArrivals = [...(productsData as Product[])]
-    .filter((product) => product.promotion === "New Arrivals")
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  // ⚡ ডাটাবেজ থেকে রিয়েল-টাইম প্রোডাক্ট ডাটা ফেচ করা হচ্ছে
+  const { data: fetchedProducts, isLoading, error } = useGetProductsForCustomer();
 
-  
+  // লোডিং অবস্থায় ব্যাকগ্রাউন্ড ব্রেক না করে ক্লিন মেসেজ শো করা
+  if (isLoading) {
+    return <div className="py-16 text-center text-gray-500 font-sans">Loading New Arrivals...</div>;
+  }
+
+  // কোনো এরর থাকলে বা ডাটা না পাওয়া গেলে সেকশনটি দেখাবে না
+  if (error || !fetchedProducts) return null;
+
+  // ১. শুধুমাত্র "New Arrivals" ফিল্টার এবং createdAt ডেট অনুযায়ী (নতুন থেকে পুরাতন) সর্ট করা
+  const newArrivals = [...(fetchedProducts as Product[])]
+    .filter((product) => product.promotion === "New Arrivals")
+    .sort((a, b) => {
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
+  // প্রোডাক্টের সংখ্যা ৫টির বেশি কি না তা যাচাই করার কন্ডিশন
   const hasMoreThanFive = newArrivals.length > 5;
 
   // ২. ডানে ও বামে স্মুথ স্ক্রোল করার ফাংশন
   const handleScroll = (direction: "left" | "right") => {
     if (gridContainerRef.current) {
       const { scrollLeft, clientWidth } = gridContainerRef.current;
-     
       const scrollAmount = clientWidth * 0.4; 
       
       gridContainerRef.current.scrollTo({
@@ -35,6 +51,7 @@ export default function NewArrivals() {
     }
   };
 
+  // যদি কোনো নিউ অ্যারাইভাল প্রোডাক্ট না থাকে, তবে সেকশনটি রেন্ডার হবে না
   if (newArrivals.length === 0) return null;
 
   return (
@@ -54,13 +71,14 @@ export default function NewArrivals() {
         {/* PRODUCT CARDS AREA WITH SEPARATED BUTTONS */}
         <div className="relative w-full">
           
-  
+          {/* কাস্টম বাটন কন্ট্রোলার */}
           <CarouselButtons 
             onScrollLeft={() => handleScroll("left")}
             onScrollRight={() => handleScroll("right")}
             showButtons={hasMoreThanFive} 
           />
 
+          {/* PRODUCT CARDS GRID / SLIDER */}
           <div 
             ref={gridContainerRef}
             className={`w-full gap-5 scrollbar-none pb-4 snap-x snap-mandatory ${
@@ -71,7 +89,7 @@ export default function NewArrivals() {
           >
             {newArrivals.map((product) => (
               <div 
-                key={product.id} 
+                key={product._id || product.productCode} // মঙ্গোডিবি ইউনিক আইডি ম্যাপ করা হলো
                 className={`flex flex-col bg-white rounded-2xl pb-4 shadow-[0_4px_20px_rgba(0,0,0,0.012)] border border-gray-100/40 relative group overflow-hidden snap-start ${
                   hasMoreThanFive ? "min-w-[46%] md:min-w-[31%] lg:min-w-[18.8%]" : ""
                 }`}
@@ -124,13 +142,13 @@ export default function NewArrivals() {
                           <Star 
                             key={i} 
                             size={11} 
-                            fill={i < Math.floor(product.rating) ? "currentColor" : "none"} 
+                            fill={i < Math.floor(product.rating || 0) ? "currentColor" : "none"} 
                             className="text-[#9BA69C]" 
                           />
                         ))}
                       </div>
                       <span className="text-[10px] font-sans text-gray-400 font-light">
-                        ({product.ratingCount})
+                        ({product.ratingCount || 0})
                       </span>
                     </div>
                   </div>
