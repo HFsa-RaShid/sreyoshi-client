@@ -121,7 +121,7 @@ export default function Navbar() {
                 {/* DYNAMIC MEGA MENU PANEL */}
                 {subCategories.length > 0 && (
                   <div
-                    className="absolute left-0 right-0 mx-auto top-full bg-white shadow-xl rounded-2xl p-8 grid opacity-0 translate-y-4 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-50 before:content-[''] before:absolute before:-top-7.5 before:left-0 before:right-0 before:h-7.5"
+                    className="absolute left-0 right-0 mx-auto top-22 bg-white shadow-xl rounded-2xl p-8 grid opacity-0 translate-y-4 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-50 before:content-[''] before:absolute before:-top-7.5 before:left-0 before:right-0 before:h-7.5"
                     style={{
                       width: subCategories.length > 3 ? "85vw" : "60vw",
                       maxWidth: "1150px",

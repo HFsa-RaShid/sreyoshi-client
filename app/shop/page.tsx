@@ -1,21 +1,28 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Star, Heart, Eye, ShoppingBag, X, ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
-import productsData from "../../public/data/products.json";
-import categoriesData from "../../public/data/categories.json"; // আপনার প্রোভাইড করা জেসন ডাটা
+import { Star, Heart, Eye, ShoppingBag, X, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
+
+// API Custom Hooks এবং Types ইম্পোর্ট করুন (আপনার পাথ অনুযায়ী চেঞ্জ করে নিবেন)
+
+import { Product, Category } from "@/Types/types"; 
+import { useGetCategoriesForCustomer, useGetProductsForCustomer } from "@/hooks/useCustomerData";
 
 export default function ShopPage() {
   const { addToCart, wishlist, toggleWishlist } = useApp();
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // ইউআরএল কোয়েরি প্যারামিটারস
+  // ১. TanStack Query দিয়ে API থেকে ডাটা নিয়ে আসা
+  const { data: categoriesData = [], isLoading: isCategoriesLoading } = useGetCategoriesForCustomer();
+  const { data: productsData = [], isLoading: isProductsLoading } = useGetProductsForCustomer();
+
+  // ইউআরএল কোয়েরি প্যারামিটারস
   const urlCategory = searchParams.get("category");
   const urlSubCategory = searchParams.get("subCategory");
 
@@ -23,44 +30,48 @@ export default function ShopPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
   const [selectedSkinTypes, setSelectedSkinTypes] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<number>(100);
+  // প্রাইস রেঞ্জ ডাইনামিক করার জন্য ১০০০+ রাখা ভালো (আপনার ডাটাতে ১২৫০ প্রাইস আছে)
+  const [priceRange, setPriceRange] = useState<number>(5000); 
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
   const [selectedPromotions, setSelectedPromotions] = useState<string[]>([]);
-  const [selectedAvailability, setSelectedAvailability] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<string>("default");
-
 
   const [openCategoryMenu, setOpenCategoryMenu] = useState<string | null>(null);
 
-  
+  // URL চেইঞ্জের উপর ভিত্তি করে ফিল্টার সেট করা
   useEffect(() => {
     if (urlCategory) {
       setSelectedCategories([urlCategory]);
       setOpenCategoryMenu(urlCategory);
-    } else if (urlSubCategory) {
-      
-      const parentCat = categoriesData.find((cat) =>
-        cat.subCategories.some((sub) => sub.items.includes(urlSubCategory))
+    } else if (urlSubCategory && categoriesData.length > 0) {
+      const parentCat = (categoriesData as Category[]).find((cat) =>
+        cat.subCategories.some((sub) => 
+          sub.items.some((item) => item.toLowerCase() === urlSubCategory.toLowerCase())
+        )
       );
       if (parentCat) {
-        setSelectedCategories([parentCat.id]);
-        setOpenCategoryMenu(parentCat.id);
+        setSelectedCategories([parentCat._id]);
+        setOpenCategoryMenu(parentCat._id);
       }
       setSelectedSubCategory(urlSubCategory);
     }
-  }, [urlCategory, urlSubCategory]);
+  }, [urlCategory, urlSubCategory, categoriesData]);
 
- 
+  // ডাইনামিক প্রোডাক্ট কাউন্ট লজিক (API ডাটা স্ট্রাকচার অনুযায়ী ফিক্সড)
   const getProductCount = (type: "category" | "subGroup" | "item", name: string) => {
-    return productsData.filter((product) => {
-      if (type === "category") return product.category === name;
-      if (type === "subGroup") return product.subCategory === name; // Assuming subCategory matches Title in product.json
-      if (type === "item") return product.subCategory?.toLowerCase() === name.toLowerCase(); // direct item mapping
+    if (!productsData) return 0;
+    return (productsData as Product[]).filter((product) => {
+      // API তে ক্যাটাগরি অবজেক্ট আকারে আসতে পারে, তাই আইডি বের করা হচ্ছে
+      const catId = typeof product.category === "object" ? product.category?._id : product.category;
+      
+      if (type === "category") return catId === name;
+      if (type === "subGroup") return product.subCategory?.toLowerCase() === name.toLowerCase();
+      if (type === "item") return product.itemName?.toLowerCase() === name.toLowerCase();
       return false;
     }).length;
   };
 
-  // ক্যাটাগরি বা সাবক্যাটাগরি সিলেকশন হ্যান্ডলার
+  // ক্যাটাগরি সিলেকশন হ্যান্ডলার
   const handleCategorySelect = (categoryId: string) => {
     setSelectedSubCategory(null);
     if (selectedCategories.includes(categoryId)) {
@@ -74,8 +85,9 @@ export default function ShopPage() {
     }
   };
 
+  // সাবক্যাটাগরি আইটেম সিলেকশন হ্যান্ডলার
   const handleSubCategoryItemSelect = (itemName: string) => {
-    if (selectedSubCategory === itemName) {
+    if (selectedSubCategory?.toLowerCase() === itemName.toLowerCase()) {
       setSelectedSubCategory(null);
       router.push(selectedCategories.length ? `/shop?category=${selectedCategories[0]}` : "/shop");
     } else {
@@ -84,37 +96,49 @@ export default function ShopPage() {
     }
   };
 
-  // অ্যাডভান্সড মাল্টি-লেয়ার ফিল্টারিং এবং সর্টিং লজিক
+  // অ্যাডভান্সড মাল্টি-লেয়ার ফিল্টারিং এবং সর্টিং লজিক (API ফ্রেন্ডলি)
   const filteredProducts = useMemo(() => {
-    return productsData
+    if (!productsData) return [];
+
+    return (productsData as Product[])
       .filter((product) => {
-        // ১. ডাইনামিক নেস্টেড ক্যাটাগরি ও সাব-ক্যাটাগরি ফিল্টার
-        if (selectedCategories.length > 0 && !selectedCategories.includes(product.category)) {
+        // Active প্রোডাক্ট ছাড়া বাকিগুলো হাইড রাখার জন্য
+        if (product.status !== "Active") return false;
+
+        // ১. ক্যাটাগরি ফিল্টার
+        const catId = typeof product.category === "object" ? product.category?._id : product.category;
+        if (selectedCategories.length > 0 && (!catId || !selectedCategories.includes(catId))) {
           return false;
         }
-        if (selectedSubCategory && product.subCategory?.toLowerCase() !== selectedSubCategory.toLowerCase()) {
+
+        // ২. সাব-ক্যাটাগরি আইটেম ফিল্টার (যেমন: Lipstick)
+        if (selectedSubCategory && product.itemName?.toLowerCase() !== selectedSubCategory.toLowerCase()) {
           return false;
         }
-        // ২. স্কিন টাইপ ফিল্টার
-        if (selectedSkinTypes.length > 0 && !selectedSkinTypes.includes(product.skinType)) {
-          return false;
+
+        // ৩. স্কিন টাইপ ফিল্টার
+        if (selectedSkinTypes.length > 0 && (!product.skinType || !selectedSkinTypes.includes(product.skinType))) {
+          // 'All Skin Types' থাকলে সেটা সব ফিল্টারে শো করা উচিত
+          if (product.skinType !== "All Skin Types") {
+            return false;
+          }
         }
-        // ৩. প্রাইস রেঞ্জ ফিল্টার
+
+        // ৪. প্রাইস রেঞ্জ ফিল্টার
         if (product.price > priceRange) {
           return false;
         }
-        // ৪. রেটিং ফিল্টার
+
+        // ৫. রেটিং ফিল্টার
         if (selectedRatings.length > 0 && !selectedRatings.includes(Math.floor(product.rating))) {
           return false;
         }
-        // ৫. প্রমোশন ফিল্টার
-        if (selectedPromotions.length > 0 && !selectedPromotions.includes(product.promotion)) {
+
+        // ৬. প্রমোশন ফিল্টার
+        if (selectedPromotions.length > 0 && (!product.promotion || !selectedPromotions.includes(product.promotion))) {
           return false;
         }
-        // ৬. অ্যাভেইলেবিলিটি ফিল্টার
-        if (selectedAvailability.length > 0 && !selectedAvailability.includes(product.availability)) {
-          return false;
-        }
+
         return true;
       })
       .sort((a, b) => {
@@ -122,20 +146,24 @@ export default function ShopPage() {
         if (sortBy === "high-to-low") return b.price - a.price;
         if (sortBy === "rating") return b.rating - a.rating;
         if (sortBy === "popularity") return b.salesCount - a.salesCount;
-        if (sortBy === "latest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        if (sortBy === "latest") {
+          // API ডেট ফরম্যাট হ্যান্ডেল করার জন্য
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          return dateB - dateA;
+        }
         return 0;
       });
-  }, [selectedCategories, selectedSubCategory, selectedSkinTypes, priceRange, selectedRatings, selectedPromotions, selectedAvailability, sortBy]);
+  }, [productsData, selectedCategories, selectedSubCategory, selectedSkinTypes, priceRange, selectedRatings, selectedPromotions, sortBy]);
 
   // Clear All Filters
   const handleClearAll = () => {
     setSelectedCategories([]);
     setSelectedSubCategory(null);
     setSelectedSkinTypes([]);
-    setPriceRange(100);
+    setPriceRange(5000);
     setSelectedRatings([]);
     setSelectedPromotions([]);
-    setSelectedAvailability([]);
     setOpenCategoryMenu(null);
     router.push("/shop");
   };
@@ -144,28 +172,38 @@ export default function ShopPage() {
     setList(list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
   };
 
+  // API ডাটা লোড হওয়ার সময়ে ফুল স্ক্রিন স্পিনার শো করবে
+  if (isCategoriesLoading || isProductsLoading) {
+    return (
+      <div className="min-h-screen bg-[#FAF9F6] flex flex-col items-center justify-center gap-2">
+        <Loader2 className="w-10 h-10 animate-spin text-[#1A2E22]" />
+        <p className="text-sm font-medium text-[#1A2E22]/70">Loading Shop Products...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#FAF9F6] min-h-screen pt-28 pb-12 px-4 md:px-12 text-[#2C3E35]">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
         
-        {/* ================= LEFT SIDEBAR: DYNAMIC DOCK SYSTEM ================= */}
+        {/* ================= LEFT SIDEBAR ================= */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit sticky top-24 max-h-[85vh] overflow-y-auto no-scrollbar">
           <h2 className="text-xl font-serif font-bold text-[#1A2E22] mb-6">Filter Options</h2>
 
-          {/* DYNAMIC NESTED CATEGORIES (MATCHED WITH Image 13-6-26 at 4.15 PM.png) */}
+          {/* DYNAMIC NESTED CATEGORIES */}
           <div className="mb-6">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#1A2E22] mb-4 opacity-50">Product Categories</h3>
             <div className="flex flex-col gap-3">
-              {categoriesData.map((category) => {
-                const isCatSelected = selectedCategories.includes(category.id);
-                const isCatOpen = openCategoryMenu === category.id;
-                const totalCatProducts = getProductCount("category", category.id);
+              {(categoriesData as Category[]).map((category) => {
+                const isCatSelected = selectedCategories.includes(category._id);
+                const isCatOpen = openCategoryMenu === category._id;
+                const totalCatProducts = getProductCount("category", category._id);
 
                 return (
-                  <div key={category.id} className="flex flex-col">
+                  <div key={category._id} className="flex flex-col">
                     {/* Main Head Category Row */}
                     <div 
-                      onClick={() => handleCategorySelect(category.id)}
+                      onClick={() => handleCategorySelect(category._id)}
                       className={`flex justify-between items-center font-sans text-sm font-bold cursor-pointer transition-colors py-1 ${isCatSelected ? "text-[#FF3F6C]" : "text-[#1A2E22] hover:text-[#FF3F6C]"}`}
                     >
                       <span>{category.name}</span>
@@ -177,7 +215,7 @@ export default function ShopPage() {
                       </div>
                     </div>
 
-                    {/* Sub-Group Area (Appeared only when Main Category is Active/Open) */}
+                    {/* Sub-Group Area */}
                     {isCatOpen && (
                       <div className="pl-4 mt-2 flex flex-col gap-3 border-l border-gray-100 ml-1">
                         {category.subCategories.map((sub, sIdx) => {
@@ -187,8 +225,8 @@ export default function ShopPage() {
                             <div key={sIdx} className="flex flex-col">
                               <div className="flex justify-between items-center text-xs font-bold uppercase text-[#FF3F6C] tracking-wide mb-2 mt-1">
                                 <span>{sub.title}</span>
-                                <span className="bg-[#FF3F6C] text-white text-[9px] px-1.5 py-0.2 rounded-full font-sans">
-                                  {totalSubProducts || 0}
+                                <span className="bg-[#FF3F6C]/10 text-[#FF3F6C] text-[9px] px-1.5 py-0.2 rounded-full font-sans">
+                                  {totalSubProducts}
                                 </span>
                               </div>
 
@@ -205,7 +243,7 @@ export default function ShopPage() {
                                       className={`flex justify-between items-center text-xs font-medium cursor-pointer py-0.5 transition-all ${isItemActive ? "text-[#1A2E22] font-bold" : "text-[#5A655D] hover:text-[#1A2E22]"}`}
                                     >
                                       <span className="truncate max-w-[160px]">{item}</span>
-                                      <span className="text-[10px] bg-gray-50 text-gray-400 font-normal px-1.5 py-0.2 rounded-full font-sans group-hover:bg-gray-100">
+                                      <span className="text-[10px] bg-gray-50 text-gray-400 font-normal px-1.5 py-0.2 rounded-full font-sans">
                                         {totalItemProducts}
                                       </span>
                                     </li>
@@ -246,11 +284,11 @@ export default function ShopPage() {
           {/* PRICE RANGE */}
           <div className="mb-6">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-1">Price</h3>
-            <p className="text-xs text-gray-500 mb-3">$10.00 - ${priceRange.toFixed(2)}</p>
+            <p className="text-xs text-gray-500 mb-3">৳0.00 - ৳{priceRange.toFixed(2)}</p>
             <input
               type="range"
-              min="10"
-              max="100"
+              min="0"
+              max="5000"
               value={priceRange}
               onChange={(e) => setPriceRange(Number(e.target.value))}
               className="w-full accent-[#2D4A3E] cursor-pointer"
@@ -286,7 +324,7 @@ export default function ShopPage() {
           <div className="mb-6">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">By Promotions</h3>
             <div className="flex flex-col gap-2.5 text-sm">
-              {["New Arrivals", "Best Sellers", "On Sale"].map((promo) => (
+              {["New Arrivals", "Best Sellers", "Trending"].map((promo) => (
                 <label key={promo} className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -299,7 +337,6 @@ export default function ShopPage() {
               ))}
             </div>
           </div>
-
         </div>
 
         {/* ================= RIGHT SIDE: PRODUCT GRID & TOPBAR ================= */}
@@ -332,25 +369,32 @@ export default function ShopPage() {
           </div>
 
           {/* ACTIVE FILTER BADGES */}
-          <div className="flex flex-wrap items-center gap-2 mb-8">
-            <span className="text-xs font-bold text-gray-400 mr-1">Active Filter</span>
-            
-            {selectedCategories.map((c) => (
-              <div key={c} className="flex items-center gap-1.5 bg-[#1A2E22] text-white text-xs px-3 py-1.5 rounded-full font-medium capitalize">
-                {c.replace("-", " ")} <X size={12} className="cursor-pointer" onClick={() => handleCategorySelect(c)} />
-              </div>
-            ))}
+          {(selectedCategories.length > 0 || selectedSubCategory) && (
+            <div className="flex flex-wrap items-center gap-2 mb-8">
+              <span className="text-xs font-bold text-gray-400 mr-1">Active Filter</span>
+              
+              {selectedCategories.map((c) => {
+                const catObj = (categoriesData as Category[]).find(cat => cat._id === c);
+                return (
+                  <div key={c} className="flex items-center gap-1.5 bg-[#1A2E22] text-white text-xs px-3 py-1.5 rounded-full font-medium capitalize">
+                    {catObj ? catObj.name : "Category"} 
+                    <X size={12} className="cursor-pointer" onClick={() => handleCategorySelect(c)} />
+                  </div>
+                );
+              })}
 
-            {selectedSubCategory && (
-              <div className="flex items-center gap-1.5 bg-[#FF3F6C] text-white text-xs px-3 py-1.5 rounded-full font-medium">
-                {selectedSubCategory} <X size={12} className="cursor-pointer" onClick={() => handleSubCategoryItemSelect(selectedSubCategory)} />
-              </div>
-            )}
+              {selectedSubCategory && (
+                <div className="flex items-center gap-1.5 bg-[#FF3F6C] text-white text-xs px-3 py-1.5 rounded-full font-medium">
+                  {selectedSubCategory} 
+                  <X size={12} className="cursor-pointer" onClick={() => handleSubCategoryItemSelect(selectedSubCategory)} />
+                </div>
+              )}
 
-            <button onClick={handleClearAll} className="text-xs text-amber-600 font-semibold hover:underline ml-2">
-              Clear All
-            </button>
-          </div>
+              <button onClick={handleClearAll} className="text-xs text-amber-600 font-semibold hover:underline ml-2">
+                Clear All
+              </button>
+            </div>
+          )}
 
           {/* PRODUCT GRID */}
           {filteredProducts.length === 0 ? (
@@ -359,70 +403,78 @@ export default function ShopPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
-                <div key={product.id} className="group relative bg-transparent flex flex-col">
-                  
-                  {/* IMAGE WRAPPER (HOVER DUAL-EFFECT) */}
-                  <div className="relative aspect-[4/5] w-full bg-[#EAE7DC] rounded-[24px] overflow-hidden mb-3 shadow-sm cursor-pointer">
-                    <div
-                      className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-700 ease-in-out group-hover:opacity-0"
-                      style={{ backgroundImage: `url(${product.images[0]})` }}
-                    />
-                    <div
-                      className="absolute inset-0 w-full h-full bg-cover bg-center scale-100 group-hover:scale-105 transition-all duration-700 ease-in-out opacity-0 group-hover:opacity-100"
-                      style={{ backgroundImage: `url(${product.images[1] || product.images[0]})` }}
-                    />
+              {filteredProducts.map((product) => {
+                const categoryName = typeof product.category === "object" ? product.category?.name : product.subCategory;
+                // ইমেজ কি-র নাম পরিবর্তন করে commonImages ব্যবহার করা হয়েছে
+                const firstImage = product.commonImages?.[0] || "/placeholder.png";
+                const secondImage = product.commonImages?.[1] || firstImage;
+
+                return (
+                  <div key={product._id || product.productCode} className="group relative bg-transparent flex flex-col">
                     
-                    <span className="absolute top-4 left-4 bg-[#1A2E22] text-white font-sans text-[11px] font-bold px-2.5 py-1 rounded-full z-10">
-                      {product.discount}
-                    </span>
+                    {/* IMAGE WRAPPER WITH DUAL-HOVER EFFECT */}
+                    <div className="relative aspect-[4/5] w-full bg-[#EAE7DC] rounded-[24px] overflow-hidden mb-3 shadow-sm cursor-pointer">
+                      <div
+                        className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-700 ease-in-out group-hover:opacity-0"
+                        style={{ backgroundImage: `url(${firstImage})` }}
+                      />
+                      <div
+                        className="absolute inset-0 w-full h-full bg-cover bg-center scale-100 group-hover:scale-105 transition-all duration-700 ease-in-out opacity-0 group-hover:opacity-100"
+                        style={{ backgroundImage: `url(${secondImage})` }}
+                      />
+                      
+                      {product.discount && (
+                        <span className="absolute top-4 left-4 bg-[#1A2E22] text-white font-sans text-[11px] font-bold px-2.5 py-1 rounded-full z-10">
+                          {product.discount} OFF
+                        </span>
+                      )}
 
-                   
+                      {/* ACTIONS */}
+                      <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                        <button 
+                          onClick={() => product._id && toggleWishlist(product._id)}
+                          className={`p-2 rounded-full shadow-md transition-colors ${product._id && wishlist.includes(product._id) ? "bg-[#FF3F6C] text-white" : "bg-white text-[#1A2E22] hover:bg-[#1A2E22] hover:text-white"}`}
+                        >
+                          <Heart size={16} fill={product._id && wishlist.includes(product._id) ? "currentColor" : "none"} />
+                        </button>
 
-                    <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
- 
-  <button 
-    onClick={() => toggleWishlist(product.id)}
-    className={`p-2 rounded-full shadow-md transition-colors ${wishlist.includes(product.id) ? "bg-[#FF3F6C] text-white" : "bg-white text-[#1A2E22] hover:bg-[#1A2E22] hover:text-white"}`}
-  >
-    <Heart size={16} fill={wishlist.includes(product.id) ? "currentColor" : "none"} />
-  </button>
+                        <Link href={`/product/${product.productCode}`} className="bg-white text-[#1A2E22] p-2 rounded-full shadow-md hover:bg-[#1A2E22] hover:text-white transition-colors flex items-center justify-center">
+                          <Eye size={16} />
+                        </Link>
 
-
-  <Link href={`/product/${product.id}`} className="bg-white text-[#1A2E22] p-2 rounded-full shadow-md hover:bg-[#1A2E22] hover:text-white transition-colors flex items-center justify-center">
-    <Eye size={16} />
-  </Link>
-
-  {/* Cart এ অ্যাড করার বাটন */}
-  <button 
-    onClick={() => addToCart(product)}
-    className="bg-white text-[#1A2E22] p-2 rounded-full shadow-md hover:bg-[#1A2E22] hover:text-white transition-colors"
-  >
-    <ShoppingBag size={16} />
-  </button>
-</div>
-                  </div>
-
-                  {/* Metadata */}
-                  <div className="flex justify-between items-start px-1">
-                    <div>
-                      <span className="text-xs text-gray-400 font-medium block mb-0.5 capitalize">{product.category.replace("-", " ")}</span>
-                      <h4 className="font-serif font-bold text-base text-[#1A2E22] group-hover:text-black transition-colors">{product.name}</h4>
+                        <button 
+                          onClick={() => addToCart(product)}
+                          disabled={product.availability === "Out of Stock"}
+                          className={`p-2 rounded-full shadow-md transition-colors ${product.availability === "Out of Stock" ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white text-[#1A2E22] hover:bg-[#1A2E22] hover:text-white"}`}
+                        >
+                          <ShoppingBag size={16} />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 text-xs font-bold text-[#1A2E22] mt-0.5 shrink-0">
-                      <Star size={14} fill="currentColor" className="text-amber-400" />
-                      <span>{product.rating.toFixed(1)}</span>
-                      <span className="text-gray-400 font-normal text-[10px]">({product.ratingCount})</span>
+
+                    {/* Metadata */}
+                    <div className="flex justify-between items-start px-1">
+                      <div>
+                        <span className="text-xs text-gray-400 font-medium block mb-0.5 capitalize">{categoryName}</span>
+                        <h4 className="font-serif font-bold text-base text-[#1A2E22] group-hover:text-black transition-colors line-clamp-1">{product.name}</h4>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs font-bold text-[#1A2E22] mt-0.5 shrink-0">
+                        <Star size={14} fill="currentColor" className="text-amber-400" />
+                        <span>{product.rating.toFixed(1)}</span>
+                        <span className="text-gray-400 font-normal text-[10px]">({product.ratingCount})</span>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2 mt-1 px-1">
-                    <span className="text-[#CDA275] font-bold text-base">${product.price.toFixed(2)}</span>
-                    <span className="text-gray-400 line-through text-xs">${product.oldPrice.toFixed(2)}</span>
-                  </div>
+                    <div className="flex items-center gap-2 mt-1 px-1">
+                      <span className="text-[#CDA275] font-bold text-base">৳{product.price.toFixed(2)}</span>
+                      {product.oldPrice && product.oldPrice > product.price && (
+                        <span className="text-gray-400 line-through text-xs">৳{product.oldPrice.toFixed(2)}</span>
+                      )}
+                    </div>
 
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -438,7 +490,6 @@ export default function ShopPage() {
           )}
 
         </div>
-
       </div>
     </div>
   );
