@@ -60,7 +60,7 @@ export interface Product {
   status: StatusType;     // ⚡ মেইন প্রোডাক্টের স্ট্যাটাস ('Active' | 'Inactive')
   commonImages: string[]; // ⚡ ব্যাকএন্ড স্কিমা অনুযায়ী 'images' এর বদলে 'commonImages' হবে
   weightOrVolume: number; 
-  unit: 'gm' | 'ml';      // ব্যাকএন্ডের enum: ['gm', 'ml']
+  unit: 'gm' | 'ml' | 'pcs';      // ব্যাকএন্ডের enum: ['gm', 'ml']
   shades?: ProductShade[]; 
   createdAt?: string;     // timestamps: true থেকে জেনারেট হওয়া ISO ডেট
   updatedAt?: string;
@@ -69,9 +69,16 @@ export interface Product {
 /**
  * Represents a single group/sub-section inside a category.
  */
+export interface SubCategoryItem {
+  name: string;
+  status: string;
+}
+
 export interface SubCategoryGroup {
-  title: string;          // যেমন: "LIPS", "FACE"
-  items: string[];        // যেমন: ["Lipstick", "Foundation", "Liquid Lipstick"]
+  id?: string;
+  title: string;
+  status: string;
+  items: SubCategoryItem[]; //  New definition
 }
 
 /**

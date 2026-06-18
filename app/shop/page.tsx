@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -8,8 +9,6 @@ import { Star, Heart, Eye, ShoppingBag, X, ChevronDown, ChevronLeft, ChevronRigh
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
 
-// API Custom Hooks এবং Types ইম্পোর্ট করুন (আপনার পাথ অনুযায়ী চেঞ্জ করে নিবেন)
-
 import { Product, Category } from "@/Types/types"; 
 import { useGetCategoriesForCustomer, useGetProductsForCustomer } from "@/hooks/useCustomerData";
 
@@ -18,7 +17,7 @@ export default function ShopPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // ১. TanStack Query দিয়ে API থেকে ডাটা নিয়ে আসা
+  // ১. TanStack Query দিয়ে API থেকে ডাটা নিয়ে আসা
   const { data: categoriesData = [], isLoading: isCategoriesLoading } = useGetCategoriesForCustomer();
   const { data: productsData = [], isLoading: isProductsLoading } = useGetProductsForCustomer();
 
@@ -30,7 +29,6 @@ export default function ShopPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
   const [selectedSkinTypes, setSelectedSkinTypes] = useState<string[]>([]);
-  // প্রাইস রেঞ্জ ডাইনামিক করার জন্য ১০০০+ রাখা ভালো (আপনার ডাটাতে ১২৫০ প্রাইস আছে)
   const [priceRange, setPriceRange] = useState<number>(5000); 
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
   const [selectedPromotions, setSelectedPromotions] = useState<string[]>([]);
@@ -46,7 +44,7 @@ export default function ShopPage() {
     } else if (urlSubCategory && categoriesData.length > 0) {
       const parentCat = (categoriesData as Category[]).find((cat) =>
         cat.subCategories.some((sub) => 
-          sub.items.some((item) => item.toLowerCase() === urlSubCategory.toLowerCase())
+          sub.items.some((item: any) => item?.name?.toLowerCase() === urlSubCategory.toLowerCase())
         )
       );
       if (parentCat) {
@@ -57,11 +55,10 @@ export default function ShopPage() {
     }
   }, [urlCategory, urlSubCategory, categoriesData]);
 
-  // ডাইনামিক প্রোডাক্ট কাউন্ট লজিক (API ডাটা স্ট্রাকচার অনুযায়ী ফিক্সড)
+  // ডাইনামিক প্রোডাক্ট কাউন্ট লজিক (API ডাটা স্ট্রাকচার অনুযায়ী ফিক্সড)
   const getProductCount = (type: "category" | "subGroup" | "item", name: string) => {
     if (!productsData) return 0;
     return (productsData as Product[]).filter((product) => {
-      // API তে ক্যাটাগরি অবজেক্ট আকারে আসতে পারে, তাই আইডি বের করা হচ্ছে
       const catId = typeof product.category === "object" ? product.category?._id : product.category;
       
       if (type === "category") return catId === name;
@@ -96,13 +93,12 @@ export default function ShopPage() {
     }
   };
 
-  // অ্যাডভান্সড মাল্টি-লেয়ার ফিল্টারিং এবং সর্টিং লজিক (API ফ্রেন্ডলি)
+  // অ্যাডভান্সড মাল্টি-লেয়ার ফিল্টারিং এবং সর্টিং লজিক
   const filteredProducts = useMemo(() => {
     if (!productsData) return [];
 
     return (productsData as Product[])
       .filter((product) => {
-        // Active প্রোডাক্ট ছাড়া বাকিগুলো হাইড রাখার জন্য
         if (product.status !== "Active") return false;
 
         // ১. ক্যাটাগরি ফিল্টার
@@ -111,14 +107,13 @@ export default function ShopPage() {
           return false;
         }
 
-        // ২. সাব-ক্যাটাগরি আইটেম ফিল্টার (যেমন: Lipstick)
+        // ২. সাব-ক্যাটাগরি আইটেম ফিল্টার
         if (selectedSubCategory && product.itemName?.toLowerCase() !== selectedSubCategory.toLowerCase()) {
           return false;
         }
 
         // ৩. স্কিন টাইপ ফিল্টার
         if (selectedSkinTypes.length > 0 && (!product.skinType || !selectedSkinTypes.includes(product.skinType))) {
-          // 'All Skin Types' থাকলে সেটা সব ফিল্টারে শো করা উচিত
           if (product.skinType !== "All Skin Types") {
             return false;
           }
@@ -147,7 +142,6 @@ export default function ShopPage() {
         if (sortBy === "rating") return b.rating - a.rating;
         if (sortBy === "popularity") return b.salesCount - a.salesCount;
         if (sortBy === "latest") {
-          // API ডেট ফরম্যাট হ্যান্ডেল করার জন্য
           const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           return dateB - dateA;
@@ -172,7 +166,6 @@ export default function ShopPage() {
     setList(list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
   };
 
-  // API ডাটা লোড হওয়ার সময়ে ফুল স্ক্রিন স্পিনার শো করবে
   if (isCategoriesLoading || isProductsLoading) {
     return (
       <div className="min-h-screen bg-[#FAF9F6] flex flex-col items-center justify-center gap-2">
@@ -232,17 +225,17 @@ export default function ShopPage() {
 
                               {/* Target Item Elements Inside Sub Group */}
                               <ul className="flex flex-col gap-1.5 pl-2 mb-1">
-                                {sub.items.map((item, iIdx) => {
-                                  const isItemActive = selectedSubCategory?.toLowerCase() === item.toLowerCase();
-                                  const totalItemProducts = getProductCount("item", item);
+                                {sub.items.map((item: any, iIdx) => {
+                                  const isItemActive = selectedSubCategory?.toLowerCase() === item?.name?.toLowerCase();
+                                  const totalItemProducts = getProductCount("item", item?.name);
 
                                   return (
                                     <li 
                                       key={iIdx}
-                                      onClick={() => handleSubCategoryItemSelect(item)}
+                                      onClick={() => handleSubCategoryItemSelect(item.name)}
                                       className={`flex justify-between items-center text-xs font-medium cursor-pointer py-0.5 transition-all ${isItemActive ? "text-[#1A2E22] font-bold" : "text-[#5A655D] hover:text-[#1A2E22]"}`}
                                     >
-                                      <span className="truncate max-w-[160px]">{item}</span>
+                                      <span className="truncate max-w-[160px]">{item.name}</span>
                                       <span className="text-[10px] bg-gray-50 text-gray-400 font-normal px-1.5 py-0.2 rounded-full font-sans">
                                         {totalItemProducts}
                                       </span>
@@ -405,7 +398,6 @@ export default function ShopPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {filteredProducts.map((product) => {
                 const categoryName = typeof product.category === "object" ? product.category?.name : product.subCategory;
-                // ইমেজ কি-র নাম পরিবর্তন করে commonImages ব্যবহার করা হয়েছে
                 const firstImage = product.commonImages?.[0] || "/placeholder.png";
                 const secondImage = product.commonImages?.[1] || firstImage;
 

@@ -3,9 +3,9 @@
 import { Product, ProductShade } from "@/Types/types";
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-// ব্যাকএন্ড ডাটা স্ট্রাকচার অনুযায়ী CartItem ইন্টারফেস আপডেট
-interface CartItem {
-  cartItemId: string; // ProductId + ShadeName দিয়ে তৈরি ইউনিক আইডি
+// ব্যাকএন্ড ডাটা স্ট্রাকচার অনুযায়ী CartItem ইন্টারফেস
+export interface CartItem {
+  cartItemId: string; // ProductId + ShadeName দিয়ে তৈরি ইউনিক আইডি
   id: string;         // আসল প্রোডাক্টের _id
   name: string;
   price: number;
@@ -19,7 +19,6 @@ interface CartItem {
 interface AppContextType {
   cart: CartItem[];
   wishlist: string[];
-  // প্রোডাক্টের সাথে অপশনাল হিসেবে সিলেক্টেড শেডও একসেপ্ট করবে
   addToCart: (product: Product & { selectedShade?: ProductShade | null }, qty?: number) => void;
   removeFromCart: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
@@ -31,49 +30,75 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
+  // লোকাল স্টোরেজ থেকে ডাটা লোড শেষ হয়েছে কিনা তা ট্র্যাক করার জন্য
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  // ১. লোকাল স্টোরেজ থেকে ইনিশিয়াল ডাটা লোড করা
+  // ১. মাউন্ট হওয়ার সময় লোকাল স্টোরেজ থেকে ডাটা লোড করা
   useEffect(() => {
     const savedCart = localStorage.getItem("sreyoshi_cart");
     const savedWishlist = localStorage.getItem("sreyoshi_wishlist");
 
-    if (savedCart) setCart(JSON.parse(savedCart));
-    if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        console.error("Cart hydration failed", e);
+      }
+    }
+    if (savedWishlist) {
+      try {
+        setWishlist(JSON.parse(savedWishlist));
+      } catch (e) {
+        console.error("Wishlist hydration failed", e);
+      }
+    }
+    setIsHydrated(true); // লোড কমপ্লিট
   }, []);
 
-  // ২. কার্ট স্টেট চেঞ্জ হলে লোকাল স্টোরেজে সেভ করা
+  // ২. কার্ট স্টেট চেঞ্জ হলে লোকাল স্টোরেজে সেভ করা (শুধুমাত্র ডাটা লোড হওয়ার পর)
   useEffect(() => {
-    localStorage.setItem("sreyoshi_cart", JSON.stringify(cart));
-  }, [cart]);
+    if (isHydrated) {
+      localStorage.setItem("sreyoshi_cart", JSON.stringify(cart));
+    }
+  }, [cart, isHydrated]);
 
-  // ৩. উইশলিস্ট স্টেট চেঞ্জ হলে লোকাল স্টোরেজে সেভ করা
+  // ৩. উইশলিস্ট স্টেট চেঞ্জ হলে লোকাল স্টোরেজে সেভ করা (শুধুমাত্র ডাটা লোড হওয়ার পর)
   useEffect(() => {
-    localStorage.setItem("sreyoshi_wishlist", JSON.stringify(wishlist));
-  }, [wishlist]);
+    if (isHydrated) {
+      localStorage.setItem("sreyoshi_wishlist", JSON.stringify(wishlist));
+    }
+  }, [wishlist, isHydrated]);
 
-  // ৪. কার্ট-এ অ্যাড করার লজিক (শেডসহ)
+  // ৪. কার্ট-এ অ্যাড করার লজিক (একই প্রোডাক্ট এবং শেড হলে কাউন্ট বাড়বে)
   const addToCart = (product: Product & { selectedShade?: ProductShade | null }, qty = 1) => {
-    const productId = product._id || "";
+    const productId = product._id || product.productCode || "";
     const shadeName = product.selectedShade?.shadeName || "NoShade";
     
-    // প্রোডাক্ট আইডি এবং শেডের নাম মিলিয়ে একটি ইউনিক কার্ট আইটেম আইডি তৈরি
+    // প্রোডাক্ট আইডি এবং শেডের নাম মিলিয়ে সম্পূর্ণ ইউনিক আইডি তৈরি
     const cartItemId = `${productId}-${shadeName}`;
 
-    // ক্যাটাগরি অবজেক্ট বা স্ট্রিং হ্যান্ডেল করার জন্য
-    const categoryString = typeof product.category === "object" ? product.category?.name : product.subCategory || "";
+    // ক্যাটাগরি অবজেক্ট বা স্ট্রিং ডাইনামিক হ্যান্ডেল
+    const categoryString = typeof product.category === "object" 
+      ? product.category?.name 
+      : product.subCategory || product.category || "";
 
-    // কার্ট ইমেজের জন্য: শেডের নিজস্ব ইমেজ থাকলে সেটা, না থাকলে কমন ইমেজের ১মটি
+    // কার্ট ইমেজের প্রায়োরিটি সেটআপ
     const cartImage = product.selectedShade?.shadeImage || (product.commonImages && product.commonImages[0]) || "/placeholder.png";
 
     setCart((prev) => {
+      // কার্টে অলরেডি এই `cartItemId` আছে কিনা চেক করা হচ্ছে
       const exists = prev.find((item) => item.cartItemId === cartItemId);
       
       if (exists) {
+        // নতুন রো তৈরি না করে আগের আইটেমটির সাথেই কোয়ান্টিটি যোগ হবে
         return prev.map((item) =>
-          item.cartItemId === cartItemId ? { ...item, quantity: item.quantity + qty } : item
+          item.cartItemId === cartItemId 
+            ? { ...item, quantity: item.quantity + qty } 
+            : item
         );
       }
       
+      // কার্টে না থাকলে নতুন আইটেম হিসেবে পুশ হবে
       return [
         ...prev,
         {
@@ -85,7 +110,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           image: cartImage,
           quantity: qty,
           category: categoryString,
-          selectedShade: product.selectedShade || null,
+          selectedShade: product.selectedShade ? { ...product.selectedShade } : null,
         },
       ];
     });
@@ -96,13 +121,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setCart((prev) => prev.filter((item) => item.cartItemId !== cartItemId));
   };
 
-  // ৬. কোয়ান্টিটি আপডেট করা
+  // ৬. কোয়ান্টিটি আপডেট করা
   const updateQuantity = (cartItemId: string, quantity: number) => {
     if (quantity <= 0) return removeFromCart(cartItemId);
-    setCart((prev) => prev.map((item) => (item.cartItemId === cartItemId ? { ...item, quantity } : item)));
+    setCart((prev) =>
+      prev.map((item) => (item.cartItemId === cartItemId ? { ...item, quantity } : item))
+    );
   };
 
-  // ৭. উইশলিস্ট টগল করা
+  // ७. উইশলিস্ট টগল করা
   const toggleWishlist = (id: string) => {
     setWishlist((prev) =>
       prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]

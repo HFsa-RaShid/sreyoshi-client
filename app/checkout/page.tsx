@@ -4,10 +4,11 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, ShieldCheck, Truck, CreditCard, Landmark, ArrowLeft } from "lucide-react";
-import { useApp } from "@/context/AppContext"; // আপনার ফাইল পাথ অনুযায়ী ঠিক করে নিবেন
+import { useApp } from "@/context/AppContext";
 
 export default function CheckoutPage() {
-  const { cart, cartTotal } = useApp(); // আপনার Context থেকে কার্ট ডাটা ও টোটাল প্রাইস আনা হয়েছে
+  // context থেকে কার্ট স্টেট এবং ক্লিয়ার করার ফাংশন আনা হয়েছে
+  const { cart } = useApp(); 
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "SSL">("COD");
   const [formData, setFormData] = useState({
     firstName: "",
@@ -19,12 +20,15 @@ export default function CheckoutPage() {
     postalCode: "",
   });
 
+  // রিয়াল-টাইম কার্ট টোটাল প্রাইস ক্যালকুলেশন
+  const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const deliveryCharge = 60; // ঢাকার ভিতরে ৬০ টাকা (আপনার সুবিধা অনুযায়ী কন্ডিশনাল করতে পারেন)
+  const deliveryCharge = 60; // ডেলিভারি চার্জ (৳৬০)
   const grandTotal = cartTotal + deliveryCharge;
 
   const handlePlaceOrder = (e: React.FormEvent) => {
@@ -32,15 +36,23 @@ export default function CheckoutPage() {
     
     const orderData = {
       customer: formData,
-      items: cart,
+      items: cart.map(item => ({
+        productId: item.id,
+        cartItemId: item.cartItemId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        shade: item.selectedShade ? item.selectedShade.shadeName : "NoShade"
+      })),
       paymentMethod,
+      deliveryCharge,
       totalAmount: grandTotal,
     };
 
     if (paymentMethod === "SSL") {
       console.log("Redirecting to SSLCommerz gateway with data:", orderData);
       alert("Redirecting to SSLCommerz Payment Gateway...");
-      // এখানে আপনার backend API এন্ডপয়েন্টে রিকোয়েস্ট পাঠাবেন (e.g., /api/ssl-init)
+      // এখানে আপনার backend API এন্ডপয়েন্টে অ্যাক্সিওস বা ফেচ রিকোয়েস্ট পাঠাবেন
     } else {
       console.log("Processing Cash on Delivery order:", orderData);
       alert("Order Placed Successfully via Cash on Delivery!");
@@ -48,10 +60,10 @@ export default function CheckoutPage() {
     }
   };
 
-  // কার্ট খালি থাকলে ইউজারকে শপ পেজে ফেরত পাঠানোর মেসেজ
+  // কার্ট খালি থাকলে ইউজারকে শপ পেজে ফেরত পাঠানোর ভিউ
   if (!cart || cart.length === 0) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#FAF9F6] px-4">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#FAF9F6] px-4 pt-24">
         <h2 className="font-serif text-2xl text-[#1E2E24] mb-4">Your cart is empty</h2>
         <Link href="/shop" className="bg-[#2C3E30] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#1A261D] transition-colors flex items-center gap-2">
           <ArrowLeft size={16} /> Return to Shop
@@ -61,7 +73,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <section className="w-full bg-[#FAF9F6] min-h-screen py-12 px-4 md:px-16 lg:px-24">
+    <section className="w-full bg-[#FAF9F6] min-h-screen pt-28 pb-12 px-4 md:px-16 lg:px-24">
       <div className="container mx-auto max-w-6xl">
         
         {/* BREADCRUMB */}
@@ -128,31 +140,31 @@ export default function CheckoutPage() {
               <div className="flex flex-col gap-3">
                 
                 {/* Cash on Delivery Option */}
-                <label 
+                <div 
                   onClick={() => setPaymentMethod("COD")}
                   className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
                     paymentMethod === "COD" ? "border-[#2C3E30] bg-[#FAF9F6]" : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <input type="radio" name="payment" checked={paymentMethod === "COD"} readOnly className="accent-[#2C3E30] h-4 w-4" />
+                    <input type="radio" name="payment" checked={paymentMethod === "COD"} onChange={() => {}} className="accent-[#2C3E30] h-4 w-4" />
                     <div>
                       <span className="text-sm font-medium text-[#1E2E24] block">Cash on Delivery (COD)</span>
                       <span className="text-xs text-gray-500">Pay with cash upon package delivery.</span>
                     </div>
                   </div>
                   <Truck size={20} className="text-[#2C3E30]" />
-                </label>
+                </div>
 
                 {/* SSLCommerz Option */}
-                <label 
+                <div 
                   onClick={() => setPaymentMethod("SSL")}
                   className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
                     paymentMethod === "SSL" ? "border-[#2C3E30] bg-[#FAF9F6]" : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <input type="radio" name="payment" checked={paymentMethod === "SSL"} readOnly className="accent-[#2C3E30] h-4 w-4" />
+                    <input type="radio" name="payment" checked={paymentMethod === "SSL"} onChange={() => {}} className="accent-[#2C3E30] h-4 w-4" />
                     <div>
                       <span className="text-sm font-medium text-[#1E2E24] block">Online Payment (SSLCommerz)</span>
                       <span className="text-xs text-gray-500">Pay securely via Cards, Mobile Banking or Net Banking.</span>
@@ -162,7 +174,7 @@ export default function CheckoutPage() {
                     <CreditCard size={18} />
                     <Landmark size={18} />
                   </div>
-                </label>
+                </div>
 
               </div>
             </div>
@@ -175,45 +187,47 @@ export default function CheckoutPage() {
           </form>
 
           {/* RIGHT SIDE: ORDER SUMMARY (5 Columns) */}
-          <div className="lg:col-span-5 bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] border border-gray-100/60 sticky top-6">
+          <div className="lg:col-span-5 bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] border border-gray-100/60 sticky top-28">
             <h3 className="font-serif text-xl text-[#1E2E24] mb-6 font-normal pb-3 border-b border-gray-100">Order Summary</h3>
             
             {/* Product Item List */}
             <div className="flex flex-col gap-4 max-h-[280px] overflow-y-auto pr-1 scrollbar-none mb-6">
               {cart.map((item) => (
-                <div key={item.id} className="flex items-center justify-between gap-4 py-1">
+                <div key={item.cartItemId} className="flex items-center justify-between gap-4 py-1">
                   <div className="flex items-center gap-3">
                     <div className="w-14 h-14 bg-[#FAF6F0] rounded-xl relative overflow-hidden flex-shrink-0 border border-gray-100">
-                      <Image src={item.images[0]} alt={item.name} fill className="object-cover" />
-                      <span className="absolute -top-1 -right-1 bg-[#2C3E30] text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-medium">
+                      <Image src={item.image} alt={item.name} fill className="object-cover" />
+                      <span className="absolute -top-1 -right-1 bg-[#2C3E30] text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-medium font-sans">
                         {item.quantity}
                       </span>
                     </div>
                     <div>
                       <h4 className="text-xs md:text-sm font-medium text-[#1E2E24] line-clamp-1">{item.name}</h4>
-                      <span className="text-[11px] text-gray-400">{item.subCategory}</span>
+                      <p className="text-[10px] text-gray-400 capitalize">
+                        {item.category} {item.selectedShade ? `• Shade: ${item.selectedShade.shadeName}` : ""}
+                      </p>
                     </div>
                   </div>
-                  <span className="text-xs md:text-sm font-medium text-[#1E2E24]">
-                    ${(item.price * item.quantity).toFixed(2)}
+                  <span className="text-xs md:text-sm font-medium text-[#1E2E24] font-sans">
+                    ৳{(item.price * item.quantity).toFixed(2)}
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* Calculations Calculation Row */}
+            {/* Calculations Row */}
             <div className="flex flex-col gap-3 pt-4 border-t border-gray-100 font-sans text-sm text-gray-600">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="font-medium text-[#1E2E24]">${cartTotal.toFixed(2)}</span>
+                <span className="font-medium text-[#1E2E24]">৳{cartTotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping Fee</span>
-                <span className="font-medium text-[#1E2E24]">${deliveryCharge.toFixed(2)}</span>
+                <span className="font-medium text-[#1E2E24]">৳{deliveryCharge.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-base font-semibold text-[#1E2E24] pt-3 border-t border-dashed border-gray-200 mt-1">
                 <span>Total</span>
-                <span>${grandTotal.toFixed(2)}</span>
+                <span>৳{grandTotal.toFixed(2)}</span>
               </div>
             </div>
 

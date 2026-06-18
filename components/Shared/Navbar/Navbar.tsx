@@ -134,16 +134,17 @@ export default function Navbar() {
                           {sub.title}
                         </h4>
                         <ul className="flex flex-col gap-2">
-                          {(sub.items || []).map((item: string, itemIdx: number) => (
-                            <li key={itemIdx}>
-                              <Link
-                                href={`/shop?subCategory=${encodeURIComponent(item)}`}
-                                className="font-sans text-xs text-[#5A655D] hover:text-[#1A2E22] hover:font-medium transition-all block whitespace-nowrap"
-                              >
-                                {item}
-                              </Link>
-                            </li>
-                          ))}
+                          {/* Change item: string to item: any or update your SubCategoryGroup interface */}
+{(sub.items || []).map((item: any, itemIdx: number) => (
+  <li key={itemIdx}>
+    <Link
+      href={`/shop?subCategory=${encodeURIComponent(item.name)}`} // <-- Fix here
+      className="font-sans text-xs text-[#5A655D] hover:text-[#1A2E22] hover:font-medium transition-all block whitespace-nowrap"
+    >
+      {item.name} {/* <-- Fix here */}
+    </Link>
+  </li>
+))}
                         </ul>
                       </div>
                     ))}
@@ -335,16 +336,16 @@ export default function Navbar() {
                           {sub.title}
                         </p>
                         <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-                          {(sub.items || []).map((item: string, itemIdx: number) => (
-                            <Link
-                              key={itemIdx}
-                              href={`/shop?subCategory=${encodeURIComponent(item)}`}
-                              onClick={() => setIsOpen(false)}
-                              className="text-xs text-[#5A655D] py-0.5 hover:text-black"
-                            >
-                              {item}
-                            </Link>
-                          ))}
+                          {(sub.items || []).map((item: any, itemIdx: number) => (
+  <Link
+    key={itemIdx}
+    href={`/shop?subCategory=${encodeURIComponent(item.name)}`} // <-- Fix here
+    onClick={() => setIsOpen(false)}
+    className="text-xs text-[#5A655D] py-0.5 hover:text-black"
+  >
+    {item.name} {/* <-- Fix here */}
+  </Link>
+))}
                         </div>
                       </div>
                     ))}
