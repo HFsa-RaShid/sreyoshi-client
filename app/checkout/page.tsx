@@ -1,15 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, ShieldCheck, Truck, CreditCard, Landmark, ArrowLeft } from "lucide-react";
+import { ChevronRight, ShieldCheck, Truck, CreditCard, Landmark, ArrowLeft, X } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 export default function CheckoutPage() {
-  // context থেকে কার্ট স্টেট এবং ক্লিয়ার করার ফাংশন আনা হয়েছে
-  const { cart } = useApp(); 
+  const { cart, clearCart } = useApp(); // clearCart ফাংশনটি কনটেক্সট থেকে নিয়ে নেবেন (যদি থাকে)
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "SSL">("COD");
+  const [isModalOpen, setIsModalOpen] = useState(false); // COD কনফার্মেশন মোডাল স্টেট
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -20,7 +22,6 @@ export default function CheckoutPage() {
     postalCode: "",
   });
 
-  // রিয়াল-টাইম কার্ট টোটাল প্রাইস ক্যালকুলেশন
   const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,39 +29,78 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const deliveryCharge = 60; // ডেলিভারি চার্জ (৳৬০)
+  const deliveryCharge = 60;
   const grandTotal = cartTotal + deliveryCharge;
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  // ব্যাকএন্ড ফরম্যাট অনুযায়ী ডেটা প্রস্তুত করার হেল্পার
+  const prepareOrderData = () => {
+    return {
+      orderItems: cart.map(item => ({
+        product: item.id,
+        quantity: item.quantity,
+        price: item.price,
+        shadeName: item.selectedShade ? item.selectedShade.shadeName : "NoShade"
+      })),
+      shippingAddress: {
+        name: `${formData.firstName} ${formData.lastName}`,
+        phone: formData.phone,
+        address: `${formData.address}, Postal Code: ${formData.postalCode}`,
+        city: formData.city,
+        email: formData.email
+      },
+      totalPrice: grandTotal,
+      paymentMethod: paymentMethod === "SSL" ? "SSLCommerz" : "COD",
+    };
+  };
+
+  // মেইন সাবমিট হ্যান্ডেলার
+  const handlePlaceOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const orderData = {
-      customer: formData,
-      items: cart.map(item => ({
-        productId: item.id,
-        cartItemId: item.cartItemId,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        shade: item.selectedShade ? item.selectedShade.shadeName : "NoShade"
-      })),
-      paymentMethod,
-      deliveryCharge,
-      totalAmount: grandTotal,
-    };
-
-    if (paymentMethod === "SSL") {
-      console.log("Redirecting to SSLCommerz gateway with data:", orderData);
-      alert("Redirecting to SSLCommerz Payment Gateway...");
-      // এখানে আপনার backend API এন্ডপয়েন্টে অ্যাক্সিওস বা ফেচ রিকোয়েস্ট পাঠাবেন
+    if (paymentMethod === "COD") {
+      setIsModalOpen(true); // COD হলে আগে কনফার্মেশন মোডাল ওপেন হবে
     } else {
-      console.log("Processing Cash on Delivery order:", orderData);
-      alert("Order Placed Successfully via Cash on Delivery!");
-      // এখানে COD অর্ডার কনফার্মেশনের জন্য backend API কল করবেন
+      await executeOrderCreation(); // SSL হলে সরাসরি এপিআই হিট করবে
     }
   };
 
-  // কার্ট খালি থাকলে ইউজারকে শপ পেজে ফেরত পাঠানোর ভিউ
+  // ব্যাকএন্ড এপিআই কল করার কমন ফাংশন
+  const executeOrderCreation = async () => {
+    setLoading(true);
+    const apiData = prepareOrderData();
+
+    try {
+      const response = await fetch("http://localhost:8080/api/v1/orders/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(apiData),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || "Something went wrong");
+      }
+
+      if (paymentMethod === "SSL" && result.data.redirectUrl) {
+        // ১. SSLCommerz গেটওয়েতে রিডাইরেক্ট (অর্ডার ব্যাকএন্ডে unpaid অবস্থায় সেভড)
+        window.location.href = result.data.redirectUrl;
+      } else {
+        // ২. COD অর্ডার সফল হওয়া
+        alert("Order Placed Successfully via Cash on Delivery!");
+        if (clearCart) clearCart(); // কার্ট ক্লিয়ার করা
+        setIsModalOpen(false);
+        // রিডাইরেক্ট করতে পারেন সাকসেস পেজে
+      }
+    } catch (error: any) {
+      alert(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!cart || cart.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#FAF9F6] px-4 pt-24">
@@ -85,10 +125,9 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* LEFT SIDE: SHIPPING & PAYMENT FORM (7 Columns) */}
-          <form onSubmit={handlePlaceOrder} className="lg:col-span-7 bg-white rounded-2xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.01)] border border-gray-100/60">
-            
-            {/* Contact Information */}
+          {/* LEFT SIDE: SHIPPING & PAYMENT FORM */}
+          <form onSubmit={handlePlaceOrderSubmit} className="lg:col-span-7 bg-white rounded-2xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.01)] border border-gray-100/60">
+            {/* Contact Info */}
             <div className="mb-8">
               <h3 className="font-serif text-xl text-[#1E2E24] mb-4 font-normal">Contact Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -134,20 +173,13 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Payment Methods (COD & SSLCommerz) */}
+            {/* Payment Methods */}
             <div className="mb-6">
               <h3 className="font-serif text-xl text-[#1E2E24] mb-4 font-normal">Payment Method</h3>
               <div className="flex flex-col gap-3">
-                
-                {/* Cash on Delivery Option */}
-                <div 
-                  onClick={() => setPaymentMethod("COD")}
-                  className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                    paymentMethod === "COD" ? "border-[#2C3E30] bg-[#FAF9F6]" : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
+                <div onClick={() => setPaymentMethod("COD")} className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === "COD" ? "border-[#2C3E30] bg-[#FAF9F6]" : "border-gray-200 hover:border-gray-300"}`}>
                   <div className="flex items-center gap-3">
-                    <input type="radio" name="payment" checked={paymentMethod === "COD"} onChange={() => {}} className="accent-[#2C3E30] h-4 w-4" />
+                    <input type="radio" checked={paymentMethod === "COD"} readOnly className="accent-[#2C3E30] h-4 w-4" />
                     <div>
                       <span className="text-sm font-medium text-[#1E2E24] block">Cash on Delivery (COD)</span>
                       <span className="text-xs text-gray-500">Pay with cash upon package delivery.</span>
@@ -156,15 +188,9 @@ export default function CheckoutPage() {
                   <Truck size={20} className="text-[#2C3E30]" />
                 </div>
 
-                {/* SSLCommerz Option */}
-                <div 
-                  onClick={() => setPaymentMethod("SSL")}
-                  className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                    paymentMethod === "SSL" ? "border-[#2C3E30] bg-[#FAF9F6]" : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
+                <div onClick={() => setPaymentMethod("SSL")} className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === "SSL" ? "border-[#2C3E30] bg-[#FAF9F6]" : "border-gray-200 hover:border-gray-300"}`}>
                   <div className="flex items-center gap-3">
-                    <input type="radio" name="payment" checked={paymentMethod === "SSL"} onChange={() => {}} className="accent-[#2C3E30] h-4 w-4" />
+                    <input type="radio" checked={paymentMethod === "SSL"} readOnly className="accent-[#2C3E30] h-4 w-4" />
                     <div>
                       <span className="text-sm font-medium text-[#1E2E24] block">Online Payment (SSLCommerz)</span>
                       <span className="text-xs text-gray-500">Pay securely via Cards, Mobile Banking or Net Banking.</span>
@@ -175,29 +201,24 @@ export default function CheckoutPage() {
                     <Landmark size={18} />
                   </div>
                 </div>
-
               </div>
             </div>
 
-            {/* Submit Button */}
-            <button type="submit" className="w-full bg-[#2C3E30] hover:bg-[#1A261D] text-white font-sans text-sm font-medium py-3.5 rounded-full shadow-sm transition-colors mt-4 active:scale-[0.99]">
-              {paymentMethod === "SSL" ? "Proceed to Secure Payment" : "Confirm Order (COD)"}
+            <button type="submit" disabled={loading} className="w-full bg-[#2C3E30] hover:bg-[#1A261D] text-white font-sans text-sm font-medium py-3.5 rounded-full shadow-sm transition-colors mt-4 disabled:opacity-50">
+              {loading ? "Processing..." : paymentMethod === "SSL" ? "Proceed to Secure Payment" : "Place Order"}
             </button>
-
           </form>
 
-          {/* RIGHT SIDE: ORDER SUMMARY (5 Columns) */}
+          {/* RIGHT SIDE: ORDER SUMMARY */}
           <div className="lg:col-span-5 bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] border border-gray-100/60 sticky top-28">
             <h3 className="font-serif text-xl text-[#1E2E24] mb-6 font-normal pb-3 border-b border-gray-100">Order Summary</h3>
-            
-            {/* Product Item List */}
-            <div className="flex flex-col gap-4 max-h-[280px] overflow-y-auto pr-1 scrollbar-none mb-6">
+            <div className="flex flex-col gap-4 max-h-[280px] overflow-y-auto pr-1 mb-6">
               {cart.map((item) => (
                 <div key={item.cartItemId} className="flex items-center justify-between gap-4 py-1">
                   <div className="flex items-center gap-3">
                     <div className="w-14 h-14 bg-[#FAF6F0] rounded-xl relative overflow-hidden flex-shrink-0 border border-gray-100">
                       <Image src={item.image} alt={item.name} fill className="object-cover" />
-                      <span className="absolute -top-1 -right-1 bg-[#2C3E30] text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-medium font-sans">
+                      <span className="absolute -top-1 -right-1 bg-[#2C3E30] text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-medium">
                         {item.quantity}
                       </span>
                     </div>
@@ -208,14 +229,13 @@ export default function CheckoutPage() {
                       </p>
                     </div>
                   </div>
-                  <span className="text-xs md:text-sm font-medium text-[#1E2E24] font-sans">
+                  <span className="text-xs md:text-sm font-medium text-[#1E2E24]">
                     ৳{(item.price * item.quantity).toFixed(2)}
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* Calculations Row */}
             <div className="flex flex-col gap-3 pt-4 border-t border-gray-100 font-sans text-sm text-gray-600">
               <div className="flex justify-between">
                 <span>Subtotal</span>
@@ -230,20 +250,32 @@ export default function CheckoutPage() {
                 <span>৳{grandTotal.toFixed(2)}</span>
               </div>
             </div>
-
-            {/* Trust Badges */}
-            <div className="mt-8 bg-[#FAF9F6] rounded-xl p-4 flex items-start gap-3 border border-gray-100">
-              <ShieldCheck size={20} className="text-[#354536] flex-shrink-0 mt-0.5" />
-              <div>
-                <h5 className="text-xs font-semibold text-[#1E2E24]">Secure Checkout Guaranteed</h5>
-                <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">Your personal data and transaction security are encrypted and fully protected under industry standards.</p>
-              </div>
-            </div>
-
           </div>
-
         </div>
       </div>
+
+      {/* COD CONFIRMATION MODAL */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative animate-in fade-in zoom-in duration-200">
+            <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+              <X size={20} />
+            </button>
+            <h4 className="font-serif text-FF text-xl text-[#1E2E24] mb-2">Confirm Your Order</h4>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+              You are placing an order using <strong className="text-[#2C3E30]">Cash on Delivery (COD)</strong>. You will pay total <strong className="text-[#2C3E30]">৳{grandTotal.toFixed(2)}</strong> when the product is delivered to your address.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setIsModalOpen(false)} className="px-5 py-2 rounded-full border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                Cancel
+              </button>
+              <button onClick={executeOrderCreation} disabled={loading} className="px-6 py-2 rounded-full bg-[#2C3E30] hover:bg-[#1A261D] text-white text-sm font-medium transition-colors">
+                {loading ? "Confirming..." : "Confirm Order"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

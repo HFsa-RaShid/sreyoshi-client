@@ -56,13 +56,13 @@ export interface Product {
   ratingCount: number;    // ডিফল্ট ০
   salesCount: number;     // ডিফল্ট ০
   promotion?: PromotionTag;
-  availability: AvailabilityStatus; // ডিফল্ট 'In Stock'
-  status: StatusType;     // ⚡ মেইন প্রোডাক্টের স্ট্যাটাস ('Active' | 'Inactive')
-  commonImages: string[]; // ⚡ ব্যাকএন্ড স্কিমা অনুযায়ী 'images' এর বদলে 'commonImages' হবে
+  availability: AvailabilityStatus; 
+  status: StatusType;     
+  commonImages: string[]; 
   weightOrVolume: number; 
-  unit: 'gm' | 'ml' | 'pcs';      // ব্যাকএন্ডের enum: ['gm', 'ml']
+  unit: 'gm' | 'ml' | 'pcs';     
   shades?: ProductShade[]; 
-  createdAt?: string;     // timestamps: true থেকে জেনারেট হওয়া ISO ডেট
+  createdAt?: string;     
   updatedAt?: string;
 }
 
