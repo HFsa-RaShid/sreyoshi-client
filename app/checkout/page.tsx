@@ -8,9 +8,9 @@ import { ChevronRight, ShieldCheck, Truck, CreditCard, Landmark, ArrowLeft, X } 
 import { useApp } from "@/context/AppContext";
 
 export default function CheckoutPage() {
-  const { cart, clearCart } = useApp(); // clearCart ফাংশনটি কনটেক্সট থেকে নিয়ে নেবেন (যদি থাকে)
+  const { cart, clearCart } = useApp(); 
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "SSL">("COD");
-  const [isModalOpen, setIsModalOpen] = useState(false); // COD কনফার্মেশন মোডাল স্টেট
+  const [isModalOpen, setIsModalOpen] = useState(false); 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
