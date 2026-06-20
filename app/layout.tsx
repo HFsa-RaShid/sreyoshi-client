@@ -5,6 +5,7 @@ import Navbar from "@/components/Shared/Navbar/Navbar";
 import Footer from "@/components/Shared/Footer/Footer";
 import { AppProvider } from "@/context/AppContext";
 import QueryProvider from "@/lib/QueryProvider"; 
+import { SessionProvider } from "next-auth/react"; // 💡 NextAuth Provider
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,15 +33,15 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="bg-[#FAF9F6]">
-
-        <QueryProvider>
-       
-          <AppProvider>
-            <Navbar />
-            {children}
-            <Footer />
-          </AppProvider>
-        </QueryProvider>
+        <SessionProvider> {/* 💡 সেশন প্রোভাইডার এখানে দেওয়া হলো */}
+          <QueryProvider>
+            <AppProvider>
+              <Navbar />
+              {children}
+              <Footer />
+            </AppProvider>
+          </QueryProvider>
+        </SessionProvider>
       </body>
     </html>
   );

@@ -4,11 +4,13 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // 💡 Next.js রাউটার ইমপোর্ট করা হলো
 import { ChevronRight, ShieldCheck, Truck, CreditCard, Landmark, ArrowLeft, X } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 export default function CheckoutPage() {
-  const { cart, clearCart } = useApp(); 
+  const router = useRouter(); // 💡 রাউটার ইনিশিয়ালাইজ করা হলো
+  const { cart, clearCart, validateAndSyncCart } = useApp(); 
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "SSL">("COD");
   const [isModalOpen, setIsModalOpen] = useState(false); 
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,7 @@ export default function CheckoutPage() {
   const deliveryCharge = 60;
   const grandTotal = cartTotal + deliveryCharge;
 
-  // ব্যাকএন্ড ফরম্যাট অনুযায়ী ডেটা প্রস্তুত করার হেল্পার
+  // ব্যাকএন্ড ফরম্যাট অনুযায়ী ডেটা প্রস্তুত করার হেল্পার
   const prepareOrderData = () => {
     return {
       orderItems: cart.map(item => ({
@@ -53,14 +55,54 @@ export default function CheckoutPage() {
     };
   };
 
-  // মেইন সাবমিট হ্যান্ডেলার
+  // 💡 মেইন সাবমিট হ্যান্ডেলার: পেমেন্ট গেটওয়ে বা মোডালে যাওয়ার আগে স্টক ডাবল চেক করবে
   const handlePlaceOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (paymentMethod === "COD") {
-      setIsModalOpen(true); // COD হলে আগে কনফার্মেশন মোডাল ওপেন হবে
-    } else {
-      await executeOrderCreation(); // SSL হলে সরাসরি এপিআই হিট করবে
+    setLoading(true);
+
+    try {
+      // ১. রিয়াল-টাইম স্টক ভ্যালিডেশন চেক
+      const response = await fetch("http://localhost:8080/api/v1/products/validate-cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: cart.map(item => ({ id: item.id, shadeName: item.selectedShade?.shadeName }))
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        const freshStocks = result.data; // { "productId-shadeName": freshStock }
+        let isStockTampered = false;
+
+        for (const item of cart) {
+          const currentAvailableStock = freshStocks[item.cartItemId] ?? 0;
+          if (item.quantity > currentAvailableStock) {
+            isStockTampered = true;
+            break;
+          }
+        }
+
+        // ২. যদি ব্যাকএন্ডে স্টক কমে গিয়ে থাকে, তবে ইউজারকে আটকে কার্ট পেজে রিডাইরেক্ট করবে
+        if (isStockTampered) {
+          alert("🚨 Some products in your cart just went out of stock or have limited quantity. Redirecting to cart for review.");
+          if (validateAndSyncCart) await validateAndSyncCart();
+          router.push("/cart"); // 💡 window.location.href এর বদলে Next.js স্ট্যান্ডার্ড রাউটিং
+          return;
+        }
+      }
+
+      // ৩. স্টক ঠিক থাকলে অর্ডার মেথড অনুযায়ী এগোনো
+      if (paymentMethod === "COD") {
+        setIsModalOpen(true); 
+      } else {
+        await executeOrderCreation(); 
+      }
+    } catch (error) {
+      alert("Validation failed before placing order. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,14 +127,11 @@ export default function CheckoutPage() {
       }
 
       if (paymentMethod === "SSL" && result.data.redirectUrl) {
-        // ১. SSLCommerz গেটওয়েতে রিডাইরেক্ট (অর্ডার ব্যাকএন্ডে unpaid অবস্থায় সেভড)
-        window.location.href = result.data.redirectUrl;
+        window.location.href = result.data.redirectUrl; // গেটওয়ে ইউআরএল এর জন্য সরাসরি উইন্ডো অ্যাসাইনমেন্ট ঠিক আছে
       } else {
-        // ২. COD অর্ডার সফল হওয়া
         alert("Order Placed Successfully via Cash on Delivery!");
-        if (clearCart) clearCart(); // কার্ট ক্লিয়ার করা
+        if (clearCart) clearCart(); 
         setIsModalOpen(false);
-        // রিডাইরেক্ট করতে পারেন সাকসেস পেজে
       }
     } catch (error: any) {
       alert(`Error: ${error.message}`);
@@ -101,12 +140,14 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!cart || cart.length === 0) {
+  // ইনভ্যালিড বা খালি কার্ট প্রোটেকশন গার্ড
+  if (!cart || cart.length === 0 || cart.some(item => item.quantity === 0 || item.error)) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#FAF9F6] px-4 pt-24">
-        <h2 className="font-serif text-2xl text-[#1E2E24] mb-4">Your cart is empty</h2>
-        <Link href="/shop" className="bg-[#2C3E30] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#1A261D] transition-colors flex items-center gap-2">
-          <ArrowLeft size={16} /> Return to Shop
+        <h2 className="font-serif text-2xl text-[#1E2E24] mb-2">Invalid Cart Items Detected</h2>
+        <p className="text-sm text-gray-500 mb-6">Some items in your bag are out of stock or exceeded limits.</p>
+        <Link href="/cart" className="bg-[#2C3E30] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#1A261D] transition-colors flex items-center gap-2">
+          <ArrowLeft size={16} /> Return to Cart
         </Link>
       </div>
     );
@@ -261,7 +302,7 @@ export default function CheckoutPage() {
             <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
               <X size={20} />
             </button>
-            <h4 className="font-serif text-FF text-xl text-[#1E2E24] mb-2">Confirm Your Order</h4>
+            <h4 className="font-serif text-xl text-[#1E2E24] mb-2">Confirm Your Order</h4>
             <p className="text-sm text-gray-500 mb-6 leading-relaxed">
               You are placing an order using <strong className="text-[#2C3E30]">Cash on Delivery (COD)</strong>. You will pay total <strong className="text-[#2C3E30]">৳{grandTotal.toFixed(2)}</strong> when the product is delivered to your address.
             </p>

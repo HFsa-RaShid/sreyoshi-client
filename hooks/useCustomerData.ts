@@ -13,19 +13,20 @@ export const useGetCategoriesForCustomer = () => {
   });
 };
 
-// ২. সব প্রোডাক্ট নিয়ে আসার হুক
+// ২. সব প্রোডাক্ট নিয়ে আসার হুক
 export const useGetProductsForCustomer = () => {
   return useQuery({
     queryKey: ['customer-products'],
     queryFn: async () => {
       const response = await axiosInstance.get('/products');
-      console.log(response);
       return response.data?.data;
     },
+    staleTime: 0, // 💡 ডাটা কখনোই পুরোনো ক্যাশ ধরে রাখবে না
+    refetchOnMount: 'always', // 💡 এই পেজে আসলেই ব্যাকএন্ড থেকে ফ্রেশ ডাটা টানবে
   });
 };
 
-// ৩. সিঙ্গেল প্রোডাক্ট ডিটেইলস দেখার হুক
+// ৩. সিঙ্গেল প্রোডাক্ট ডিটেইলস দেখার হুক (এখানেও যুক্ত করুন)
 export const useGetSingleProductForCustomer = (productCode: string) => {
   return useQuery({
     queryKey: ['customer-product', productCode],
@@ -35,5 +36,7 @@ export const useGetSingleProductForCustomer = (productCode: string) => {
       return response.data?.data;
     },
     enabled: !!productCode,
+    staleTime: 0, 
+    refetchOnMount: 'always',
   });
 };

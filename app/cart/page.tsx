@@ -1,18 +1,24 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useApp } from "../../context/AppContext";
-import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingBag, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 export default function CartPage() {
-  // AppContext থেকে স্টেট এবং সঠিক ফাংশনগুলো নিয়ে আসা
-  const { cart, updateQuantity, removeFromCart } = useApp();
+  const { cart, updateQuantity, removeFromCart, validateAndSyncCart } = useApp();
 
-  // রিয়াল-টাইম মোট প্রাইস ক্যালকুলেশন
+  // 💡 কার্ট পেজে ঢোকার সাথে সাথে ব্যাকএন্ডের ফ্রেশ স্টক ডাটার সাথে সিঙ্ক করা
+  useEffect(() => {
+    validateAndSyncCart();
+  }, []);
+
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
-  // কার্ট খালি থাকলে এই ভিউটি দেখাবে
+  // 💡 চেক করা কার্টের কোনো আইটেম স্টক আউট বা ইনভ্যালিড অবস্থায় আছে কিনা
+  const hasCartError = cart.some((item) => item.error || item.quantity === 0);
+
   if (cart.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAF9F6] text-[#2C3E35]">
@@ -33,10 +39,8 @@ export default function CartPage() {
         </h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* LEFT SIDE: CART ITEMS LIST */}
           <div className="lg:col-span-2 space-y-4">
             {cart.map((item) => {
-              // মাইনাস বাটনে ক্লিক করলে কোয়ান্টিটি কমবে, ১ এর নিচে নামলে স্বয়ংক্রিয়ভাবে রিমুভ হবে
               const handleMinusClick = () => {
                 if (item.quantity <= 1) {
                   removeFromCart(item.cartItemId);
@@ -48,23 +52,22 @@ export default function CartPage() {
               return (
                 <div 
                   key={item.cartItemId} 
-                  className="bg-white p-4 rounded-2xl flex gap-4 items-center border border-gray-100 shadow-sm"
+                  className={`bg-white p-4 rounded-2xl flex gap-4 items-center border shadow-sm transition-all ${
+                    item.error ? "border-amber-300 bg-amber-50/30" : "border-gray-100"
+                  }`}
                 >
-                  {/* PRODUCT IMAGE (কনটেক্সট থেকে সরাসরি আসা শেড ইমেজ বা মেইন ইমেজ) */}
                   <img 
                     src={item.image} 
                     alt={item.name} 
-                    className="w-20 h-20 rounded-xl object-cover bg-gray-50 flex-shrink-0" 
+                    className={`w-20 h-20 rounded-xl object-cover bg-gray-50 flex-shrink-0 ${item.quantity === 0 ? "grayscale opacity-50" : ""}`} 
                   />
                   
-                  {/* PRODUCT DETAILS */}
                   <div className="flex-1">
                     <h3 className="text-sm font-bold text-[#1A2E22] line-clamp-1">{item.name}</h3>
                     <p className="text-[11px] text-gray-400 capitalize mb-1">{item.category}</p>
                     
-                    {/* যদি কোনো শেড সিলেক্ট করা থাকে তবে তা সুন্দর করে দেখাবে */}
                     {item.selectedShade && (
-                      <div className="flex items-center gap-1.5 mb-2">
+                      <div className="flex items-center gap-1.5 mb-1">
                         <span 
                           className="w-2.5 h-2.5 rounded-full border border-gray-300 inline-block"
                           style={{ backgroundColor: item.selectedShade.shadeColorCode || "#ccc" }}
@@ -78,9 +81,16 @@ export default function CartPage() {
                     <div className="block">
                       <span className="text-sm font-bold text-[#FF3F6C]">৳{item.price.toFixed(2)}</span>
                     </div>
+
+                    {/* 💡 এরর মেসেজ বা স্টক আউট নোটিশ শো করা */}
+                    {item.error && (
+                      <div className="flex items-center gap-1 text-[11px] text-amber-700 font-medium mt-1">
+                        <AlertTriangle size={12} />
+                        <span>{item.error}</span>
+                      </div>
+                    )}
                   </div>
                   
-                  {/* QUANTITY CONTROLS */}
                   <div className="flex items-center bg-gray-100 rounded-xl px-1">
                     <button 
                       onClick={handleMinusClick} 
@@ -91,13 +101,13 @@ export default function CartPage() {
                     <span className="w-6 text-center text-xs font-bold font-sans">{item.quantity}</span>
                     <button 
                       onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} 
-                      className="p-2 text-gray-500 hover:text-[#1A2E22] transition-colors"
+                      disabled={item.quantity >= item.maxStock}
+                      className="p-2 text-gray-500 hover:text-[#1A2E22] transition-colors disabled:opacity-30"
                     >
                       <Plus size={12} />
                     </button>
                   </div>
 
-                  {/* REMOVE / TRASH BUTTON */}
                   <button 
                     onClick={() => removeFromCart(item.cartItemId)} 
                     className="text-gray-300 hover:text-rose-500 transition-colors p-2"
@@ -109,7 +119,6 @@ export default function CartPage() {
             })}
           </div>
 
-          {/* RIGHT SIDE: ORDER SUMMARY */}
           <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit sticky top-24">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#1A2E22] mb-4 opacity-60">
               Order Summary
@@ -118,11 +127,24 @@ export default function CartPage() {
               <span className="text-gray-400 font-normal">Subtotal</span>
               <span className="text-[#1A2E22] font-sans">৳{totalPrice.toFixed(2)}</span>
             </div>
-            <Link href='/checkout'>
-            <button className="w-full bg-[#1A2E22] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-black transition-colors shadow-md">
-              Proceed To Checkout
-            </button>
-            </Link>
+            
+            {/* 💡 কার্টে কোনো স্টক এরর থাকলে Checkout বাটন লক থাকবে এবং ওয়ার্নিং দেবে */}
+            {hasCartError ? (
+              <div>
+                <button disabled className="w-full bg-gray-300 text-gray-500 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider cursor-not-allowed shadow-none">
+                  Proceed To Checkout
+                </button>
+                <p className="text-[10px] text-rose-500 text-center mt-2 font-medium">
+                  Please fix or remove the out-of-stock items to proceed!
+                </p>
+              </div>
+            ) : (
+              <Link href='/checkout'>
+                <button className="w-full bg-[#1A2E22] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-black transition-colors shadow-md">
+                  Proceed To Checkout
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
