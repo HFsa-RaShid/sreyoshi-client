@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Represents the skin type suitability for a skin care product.
  * (ব্যাকএন্ড স্কিমা ও ফ্রন্টএন্ড ফিল্টারিংয়ের সাথে মিল রেখে)
@@ -38,32 +39,40 @@ export interface ProductShade {
  * (⚡ আপনার মঙ্গুস স্কিমার IProduct ইন্টারফেসের সাথে ১০০% ম্যাচড)
  */
 export interface Product {
-  _id?: string;            // মঙ্গোডিবি থেকে আসা রিয়াল আইডি
-  productCode: string;    // ব্যাকএন্ডে unique ও required
-  name: string;           // ব্যাকএন্ড ফিল্ডের নাম 'name'
-  category: string | {    // ⚡ ক্যাটাগরি আইডি অথবা পপুলেট হয়ে আসা ক্যাটাগরি অবজেক্ট দুটোই হতে পারে
-    _id: string;
-    name: string;
+  _id?: string;            
+  productCode: string;    
+  name: string;           
+  category: string | {    
+    _id?: string;
+    name?: string;
     image?: string;
+    $oid?: string; // 🎯 মঙ্গোডিবি আইডি হ্যান্ডেল করার জন্য
   };       
-  subCategory: string;    // ব্যাকএন্ডে uppercase: true লজিক হ্যান্ডেল করা
-  itemName: string;       // ব্যাকএন্ডে required ফিল্ড
-  skinType?: SkinType;    
+  brand?: string | {
+    _id?: string;
+    name?: string;
+    $oid?: string;
+  };
+  subCategory: string;    
+  itemName: string;       
   price: number;
   oldPrice?: number;      
-  discount?: string;      // ব্যাকএন্ড স্কিমাতে string টাইপ ছিল (যেমন: "10%")
-  rating: number;         // ডিফল্ট ০
-  ratingCount: number;    // ডিফল্ট ০
-  salesCount: number;     // ডিফল্ট ০
-  promotion?: PromotionTag;
-  availability: AvailabilityStatus; 
-  status: StatusType;     
+  discount?: string;      
+  rating: number;         
+  ratingCount: number;    
+  salesCount: number;     
+  promotion?: string;
+  availability: 'In Stock' | 'Out of Stock'; 
+  status: 'Active' | 'Inactive';     
   commonImages: string[]; 
   weightOrVolume: number; 
-  unit: 'gm' | 'ml' | 'pcs';     
+  unit: 'gm' | 'ml' | 'pcs';  
+  totalStock: number; // 🎯 ডাটাতে থাকা মেইন স্টক ফিল্ড   
   shades?: ProductShade[]; 
-  createdAt?: string;     
-  updatedAt?: string;
+  description?: string;
+  howToUse?: string;
+  createdAt?: any;     
+  updatedAt?: any;
 }
 
 /**

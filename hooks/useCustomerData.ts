@@ -19,6 +19,7 @@ export const useGetProductsForCustomer = () => {
     queryKey: ['customer-products'],
     queryFn: async () => {
       const response = await axiosInstance.get('/products');
+      console.log(response.data?.data)
       return response.data?.data;
     },
     staleTime: 0, // 💡 ডাটা কখনোই পুরোনো ক্যাশ ধরে রাখবে না

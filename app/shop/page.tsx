@@ -1,50 +1,49 @@
 
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Star, Heart, Eye, ShoppingBag, X, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2 } from "lucide-react";
+import { Star, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { useApp } from "@/context/AppContext";
-import Link from "next/link";
 
-import { Product, Category } from "@/Types/types"; 
+import { Product, Category, SkinType, PromotionTag } from "@/Types/types"; 
 import { useGetCategoriesForCustomer, useGetProductsForCustomer } from "@/hooks/useCustomerData";
+import ShopFilterDrawer from "./ShopFilterDrawer";
+import ShopProductCard from "./ShopProductCard";
+
 
 export default function ShopPage() {
   const { addToCart, wishlist, toggleWishlist } = useApp();
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // ১. TanStack Query দিয়ে API থেকে ডাটা নিয়ে আসা
-  const { data: categoriesData = [], isLoading: isCategoriesLoading } = useGetCategoriesForCustomer();
-  const { data: productsData = [], isLoading: isProductsLoading } = useGetProductsForCustomer();
+  // API থেকে ডাটা ফেচিং
+  const { data: categoriesData = [], isLoading: isCategoriesLoading } = useGetCategoriesForCustomer() as { data: Category[], isLoading: boolean };
+  const { data: productsData = [], isLoading: isProductsLoading } = useGetProductsForCustomer() as { data: Product[], isLoading: boolean };
 
-  // ইউআরএল কোয়েরি প্যারামিটারস
   const urlCategory = searchParams.get("category");
   const urlSubCategory = searchParams.get("subCategory");
 
-  // ফিল্টার স্টেটসমূহ
+  // ফিল্টার এবং ড্রয়ার স্টেট
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
-  const [selectedSkinTypes, setSelectedSkinTypes] = useState<string[]>([]);
+  const [selectedSkinTypes, setSelectedSkinTypes] = useState<SkinType[]>([]);
   const [priceRange, setPriceRange] = useState<number>(5000); 
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
-  const [selectedPromotions, setSelectedPromotions] = useState<string[]>([]);
+  const [selectedPromotions, setSelectedPromotions] = useState<PromotionTag[]>([]);
   const [sortBy, setSortBy] = useState<string>("default");
-
   const [openCategoryMenu, setOpenCategoryMenu] = useState<string | null>(null);
 
-  // URL চেইঞ্জের উপর ভিত্তি করে ফিল্টার সেট করা
   useEffect(() => {
     if (urlCategory) {
       setSelectedCategories([urlCategory]);
       setOpenCategoryMenu(urlCategory);
     } else if (urlSubCategory && categoriesData.length > 0) {
-      const parentCat = (categoriesData as Category[]).find((cat) =>
+      const parentCat = categoriesData.find((cat) =>
         cat.subCategories.some((sub) => 
-          sub.items.some((item: any) => item?.name?.toLowerCase() === urlSubCategory.toLowerCase())
+          sub.items.some((item) => item?.name?.toLowerCase() === urlSubCategory.toLowerCase())
         )
       );
       if (parentCat) {
@@ -55,10 +54,9 @@ export default function ShopPage() {
     }
   }, [urlCategory, urlSubCategory, categoriesData]);
 
-  // ডাইনামিক প্রোডাক্ট কাউন্ট লজিক (API ডাটা স্ট্রাকচার অনুযায়ী ফিক্সড)
   const getProductCount = (type: "category" | "subGroup" | "item", name: string) => {
     if (!productsData) return 0;
-    return (productsData as Product[]).filter((product) => {
+    return productsData.filter((product) => {
       const catId = typeof product.category === "object" ? product.category?._id : product.category;
       
       if (type === "category") return catId === name;
@@ -68,7 +66,6 @@ export default function ShopPage() {
     }).length;
   };
 
-  // ক্যাটাগরি সিলেকশন হ্যান্ডলার
   const handleCategorySelect = (categoryId: string) => {
     setSelectedSubCategory(null);
     if (selectedCategories.includes(categoryId)) {
@@ -82,7 +79,6 @@ export default function ShopPage() {
     }
   };
 
-  // সাবক্যাটাগরি আইটেম সিলেকশন হ্যান্ডলার
   const handleSubCategoryItemSelect = (itemName: string) => {
     if (selectedSubCategory?.toLowerCase() === itemName.toLowerCase()) {
       setSelectedSubCategory(null);
@@ -93,44 +89,37 @@ export default function ShopPage() {
     }
   };
 
-  // অ্যাডভান্সড মাল্টি-লেয়ার ফিল্টারিং এবং সর্টিং লজিক
   const filteredProducts = useMemo(() => {
     if (!productsData) return [];
 
-    return (productsData as Product[])
+    return productsData
       .filter((product) => {
         if (product.status !== "Active") return false;
 
-        // ১. ক্যাটাগরি ফিল্টার
         const catId = typeof product.category === "object" ? product.category?._id : product.category;
         if (selectedCategories.length > 0 && (!catId || !selectedCategories.includes(catId))) {
           return false;
         }
 
-        // ২. সাব-ক্যাটাগরি আইটেম ফিল্টার
         if (selectedSubCategory && product.itemName?.toLowerCase() !== selectedSubCategory.toLowerCase()) {
           return false;
         }
 
-        // ৩. স্কিন টাইপ ফিল্টার
-        if (selectedSkinTypes.length > 0 && (!product.skinType || !selectedSkinTypes.includes(product.skinType))) {
-          if (product.skinType !== "All Skin Types") {
+        if (selectedSkinTypes.length > 0 && (!product.promotion || !selectedSkinTypes.includes(product.promotion as any))) {
+          if (product.promotion !== "All Skin Types") {
             return false;
           }
         }
 
-        // ৪. প্রাইস রেঞ্জ ফিল্টার
         if (product.price > priceRange) {
           return false;
         }
 
-        // ৫. রেটিং ফিল্টার
         if (selectedRatings.length > 0 && !selectedRatings.includes(Math.floor(product.rating))) {
           return false;
         }
 
-        // ৬. প্রমোশন ফিল্টার
-        if (selectedPromotions.length > 0 && (!product.promotion || !selectedPromotions.includes(product.promotion))) {
+        if (selectedPromotions.length > 0 && (!product.promotion || !selectedPromotions.includes(product.promotion as PromotionTag))) {
           return false;
         }
 
@@ -150,7 +139,6 @@ export default function ShopPage() {
       });
   }, [productsData, selectedCategories, selectedSubCategory, selectedSkinTypes, priceRange, selectedRatings, selectedPromotions, sortBy]);
 
-  // Clear All Filters
   const handleClearAll = () => {
     setSelectedCategories([]);
     setSelectedSubCategory(null);
@@ -162,7 +150,8 @@ export default function ShopPage() {
     router.push("/shop");
   };
 
-  const toggleFilter = (list: any[], setList: Function, value: any) => {
+  // টাইপ সেফ জেনেরিক ফিল্টার টগল ফাংশন
+  const toggleFilter = <T,>(list: T[], setList: React.Dispatch<React.SetStateAction<T[]>>, value: T) => {
     setList(list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
   };
 
@@ -177,24 +166,22 @@ export default function ShopPage() {
 
   return (
     <div className="bg-[#FAF9F6] min-h-screen pt-28 pb-12 px-4 md:px-12 text-[#2C3E35]">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
         
-        {/* ================= LEFT SIDEBAR ================= */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit sticky top-24 max-h-[85vh] overflow-y-auto no-scrollbar">
-          <h2 className="text-xl font-serif font-bold text-[#1A2E22] mb-6">Filter Options</h2>
+        {/* ================= LEFT SIDEBAR (DESKTOP) ================= */}
+        <div className="hidden lg:block bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-auto sticky top-24">
+  <h2 className="text-xl font-serif font-bold text-[#1A2E22] mb-6">Filter Options</h2>
 
-          {/* DYNAMIC NESTED CATEGORIES */}
-          <div className="mb-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#1A2E22] mb-4 opacity-50">Product Categories</h3>
+  <div className="mb-6">
+    <h3 className="text-xs font-bold uppercase tracking-wider text-[#1A2E22] mb-4 opacity-50">Product Categories</h3>
             <div className="flex flex-col gap-3">
-              {(categoriesData as Category[]).map((category) => {
+              {categoriesData.map((category) => {
                 const isCatSelected = selectedCategories.includes(category._id);
                 const isCatOpen = openCategoryMenu === category._id;
                 const totalCatProducts = getProductCount("category", category._id);
 
                 return (
                   <div key={category._id} className="flex flex-col">
-                    {/* Main Head Category Row */}
                     <div 
                       onClick={() => handleCategorySelect(category._id)}
                       className={`flex justify-between items-center font-sans text-sm font-bold cursor-pointer transition-colors py-1 ${isCatSelected ? "text-[#FF3F6C]" : "text-[#1A2E22] hover:text-[#FF3F6C]"}`}
@@ -208,12 +195,10 @@ export default function ShopPage() {
                       </div>
                     </div>
 
-                    {/* Sub-Group Area */}
                     {isCatOpen && (
                       <div className="pl-4 mt-2 flex flex-col gap-3 border-l border-gray-100 ml-1">
                         {category.subCategories.map((sub, sIdx) => {
                           const totalSubProducts = getProductCount("subGroup", sub.title);
-                          
                           return (
                             <div key={sIdx} className="flex flex-col">
                               <div className="flex justify-between items-center text-xs font-bold uppercase text-[#FF3F6C] tracking-wide mb-2 mt-1">
@@ -223,9 +208,8 @@ export default function ShopPage() {
                                 </span>
                               </div>
 
-                              {/* Target Item Elements Inside Sub Group */}
                               <ul className="flex flex-col gap-1.5 pl-2 mb-1">
-                                {sub.items.map((item: any, iIdx) => {
+                                {sub.items.map((item, iIdx) => {
                                   const isItemActive = selectedSubCategory?.toLowerCase() === item?.name?.toLowerCase();
                                   const totalItemProducts = getProductCount("item", item?.name);
 
@@ -259,7 +243,7 @@ export default function ShopPage() {
           <div className="mb-6">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">By Skin Type</h3>
             <div className="flex flex-col gap-2.5 text-sm">
-              {["Normal", "Oily", "Dry", "Combination", "Sensitive"].map((type) => (
+              {(["Normal", "Oily", "Dry", "Combination", "Sensitive"] as SkinType[]).map((type) => (
                 <label key={type} className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -317,7 +301,7 @@ export default function ShopPage() {
           <div className="mb-6">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">By Promotions</h3>
             <div className="flex flex-col gap-2.5 text-sm">
-              {["New Arrivals", "Best Sellers", "Trending"].map((promo) => (
+              {(["New Arrivals", "Best Sellers", "Trending"] as PromotionTag[]).map((promo) => (
                 <label key={promo} className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -332,6 +316,28 @@ export default function ShopPage() {
           </div>
         </div>
 
+        {/* ================= MOBILE DRAWER OPTION ================= */}
+        <ShopFilterDrawer
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          categoriesData={categoriesData}
+          selectedCategories={selectedCategories}
+          openCategoryMenu={openCategoryMenu}
+          handleCategorySelect={handleCategorySelect}
+          selectedSubCategory={selectedSubCategory}
+          handleSubCategoryItemSelect={handleSubCategoryItemSelect}
+          getProductCount={getProductCount}
+          selectedSkinTypes={selectedSkinTypes}
+          setSelectedSkinTypes={setSelectedSkinTypes}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          selectedRatings={selectedRatings}
+          setSelectedRatings={setSelectedRatings}
+          selectedPromotions={selectedPromotions}
+          setSelectedPromotions={setSelectedPromotions}
+          toggleFilter={toggleFilter}
+        />
+
         {/* ================= RIGHT SIDE: PRODUCT GRID & TOPBAR ================= */}
         <div className="lg:col-span-3">
           
@@ -342,6 +348,12 @@ export default function ShopPage() {
               {selectedSubCategory && <span className="text-[#2D4A3E] font-bold"> (Filtered by: {selectedSubCategory})</span>}
             </p>
             <div className="flex items-center gap-2 self-end sm:self-auto">
+              <button 
+                onClick={() => setIsDrawerOpen(true)} 
+                className="lg:hidden flex items-center gap-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-700 shadow-sm mr-2"
+              >
+                <SlidersHorizontal size={14} /> Filter
+              </button>
               <span className="text-sm text-gray-500">Sort by :</span>
               <div className="relative bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-sm font-medium flex items-center gap-4 shadow-sm">
                 <select
@@ -367,7 +379,7 @@ export default function ShopPage() {
               <span className="text-xs font-bold text-gray-400 mr-1">Active Filter</span>
               
               {selectedCategories.map((c) => {
-                const catObj = (categoriesData as Category[]).find(cat => cat._id === c);
+                const catObj = categoriesData.find(cat => cat._id === c);
                 return (
                   <div key={c} className="flex items-center gap-1.5 bg-[#1A2E22] text-white text-xs px-3 py-1.5 rounded-full font-medium capitalize">
                     {catObj ? catObj.name : "Category"} 
@@ -396,77 +408,15 @@ export default function ShopPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => {
-                const categoryName = typeof product.category === "object" ? product.category?.name : product.subCategory;
-                const firstImage = product.commonImages?.[0] || "/placeholder.png";
-                const secondImage = product.commonImages?.[1] || firstImage;
-
-                return (
-                  <div key={product._id || product.productCode} className="group relative bg-transparent flex flex-col">
-                    
-                    {/* IMAGE WRAPPER WITH DUAL-HOVER EFFECT */}
-                    <div className="relative aspect-[4/5] w-full bg-[#EAE7DC] rounded-[24px] overflow-hidden mb-3 shadow-sm cursor-pointer">
-                      <div
-                        className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-700 ease-in-out group-hover:opacity-0"
-                        style={{ backgroundImage: `url(${firstImage})` }}
-                      />
-                      <div
-                        className="absolute inset-0 w-full h-full bg-cover bg-center scale-100 group-hover:scale-105 transition-all duration-700 ease-in-out opacity-0 group-hover:opacity-100"
-                        style={{ backgroundImage: `url(${secondImage})` }}
-                      />
-                      
-                      {product.discount && (
-                        <span className="absolute top-4 left-4 bg-[#1A2E22] text-white font-sans text-[11px] font-bold px-2.5 py-1 rounded-full z-10">
-                          {product.discount} OFF
-                        </span>
-                      )}
-
-                      {/* ACTIONS */}
-                      <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                        <button 
-                          onClick={() => product._id && toggleWishlist(product._id)}
-                          className={`p-2 rounded-full shadow-md transition-colors ${product._id && wishlist.includes(product._id) ? "bg-[#FF3F6C] text-white" : "bg-white text-[#1A2E22] hover:bg-[#1A2E22] hover:text-white"}`}
-                        >
-                          <Heart size={16} fill={product._id && wishlist.includes(product._id) ? "currentColor" : "none"} />
-                        </button>
-
-                        <Link href={`/product/${product.productCode}`} className="bg-white text-[#1A2E22] p-2 rounded-full shadow-md hover:bg-[#1A2E22] hover:text-white transition-colors flex items-center justify-center">
-                          <Eye size={16} />
-                        </Link>
-
-                        <button 
-                          onClick={() => addToCart(product)}
-                          disabled={product.availability === "Out of Stock"}
-                          className={`p-2 rounded-full shadow-md transition-colors ${product.availability === "Out of Stock" ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white text-[#1A2E22] hover:bg-[#1A2E22] hover:text-white"}`}
-                        >
-                          <ShoppingBag size={16} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Metadata */}
-                    <div className="flex justify-between items-start px-1">
-                      <div>
-                        <span className="text-xs text-gray-400 font-medium block mb-0.5 capitalize">{categoryName}</span>
-                        <h4 className="font-serif font-bold text-base text-[#1A2E22] group-hover:text-black transition-colors line-clamp-1">{product.name}</h4>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs font-bold text-[#1A2E22] mt-0.5 shrink-0">
-                        <Star size={14} fill="currentColor" className="text-amber-400" />
-                        <span>{product.rating.toFixed(1)}</span>
-                        <span className="text-gray-400 font-normal text-[10px]">({product.ratingCount})</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-1 px-1">
-                      <span className="text-[#CDA275] font-bold text-base">৳{product.price.toFixed(2)}</span>
-                      {product.oldPrice && product.oldPrice > product.price && (
-                        <span className="text-gray-400 line-through text-xs">৳{product.oldPrice.toFixed(2)}</span>
-                      )}
-                    </div>
-
-                  </div>
-                );
-              })}
+              {filteredProducts.map((product) => (
+                <ShopProductCard
+                  key={product._id || product.productCode}
+                  product={product}
+                  wishlist={wishlist}
+                  toggleWishlist={toggleWishlist}
+                  addToCart={addToCart}
+                />
+              ))}
             </div>
           )}
 
