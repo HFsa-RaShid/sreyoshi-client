@@ -2,9 +2,9 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useApp } from "../../context/AppContext";
 import { Trash2, Plus, Minus, ShoppingBag, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { useApp } from "@/context/AppContext";
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, validateAndSyncCart } = useApp();

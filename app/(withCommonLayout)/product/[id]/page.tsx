@@ -5,12 +5,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Star, Heart, ArrowLeft, Plus, Minus, Loader2 } from "lucide-react";
-import { useApp } from "../../../context/AppContext";
-
-import { Product, ProductShade } from "@/Types/types";
+import { Heart, ArrowLeft, Plus, Minus, Loader2 } from "lucide-react";
+import { ProductShade } from "@/Types/types";
 import { useGetSingleProductForCustomer } from "@/hooks/useCustomerData";
 import ProductReviews from "@/components/ProductReviews";
+import { useApp } from "@/context/AppContext";
 
 type TabType = "desc" | "howToUse" | "reviews";
 

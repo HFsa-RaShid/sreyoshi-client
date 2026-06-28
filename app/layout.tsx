@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Shared/Navbar/Navbar";
-import Footer from "@/components/Shared/Footer/Footer";
 import { AppProvider } from "@/context/AppContext";
 import QueryProvider from "@/lib/QueryProvider"; 
-import { SessionProvider } from "next-auth/react"; // 💡 NextAuth Provider
+import { SessionProvider } from "next-auth/react"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,12 +31,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="bg-[#FAF9F6]">
-        <SessionProvider> {/* 💡 সেশন প্রোভাইডার এখানে দেওয়া হলো */}
+        <SessionProvider> 
           <QueryProvider>
             <AppProvider>
-              <Navbar />
+       
               {children}
-              <Footer />
+              
             </AppProvider>
           </QueryProvider>
         </SessionProvider>

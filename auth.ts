@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { jwtDecode } from "jwt-decode";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -15,41 +14,43 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`, {
+          // 🎯 মেইন ফিক্স ১: URL-টি আপনার ব্যাকএন্ড পোর্ট (৮০৮০) এবং সঠিক রাউট অনুযায়ী সেট করা হলো
+          const res = await fetch("http://localhost:8080/api/v1/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            // 🎯 মেইন ফিক্স ২: ফ্রন্টএন্ডের মতো এখানেও 'identity' কী (Key) ব্যবহার করা হলো
             body: JSON.stringify({
-              email: credentials.email,
+              identity: credentials.email,
               password: credentials.password,
             }),
           });
 
           if (!res.ok) {
-            console.log("❌ Backend Auth Failed, status:", res.status);
+            console.error("❌ NextAuth Backend Auth Failed. Status:", res.status);
             return null;
           }
 
-          const data = await res.json();
-          console.log("✅ Backend Data Received:", data);
+          const responseData = await res.json();
+          
+          // ব্যাকএন্ড রেসপন্স থেকে ইউজার অবজেক্ট এবং টোকেন আলাদা করা
+          const actualData = responseData?.data || responseData;
+          const userDoc = responseData?.data?.user || responseData?.user || actualData; 
+          const accessToken = responseData?.accessToken || responseData?.token || actualData?.accessToken;
 
-          if (data && data.accessToken) {
-            const decoded: any = jwtDecode(data.accessToken);
-
-            // 💡 টাইপ এরর ফিক্স করতে ইমেইলকে স্পষ্ট 'string' কাস্ট করা হয়েছে
-            const userEmail = credentials.email as string;
-
+          if (userDoc && accessToken) {
             return {
-              id: (decoded._id || "user-id") as string,
-              name: userEmail.split("@")[0], 
-              email: userEmail, // 🚀 Fixed: '{}' is not assignable to 'string' এরর দূর হলো
-              role: decoded.role || "user",
-              accessToken: data.accessToken,
-            } as any; // 💡 NextAuth User interface টাইপ ব্লকিং এড়াতে কাস্টিং করা হয়েছে
+              // ডাটাবেজের আসল আইডি ম্যাপ করা হচ্ছে
+              id: (userDoc._id || userDoc.id || actualData?._id) as string, 
+              name: userDoc.name || actualData?.name,
+              email: userDoc.email || actualData?.email,
+              role: userDoc.role || actualData?.role, 
+              accessToken: accessToken,
+            } as any;
           }
           
           return null;
         } catch (error) {
-          console.error("💥 Auth Error:", error);
+          console.error("💥 NextAuth Authorize Catch Error:", error);
           return null;
         }
       },
@@ -59,7 +60,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = (user as any).accessToken;
-        token.id = user.id;
+        token.id = user.id; 
+        token.name = user.name;
+        token.email = user.email;
         token.role = (user as any).role;
       }
       return token;
@@ -67,7 +70,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (session.user && token) {
         (session.user as any).accessToken = token.accessToken;
-        (session.user as any).id = token.id;
+        (session.user as any).id = token.id; 
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
         (session.user as any).role = token.role;
       }
       return session;
@@ -76,5 +81,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/signin",
   },
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
 });
