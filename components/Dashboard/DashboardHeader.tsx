@@ -28,9 +28,17 @@ export default function DashboardHeader() {
         <button className="p-2 md:hidden rounded-lg hover:bg-gray-50 text-gray-500 transition-colors">
           <Menu size={20} />
         </button>
-        <Link href="/" className="font-bold text-lg text-[#0F1E29] tracking-tight">
-          Khati<span className="text-[#4E612B]">Bazar</span>
-        </Link>
+        <div className="flex items-start gap-0.5 relative">
+            <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[#8FA887] text-base md:text-xl md:-top-2.5">
+              🍃
+            </span>
+            <Link
+              href="/dashboard"
+              className="font-serif text-2xl md:text-3xl font-semibold text-[#1A2E22] tracking-wide mt-1"
+            >
+              Sreyoshi
+            </Link>
+          </div>
       </div>
 
       {/* Global Search Bar */}
@@ -84,7 +92,7 @@ export default function DashboardHeader() {
               
               <div className="hidden md:block text-left">
                 <h4 className="text-xs font-bold text-[#0F1E29] leading-none">
-                  {user?.name || "Hafsa"}
+                  {user?.name}
                 </h4>
                 <span className="text-[10px] text-gray-400 font-semibold capitalize mt-1 block">
                   {userRole}

@@ -129,7 +129,7 @@ export default function CheckoutPage() {
         alert("Order Placed Successfully via Cash on Delivery!");
         if (clearCart) clearCart(); 
         setIsModalOpen(false);
-        router.push("/order-success");
+        router.push("/payment/success");
       }
     } catch (error: any) {
       alert(`Error: ${error.message}`);

@@ -1,16 +1,26 @@
-
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Star, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2, SlidersHorizontal, X } from "lucide-react";
+import {
+  Star,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Loader2,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
-import { Product, Category, SkinType, PromotionTag } from "@/Types/types"; 
-import { useGetCategoriesForCustomer, useGetProductsForCustomer } from "@/hooks/useCustomerData";
+import { Product, Category, SkinType, PromotionTag } from "@/Types/types";
+import {
+  useGetCategoriesForCustomer,
+  useGetProductsForCustomer,
+} from "@/hooks/useCustomerData";
 import ShopFilterDrawer from "./ShopFilterDrawer";
 import ShopProductCard from "./ShopProductCard";
-
 
 export default function ShopPage() {
   const { addToCart, wishlist, toggleWishlist } = useApp();
@@ -18,8 +28,10 @@ export default function ShopPage() {
   const router = useRouter();
 
   // API থেকে ডাটা ফেচিং
-  const { data: categoriesData = [], isLoading: isCategoriesLoading } = useGetCategoriesForCustomer() as { data: Category[], isLoading: boolean };
-  const { data: productsData = [], isLoading: isProductsLoading } = useGetProductsForCustomer() as { data: Product[], isLoading: boolean };
+  const { data: categoriesData = [], isLoading: isCategoriesLoading } =
+    useGetCategoriesForCustomer() as { data: Category[]; isLoading: boolean };
+  const { data: productsData = [], isLoading: isProductsLoading } =
+    useGetProductsForCustomer() as { data: Product[]; isLoading: boolean };
 
   const urlCategory = searchParams.get("category");
   const urlSubCategory = searchParams.get("subCategory");
@@ -27,11 +39,15 @@ export default function ShopPage() {
   // ফিল্টার এবং ড্রয়ার স্টেট
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
+    null,
+  );
   const [selectedSkinTypes, setSelectedSkinTypes] = useState<SkinType[]>([]);
-  const [priceRange, setPriceRange] = useState<number>(5000); 
+  const [priceRange, setPriceRange] = useState<number>(5000);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
-  const [selectedPromotions, setSelectedPromotions] = useState<PromotionTag[]>([]);
+  const [selectedPromotions, setSelectedPromotions] = useState<PromotionTag[]>(
+    [],
+  );
   const [sortBy, setSortBy] = useState<string>("default");
   const [openCategoryMenu, setOpenCategoryMenu] = useState<string | null>(null);
 
@@ -41,9 +57,12 @@ export default function ShopPage() {
       setOpenCategoryMenu(urlCategory);
     } else if (urlSubCategory && categoriesData.length > 0) {
       const parentCat = categoriesData.find((cat) =>
-        cat.subCategories.some((sub) => 
-          sub.items.some((item) => item?.name?.toLowerCase() === urlSubCategory.toLowerCase())
-        )
+        cat.subCategories.some((sub) =>
+          sub.items.some(
+            (item) =>
+              item?.name?.toLowerCase() === urlSubCategory.toLowerCase(),
+          ),
+        ),
       );
       if (parentCat) {
         setSelectedCategories([parentCat._id]);
@@ -53,14 +72,22 @@ export default function ShopPage() {
     }
   }, [urlCategory, urlSubCategory, categoriesData]);
 
-  const getProductCount = (type: "category" | "subGroup" | "item", name: string) => {
+  const getProductCount = (
+    type: "category" | "subGroup" | "item",
+    name: string,
+  ) => {
     if (!productsData) return 0;
     return productsData.filter((product) => {
-      const catId = typeof product.category === "object" ? product.category?._id : product.category;
-      
+      const catId =
+        typeof product.category === "object"
+          ? product.category?._id
+          : product.category;
+
       if (type === "category") return catId === name;
-      if (type === "subGroup") return product.subCategory?.toLowerCase() === name.toLowerCase();
-      if (type === "item") return product.itemName?.toLowerCase() === name.toLowerCase();
+      if (type === "subGroup")
+        return product.subCategory?.toLowerCase() === name.toLowerCase();
+      if (type === "item")
+        return product.itemName?.toLowerCase() === name.toLowerCase();
       return false;
     }).length;
   };
@@ -81,7 +108,11 @@ export default function ShopPage() {
   const handleSubCategoryItemSelect = (itemName: string) => {
     if (selectedSubCategory?.toLowerCase() === itemName.toLowerCase()) {
       setSelectedSubCategory(null);
-      router.push(selectedCategories.length ? `/shop?category=${selectedCategories[0]}` : "/shop");
+      router.push(
+        selectedCategories.length
+          ? `/shop?category=${selectedCategories[0]}`
+          : "/shop",
+      );
     } else {
       setSelectedSubCategory(itemName);
       router.push(`/shop?subCategory=${encodeURIComponent(itemName)}`);
@@ -95,16 +126,29 @@ export default function ShopPage() {
       .filter((product) => {
         if (product.status !== "Active") return false;
 
-        const catId = typeof product.category === "object" ? product.category?._id : product.category;
-        if (selectedCategories.length > 0 && (!catId || !selectedCategories.includes(catId))) {
+        const catId =
+          typeof product.category === "object"
+            ? product.category?._id
+            : product.category;
+        if (
+          selectedCategories.length > 0 &&
+          (!catId || !selectedCategories.includes(catId))
+        ) {
           return false;
         }
 
-        if (selectedSubCategory && product.itemName?.toLowerCase() !== selectedSubCategory.toLowerCase()) {
+        if (
+          selectedSubCategory &&
+          product.itemName?.toLowerCase() !== selectedSubCategory.toLowerCase()
+        ) {
           return false;
         }
 
-        if (selectedSkinTypes.length > 0 && (!product.promotion || !selectedSkinTypes.includes(product.promotion as any))) {
+        if (
+          selectedSkinTypes.length > 0 &&
+          (!product.promotion ||
+            !selectedSkinTypes.includes(product.promotion as any))
+        ) {
           if (product.promotion !== "All Skin Types") {
             return false;
           }
@@ -114,11 +158,18 @@ export default function ShopPage() {
           return false;
         }
 
-        if (selectedRatings.length > 0 && !selectedRatings.includes(Math.floor(product.rating))) {
+        if (
+          selectedRatings.length > 0 &&
+          !selectedRatings.includes(Math.floor(product.rating))
+        ) {
           return false;
         }
 
-        if (selectedPromotions.length > 0 && (!product.promotion || !selectedPromotions.includes(product.promotion as PromotionTag))) {
+        if (
+          selectedPromotions.length > 0 &&
+          (!product.promotion ||
+            !selectedPromotions.includes(product.promotion as PromotionTag))
+        ) {
           return false;
         }
 
@@ -136,7 +187,16 @@ export default function ShopPage() {
         }
         return 0;
       });
-  }, [productsData, selectedCategories, selectedSubCategory, selectedSkinTypes, priceRange, selectedRatings, selectedPromotions, sortBy]);
+  }, [
+    productsData,
+    selectedCategories,
+    selectedSubCategory,
+    selectedSkinTypes,
+    priceRange,
+    selectedRatings,
+    selectedPromotions,
+    sortBy,
+  ]);
 
   const handleClearAll = () => {
     setSelectedCategories([]);
@@ -150,15 +210,25 @@ export default function ShopPage() {
   };
 
   // টাইপ সেফ জেনেরিক ফিল্টার টগল ফাংশন
-  const toggleFilter = <T,>(list: T[], setList: React.Dispatch<React.SetStateAction<T[]>>, value: T) => {
-    setList(list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
+  const toggleFilter = <T,>(
+    list: T[],
+    setList: React.Dispatch<React.SetStateAction<T[]>>,
+    value: T,
+  ) => {
+    setList(
+      list.includes(value)
+        ? list.filter((item) => item !== value)
+        : [...list, value],
+    );
   };
 
   if (isCategoriesLoading || isProductsLoading) {
     return (
       <div className="min-h-screen bg-[#FAF9F6] flex flex-col items-center justify-center gap-2">
         <Loader2 className="w-10 h-10 animate-spin text-[#1A2E22]" />
-        <p className="text-sm font-medium text-[#1A2E22]/70">Loading Shop Products...</p>
+        <p className="text-sm font-medium text-[#1A2E22]/70">
+          Loading Shop Products...
+        </p>
       </div>
     );
   }
@@ -166,38 +236,53 @@ export default function ShopPage() {
   return (
     <div className="bg-[#FAF9F6] min-h-screen pt-28 pb-12 px-4 md:px-12 text-[#2C3E35]">
       <div className="container mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
         {/* ================= LEFT SIDEBAR (DESKTOP) ================= */}
         <div className="hidden lg:block bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-auto sticky top-24">
-  <h2 className="text-xl font-serif font-bold text-[#1A2E22] mb-6">Filter Options</h2>
+          <h2 className="text-xl font-serif font-bold text-[#1A2E22] mb-6">
+            Filter Options
+          </h2>
 
-  <div className="mb-6">
-    <h3 className="text-xs font-bold uppercase tracking-wider text-[#1A2E22] mb-4 opacity-50">Product Categories</h3>
+          <div className="mb-6">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#1A2E22] mb-4 opacity-50">
+              Product Categories
+            </h3>
             <div className="flex flex-col gap-3">
               {categoriesData.map((category) => {
                 const isCatSelected = selectedCategories.includes(category._id);
                 const isCatOpen = openCategoryMenu === category._id;
-                const totalCatProducts = getProductCount("category", category._id);
+                const totalCatProducts = getProductCount(
+                  "category",
+                  category._id,
+                );
 
                 return (
                   <div key={category._id} className="flex flex-col">
-                    <div 
+                    <div
                       onClick={() => handleCategorySelect(category._id)}
                       className={`flex justify-between items-center font-sans text-sm font-bold cursor-pointer transition-colors py-1 ${isCatSelected ? "text-[#FF3F6C]" : "text-[#1A2E22] hover:text-[#FF3F6C]"}`}
                     >
                       <span>{category.name}</span>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-sans px-2 py-0.5 rounded-full ${isCatSelected ? "bg-[#FF3F6C] text-white" : "bg-gray-100 text-gray-500"}`}>
+                        <span
+                          className={`text-[10px] font-sans px-2 py-0.5 rounded-full ${isCatSelected ? "bg-[#FF3F6C] text-white" : "bg-gray-100 text-gray-500"}`}
+                        >
                           {totalCatProducts}
                         </span>
-                        {isCatOpen ? <ChevronUp size={14} className="opacity-60" /> : <ChevronDown size={14} className="opacity-60" />}
+                        {isCatOpen ? (
+                          <ChevronUp size={14} className="opacity-60" />
+                        ) : (
+                          <ChevronDown size={14} className="opacity-60" />
+                        )}
                       </div>
                     </div>
 
                     {isCatOpen && (
                       <div className="pl-4 mt-2 flex flex-col gap-3 border-l border-gray-100 ml-1">
                         {category.subCategories.map((sub, sIdx) => {
-                          const totalSubProducts = getProductCount("subGroup", sub.title);
+                          const totalSubProducts = getProductCount(
+                            "subGroup",
+                            sub.title,
+                          );
                           return (
                             <div key={sIdx} className="flex flex-col">
                               <div className="flex justify-between items-center text-xs font-bold uppercase text-[#FF3F6C] tracking-wide mb-2 mt-1">
@@ -209,16 +294,25 @@ export default function ShopPage() {
 
                               <ul className="flex flex-col gap-1.5 pl-2 mb-1">
                                 {sub.items.map((item, iIdx) => {
-                                  const isItemActive = selectedSubCategory?.toLowerCase() === item?.name?.toLowerCase();
-                                  const totalItemProducts = getProductCount("item", item?.name);
+                                  const isItemActive =
+                                    selectedSubCategory?.toLowerCase() ===
+                                    item?.name?.toLowerCase();
+                                  const totalItemProducts = getProductCount(
+                                    "item",
+                                    item?.name,
+                                  );
 
                                   return (
-                                    <li 
+                                    <li
                                       key={iIdx}
-                                      onClick={() => handleSubCategoryItemSelect(item.name)}
+                                      onClick={() =>
+                                        handleSubCategoryItemSelect(item.name)
+                                      }
                                       className={`flex justify-between items-center text-xs font-medium cursor-pointer py-0.5 transition-all ${isItemActive ? "text-[#1A2E22] font-bold" : "text-[#5A655D] hover:text-[#1A2E22]"}`}
                                     >
-                                      <span className="truncate max-w-[160px]">{item.name}</span>
+                                      <span className="truncate max-w-[160px]">
+                                        {item.name}
+                                      </span>
                                       <span className="text-[10px] bg-gray-50 text-gray-400 font-normal px-1.5 py-0.2 rounded-full font-sans">
                                         {totalItemProducts}
                                       </span>
@@ -240,14 +334,33 @@ export default function ShopPage() {
 
           {/* BY SKIN TYPE */}
           <div className="mb-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">By Skin Type</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">
+              By Skin Type
+            </h3>
             <div className="flex flex-col gap-2.5 text-sm">
-              {(["Normal", "Oily", "Dry", "Combination", "Sensitive"] as SkinType[]).map((type) => (
-                <label key={type} className="flex items-center gap-3 cursor-pointer">
+              {(
+                [
+                  "Normal",
+                  "Oily",
+                  "Dry",
+                  "Combination",
+                  "Sensitive",
+                ] as SkinType[]
+              ).map((type) => (
+                <label
+                  key={type}
+                  className="flex items-center gap-3 cursor-pointer"
+                >
                   <input
                     type="checkbox"
                     checked={selectedSkinTypes.includes(type)}
-                    onChange={() => toggleFilter(selectedSkinTypes, setSelectedSkinTypes, type)}
+                    onChange={() =>
+                      toggleFilter(
+                        selectedSkinTypes,
+                        setSelectedSkinTypes,
+                        type,
+                      )
+                    }
                     className="w-4 h-4 rounded accent-[#2D4A3E]"
                   />
                   {type}
@@ -259,8 +372,12 @@ export default function ShopPage() {
 
           {/* PRICE RANGE */}
           <div className="mb-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-1">Price</h3>
-            <p className="text-xs text-gray-500 mb-3">৳0.00 - ৳{priceRange.toFixed(2)}</p>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-1">
+              Price
+            </h3>
+            <p className="text-xs text-gray-500 mb-3">
+              ৳0.00 - ৳{priceRange.toFixed(2)}
+            </p>
             <input
               type="range"
               min="0"
@@ -274,19 +391,31 @@ export default function ShopPage() {
 
           {/* REVIEW / RATING */}
           <div className="mb-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">Review</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">
+              Review
+            </h3>
             <div className="flex flex-col gap-2.5">
               {[5, 4, 3, 2, 1].map((stars) => (
-                <label key={stars} className="flex items-center gap-3 cursor-pointer text-sm">
+                <label
+                  key={stars}
+                  className="flex items-center gap-3 cursor-pointer text-sm"
+                >
                   <input
                     type="checkbox"
                     checked={selectedRatings.includes(stars)}
-                    onChange={() => toggleFilter(selectedRatings, setSelectedRatings, stars)}
+                    onChange={() =>
+                      toggleFilter(selectedRatings, setSelectedRatings, stars)
+                    }
                     className="w-4 h-4 rounded accent-[#2D4A3E]"
                   />
                   <div className="flex items-center text-amber-400 gap-0.5">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={14} fill={i < stars ? "currentColor" : "none"} className={i < stars ? "" : "text-gray-200"} />
+                      <Star
+                        key={i}
+                        size={14}
+                        fill={i < stars ? "currentColor" : "none"}
+                        className={i < stars ? "" : "text-gray-200"}
+                      />
                     ))}
                   </div>
                   <span className="text-xs text-gray-500">{stars} Star</span>
@@ -298,14 +427,27 @@ export default function ShopPage() {
 
           {/* BY PROMOTIONS */}
           <div className="mb-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">By Promotions</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">
+              By Promotions
+            </h3>
             <div className="flex flex-col gap-2.5 text-sm">
-              {(["New Arrivals", "Best Sellers", "Trending"] as PromotionTag[]).map((promo) => (
-                <label key={promo} className="flex items-center gap-3 cursor-pointer">
+              {(
+                ["New Arrivals", "Best Sellers", "Trending"] as PromotionTag[]
+              ).map((promo) => (
+                <label
+                  key={promo}
+                  className="flex items-center gap-3 cursor-pointer"
+                >
                   <input
                     type="checkbox"
                     checked={selectedPromotions.includes(promo)}
-                    onChange={() => toggleFilter(selectedPromotions, setSelectedPromotions, promo)}
+                    onChange={() =>
+                      toggleFilter(
+                        selectedPromotions,
+                        setSelectedPromotions,
+                        promo,
+                      )
+                    }
                     className="w-4 h-4 rounded accent-[#2D4A3E]"
                   />
                   {promo}
@@ -339,16 +481,21 @@ export default function ShopPage() {
 
         {/* ================= RIGHT SIDE: PRODUCT GRID & TOPBAR ================= */}
         <div className="lg:col-span-3">
-          
           {/* TOPBAR */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <p className="text-sm text-gray-600 font-medium">
-              Showing 1-{filteredProducts.length} of {filteredProducts.length} results
-              {selectedSubCategory && <span className="text-[#2D4A3E] font-bold"> (Filtered by: {selectedSubCategory})</span>}
+              Showing 1-{filteredProducts.length} of {filteredProducts.length}{" "}
+              results
+              {selectedSubCategory && (
+                <span className="text-[#2D4A3E] font-bold">
+                  {" "}
+                  (Filtered by: {selectedSubCategory})
+                </span>
+              )}
             </p>
             <div className="flex items-center gap-2 self-end sm:self-auto">
-              <button 
-                onClick={() => setIsDrawerOpen(true)} 
+              <button
+                onClick={() => setIsDrawerOpen(true)}
                 className="lg:hidden flex items-center gap-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-700 shadow-sm mr-2"
               >
                 <SlidersHorizontal size={14} /> Filter
@@ -367,7 +514,10 @@ export default function ShopPage() {
                   <option value="high-to-low">Price: High to Low</option>
                   <option value="rating">Highest Rating</option>
                 </select>
-                <ChevronDown size={14} className="absolute right-3 pointer-events-none text-gray-500" />
+                <ChevronDown
+                  size={14}
+                  className="absolute right-3 pointer-events-none text-gray-500"
+                />
               </div>
             </div>
           </div>
@@ -375,26 +525,44 @@ export default function ShopPage() {
           {/* ACTIVE FILTER BADGES */}
           {(selectedCategories.length > 0 || selectedSubCategory) && (
             <div className="flex flex-wrap items-center gap-2 mb-8">
-              <span className="text-xs font-bold text-gray-400 mr-1">Active Filter</span>
-              
+              <span className="text-xs font-bold text-gray-400 mr-1">
+                Active Filter
+              </span>
+
               {selectedCategories.map((c) => {
-                const catObj = categoriesData.find(cat => cat._id === c);
+                const catObj = categoriesData.find((cat) => cat._id === c);
                 return (
-                  <div key={c} className="flex items-center gap-1.5 bg-[#1A2E22] text-white text-xs px-3 py-1.5 rounded-full font-medium capitalize">
-                    {catObj ? catObj.name : "Category"} 
-                    <X size={12} className="cursor-pointer" onClick={() => handleCategorySelect(c)} />
+                  <div
+                    key={c}
+                    className="flex items-center gap-1.5 bg-[#1A2E22] text-white text-xs px-3 py-1.5 rounded-full font-medium capitalize"
+                  >
+                    {catObj ? catObj.name : "Category"}
+                    <X
+                      size={12}
+                      className="cursor-pointer"
+                      onClick={() => handleCategorySelect(c)}
+                    />
                   </div>
                 );
               })}
 
               {selectedSubCategory && (
                 <div className="flex items-center gap-1.5 bg-[#FF3F6C] text-white text-xs px-3 py-1.5 rounded-full font-medium">
-                  {selectedSubCategory} 
-                  <X size={12} className="cursor-pointer" onClick={() => handleSubCategoryItemSelect(selectedSubCategory)} />
+                  {selectedSubCategory}
+                  <X
+                    size={12}
+                    className="cursor-pointer"
+                    onClick={() =>
+                      handleSubCategoryItemSelect(selectedSubCategory)
+                    }
+                  />
                 </div>
               )}
 
-              <button onClick={handleClearAll} className="text-xs text-amber-600 font-semibold hover:underline ml-2">
+              <button
+                onClick={handleClearAll}
+                className="text-xs text-amber-600 font-semibold hover:underline ml-2"
+              >
                 Clear All
               </button>
             </div>
@@ -403,7 +571,9 @@ export default function ShopPage() {
           {/* PRODUCT GRID */}
           {filteredProducts.length === 0 ? (
             <div className="bg-white text-center py-20 rounded-2xl border border-dashed border-gray-200">
-              <p className="text-gray-500 font-medium">No products found matching the criteria.</p>
+              <p className="text-gray-500 font-medium">
+                No products found matching the criteria.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -418,18 +588,6 @@ export default function ShopPage() {
               ))}
             </div>
           )}
-
-          {/* PAGINATION */}
-          {filteredProducts.length > 0 && (
-            <div className="flex justify-center items-center gap-2 mt-12">
-              <button className="p-2 rounded-full bg-white border border-gray-100 hover:bg-[#1A2E22] hover:text-white transition-colors"><ChevronLeft size={16} /></button>
-              <button className="w-9 h-9 flex items-center justify-center rounded-full text-xs font-bold bg-[#1A2E22] text-white">1</button>
-              <button className="w-9 h-9 flex items-center justify-center rounded-full text-xs font-bold bg-white text-[#1A2E22] hover:bg-gray-100 transition-colors">2</button>
-              <span className="text-gray-400 text-xs px-1">...</span>
-              <button className="p-2 rounded-full bg-white border border-gray-100 hover:bg-[#1A2E22] hover:text-white transition-colors"><ChevronRight size={16} /></button>
-            </div>
-          )}
-
         </div>
       </div>
     </div>
