@@ -33,7 +33,7 @@ export default function DashboardHeader() {
               🍃
             </span>
             <Link
-              href="/dashboard"
+              href="/"
               className="font-serif text-2xl md:text-3xl font-semibold text-[#1A2E22] tracking-wide mt-1"
             >
               Sreyoshi

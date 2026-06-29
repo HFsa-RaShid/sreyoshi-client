@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -22,11 +23,14 @@ import {
 import { Category, Product, SubCategoryGroup } from "@/Types/types";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useWishlist } from "@/hooks/useWishlist"; 
 
 export default function Navbar() {
   const router = useRouter();
-  const { cart, wishlist } = useApp();
+  const { cart } = useApp();
   const { data: session } = useSession();
+
+  const { wishlistItems = [] } = useWishlist(); 
 
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -94,6 +98,14 @@ export default function Navbar() {
       setActiveMobileMenu(null);
     } else {
       setActiveMobileMenu(id);
+    }
+  };
+
+  // 🎯 মেইন ফিক্স ২: লগইন না থাকলে উইশলিস্ট বাটনে ক্লিক করলে সাইন-ইন পেজে রিডাইরেক্ট করার হ্যান্ডলার
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    if (!session) {
+      e.preventDefault(); // ডিফল্ট লিঙ্ক ট্র্যাকিং ব্লক
+      router.push("/signin"); // সরাসরি সাইন ইন পেজে পাঠিয়ে দেওয়া
     }
   };
 
@@ -283,18 +295,20 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* WISHLIST */}
+            {/* WISHLIST (DESKTOP) */}
             <Link
               href="/wishlist"
+              onClick={handleWishlistClick} // 🎯 মেইন ফিক্স ৩: লগইন না থাকলে রিডাইরেক্ট কন্ডিশন সেট হলো
               className="relative p-1 text-gray-700 hover:text-[#FF3F6C] transition-colors shrink-0"
             >
               <Heart
                 strokeWidth={1.5}
-                className={`w-7 h-7 ${wishlist.length > 0 ? "text-[#FF3F6C] fill-[#FF3F6C]" : ""}`}
+                className={`w-7 h-7 ${session && wishlistItems.length > 0 ? "text-[#FF3F6C] fill-[#FF3F6C]" : ""}`}
               />
-              {wishlist.length > 0 && (
+              {/* 🎯 মেইন ফিক্স ৪: সাইন-ইন অবস্থায় লাইভ উইশলিস্ট আইটেম কাউন্টের ব্যাজ লোড হবে */}
+              {session && wishlistItems.length > 0 && (
                 <span className="absolute top-0 right-0 bg-[#FF3F6C] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center translate-x-1 -translate-y-1 animate-pulse">
-                  {wishlist.length}
+                  {wishlistItems.length}
                 </span>
               )}
             </Link>
@@ -357,14 +371,22 @@ export default function Navbar() {
             </Link>
           )}
 
+          {/* WISHLIST (MOBILE) */}
           <Link
             href="/wishlist"
+            onClick={handleWishlistClick} // 🎯 মেইন ফিক্স ৫: মোবাইল ভিউতেও রিডাইরেক্ট সিকিউরিটি হ্যান্ডলার যুক্ত হলো
             className="relative p-1 text-gray-700 shrink-0"
           >
             <Heart
               strokeWidth={1.5}
-              className={`w-6 h-6 ${wishlist.length > 0 ? "text-[#FF3F6C] fill-[#FF3F6C]" : ""}`}
+              className={`w-6 h-6 ${session && wishlistItems.length > 0 ? "text-[#FF3F6C] fill-[#FF3F6C]" : ""}`}
             />
+            {/* 🎯 মেইন ফিক্স ৬: মোবাইল ভিউর জন্য লাইভ উইশলিস্ট ব্যাজ কাউন্টার */}
+            {session && wishlistItems.length > 0 && (
+              <span className="absolute top-0 right-0 bg-[#FF3F6C] text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center translate-x-1 -translate-y-1 animate-pulse">
+                {wishlistItems.length}
+              </span>
+            )}
           </Link>
 
           <Link href="/cart" className="relative p-1 text-gray-700 shrink-0">

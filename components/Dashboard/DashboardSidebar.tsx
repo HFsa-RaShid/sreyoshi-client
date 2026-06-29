@@ -10,10 +10,9 @@ export default function DashboardSidebar() {
 
   const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "My Orders", href: "/dashboard/my-orders", icon: MapPin },
+    { name: "Invoice", href: "/dashboard/invoice", icon: Bell },
     { name: "Account Settings", href: "/dashboard/settings", icon: User },
-    { name: "Saved Addresses", href: "/dashboard/addresses", icon: MapPin },
-    { name: "My Wishlist", href: "/dashboard/wishlist", icon: Heart },
-    { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
   ];
 
   return (

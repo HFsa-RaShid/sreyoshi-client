@@ -18,7 +18,7 @@ export default function DashboardHomePage() {
   }
 
   const cards = [
-    { name: "My Wishlist", count: "10 Items", icon: Heart, href: "/dashboard/wishlist", color: "bg-amber-50 text-amber-600 border-amber-100" },
+    { name: "My Orders", count: "10 Items", icon: Heart, href: "/dashboard/my-orders", color: "bg-amber-50 text-amber-600 border-amber-100" },
     { name: "Saved Addresses", count: "2 Addresses", icon: MapPin, href: "/dashboard/addresses", color: "bg-emerald-50 text-emerald-600 border-emerald-100" },
     { name: "Recent Orders", count: "45 Orders", icon: ShoppingBag, href: "#", color: "bg-blue-50 text-blue-600 border-blue-100" },
   ];
