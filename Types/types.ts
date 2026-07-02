@@ -57,7 +57,8 @@ export interface Product {
   itemName: string;       
   price: number;
   oldPrice?: number;      
-  discount?: string;      
+  discount?: string;
+  skinType?: string;      
   rating: number;         
   ratingCount: number;    
   salesCount: number;     

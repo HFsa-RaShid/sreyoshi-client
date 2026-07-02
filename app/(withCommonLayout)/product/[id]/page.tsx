@@ -1,13 +1,13 @@
-
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react"; 
 import { Heart, ArrowLeft, Plus, Minus, Loader2 } from "lucide-react";
 import { ProductShade } from "@/Types/types";
 import { useGetSingleProductForCustomer } from "@/hooks/useCustomerData";
+import { useWishlist } from "@/hooks/useWishlist"; 
 import ProductReviews from "@/components/ProductReviews";
 import { useApp } from "@/context/AppContext";
 
@@ -16,9 +16,10 @@ type TabType = "desc" | "howToUse" | "reviews";
 export default function ProductDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
-  const { addToCart, wishlist, toggleWishlist } = useApp();
+  const { data: session, status: sessionStatus } = useSession(); 
+  const { addToCart } = useApp();
 
-  // 💡 TanStack Query-র staleTime: 0 থাকায় এটি প্রতিবার মাউন্টে ব্যাকএন্ড থেকে ফ্রেশ লাইভ ডাটা টানবে
+  const { wishlistItems, toggleWishlist, isTogglingWishlist } = useWishlist();
   const { data: product, isLoading, isError } = useGetSingleProductForCustomer(id as string);
 
   const [activeTab, setActiveTab] = useState<TabType>("desc");
@@ -71,14 +72,15 @@ export default function ProductDetailsPage() {
     );
   }
 
-  // 💡 কারেন্ট স্টক লজিক (শেড সিলেক্ট করা থাকলে শেডের স্টক, না থাকলে মেইন স্টক কাউন্ট হবে)
   const currentAvailableStock = product.shades && product.shades.length > 0
     ? (selectedShade ? selectedShade.stock : 0)
     : product.totalStock;
 
   const isOutOfStock = currentAvailableStock <= 0;
 
-  const isFavorite = product._id ? wishlist.includes(product._id) : false;
+  const isFavorite = product._id && Array.isArray(wishlistItems)
+    ? wishlistItems.some((item: any) => item.productId?._id === product._id || item.productId === product._id) 
+    : false;
   
   const categoryId = typeof product.category === "object" ? (product.category as any)?._id : "";
   const categoryName = typeof product.category === "object" ? (product.category as any)?.name : product.category;
@@ -98,6 +100,20 @@ export default function ProductDetailsPage() {
     }, quantity);
   };
 
+  const handleWishlistClick = async () => {
+    if (sessionStatus === "loading" || isTogglingWishlist) return;
+
+    const isLoggedIn = !!session?.user;
+    if (!isLoggedIn) {
+      router.push("/signin");
+      return;
+    }
+
+    if (product._id) {
+      await toggleWishlist(product._id);
+    }
+  };
+
   const handleCategoryNavigation = (type: "category" | "subCategory" | "itemName" | "brand", value: string) => {
     if (!value) return;
     router.push(`/shop?${type}=${encodeURIComponent(value)}`);
@@ -112,13 +128,15 @@ export default function ProductDetailsPage() {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-          {/* ================= LEFT GALLERY ================= */}
-          <div>
-            <div className="aspect-square w-full rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
+          {/* ================= LEFT GALLERY (পারফেক্ট মিডিয়াম সাইজ) ================= */}
+          <div className="flex flex-col items-center lg:items-start w-full">
+            {/* 🎯 মেইন ইমেজ কন্টেইনার - max-w-lg করা হয়েছে যা একদম পারফেক্ট স্ট্যান্ডার্ড লুক দেয় */}
+            <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
               <img src={selectedImg || "/placeholder.png"} alt={product.name} className="w-full h-full object-cover transition-all duration-300" />
             </div>
             
-            <div className="grid grid-cols-4 gap-3">
+            {/* 🎯 থাম্বনেইল গ্রিড - মেইন ইমেজের সাথে সামঞ্জস্য রেখে ৪ কলাম করা হয়েছে */}
+            <div className="grid grid-cols-4 gap-3 w-full max-w-lg">
               {product.commonImages?.map((img: string, idx: number) => (
                 <div 
                   key={idx} 
@@ -137,7 +155,6 @@ export default function ProductDetailsPage() {
               <h1 className="text-xl md:text-2xl font-sans font-semibold text-gray-800 tracking-tight">{product.name}</h1>
               <p className="text-xs text-gray-400 font-medium">Size: {product.weightOrVolume} {product.unit}</p>
               
-              {/* 💡 লাইভ বড় কালারফুল স্টক স্ট্যাটাস এরিয়া */}
               <div className="pt-1">
                 {isOutOfStock ? (
                   <div className="inline-flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-1.5 rounded-xl">
@@ -154,7 +171,6 @@ export default function ProductDetailsPage() {
                 )}
               </div>
 
-              {/* প্রাইস এরিয়া */}
               <div className="flex items-center flex-wrap gap-2.5 pt-1">
                 <span className="text-xl font-bold text-[#E92C66]">৳{product.price?.toFixed(2)}</span>
                 {discountAmount > 0 && (
@@ -166,7 +182,6 @@ export default function ProductDetailsPage() {
                 )}
               </div>
 
-              {/* ব্যাজসমূহ */}
               <div className="flex items-center gap-2 pt-1 flex-wrap">
                 <span className="bg-[#121B2B] text-white text-[11px] px-3 py-1 rounded-full font-medium">
                   No #{product.salesCount || 1} {product.promotion || "Best Seller"}
@@ -176,7 +191,6 @@ export default function ProductDetailsPage() {
                 </span>
               </div>
 
-              {/* শেড সিলেকশন */}
               {product.shades && product.shades.length > 0 && (
                 <div className="pt-2">
                   <h3 className="text-xs font-bold text-gray-700 mb-2">
@@ -206,12 +220,12 @@ export default function ProductDetailsPage() {
               )}
             </div>
 
-            {/* কার্ট এবং কোয়ান্টিটি হ্যান্ডলার বক্স */}
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <button 
-                  onClick={() => product._id && toggleWishlist(product._id)}
-                  className={`p-3 rounded-lg border transition-all ${isFavorite ? "bg-[#121B2B] text-white border-transparent" : "bg-white text-gray-500 hover:bg-gray-50 border-gray-200 shadow-sm"}`}
+                  onClick={handleWishlistClick}
+                  disabled={sessionStatus === "loading" || isTogglingWishlist}
+                  className={`p-3 rounded-lg border transition-all ${isFavorite ? "bg-[#121B2B] text-white border-transparent" : "bg-white text-gray-500 hover:bg-gray-50 border-gray-200 shadow-sm"} disabled:opacity-70`}
                 >
                   <Heart size={18} fill={isFavorite ? "currentColor" : "none"} />
                 </button>
@@ -234,7 +248,6 @@ export default function ProductDetailsPage() {
                   </button>
                 </div>
 
-                {/* 💡 আউট অব স্টক হলে বাটন ডিসেবল ও গ্রে কালার হবে */}
                 <button 
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
@@ -245,7 +258,6 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            {/* ব্রিফ ডেসক্রিপশন */}
             <div className="pt-2 border-t border-gray-100">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Brief Description</p>
               <div 
@@ -262,7 +274,6 @@ export default function ProductDetailsPage() {
               )}
             </div>
 
-            {/* মেটা ইনফরমেশন টেবিল */}
             <div className="border-t border-gray-100 pt-5 text-xs space-y-2.5 text-gray-600">
               <div className="grid grid-cols-[100px_1fr] items-start">
                 <span className="font-semibold text-gray-500">SKU</span>
