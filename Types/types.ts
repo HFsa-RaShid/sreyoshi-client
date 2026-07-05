@@ -103,3 +103,16 @@ export interface Category {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface IBrand {
+  name: string;
+  slug: string;
+  logo?: string;
+  status: 'Active' | 'Inactive';
+}
+
+export interface IBrandDocument extends IBrand {
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
+}
