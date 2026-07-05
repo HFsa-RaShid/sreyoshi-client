@@ -1,9 +1,7 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import Image from "next/image";
 
 import {
@@ -101,11 +99,10 @@ export default function Navbar() {
     }
   };
 
-  // 🎯 মেইন ফিক্স ২: লগইন না থাকলে উইশলিস্ট বাটনে ক্লিক করলে সাইন-ইন পেজে রিডাইরেক্ট করার হ্যান্ডলার
   const handleWishlistClick = (e: React.MouseEvent) => {
     if (!session) {
-      e.preventDefault(); // ডিফল্ট লিঙ্ক ট্র্যাকিং ব্লক
-      router.push("/signin"); // সরাসরি সাইন ইন পেজে পাঠিয়ে দেওয়া
+      e.preventDefault(); 
+      router.push("/signin"); 
     }
   };
 
@@ -113,7 +110,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`px-2 py-5 md:px-12 w-full z-50 transition-all duration-300 left-0 right-0 ${
+      className={`px-2 py-5 md:px-12 w-full z-[99] transition-all duration-300 left-0 right-0 ${
         isScrolled
           ? "fixed top-0 bg-[#FAF9F6] shadow-sm backdrop-blur-md "
           : "absolute top-0 bg-transparent"
@@ -125,12 +122,12 @@ export default function Navbar() {
             <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[#8FA887] text-base md:text-xl md:-top-2.5">
               🍃
             </span>
-            <Link
-              href="/"
-              className="font-serif text-2xl md:text-3xl font-semibold text-[#1A2E22] tracking-wide mt-1"
+            <span
+              onClick={() => { setIsOpen(false); router.push("/"); }}
+              className="font-serif text-2xl md:text-3xl font-semibold text-[#1A2E22] tracking-wide mt-1 cursor-pointer"
             >
               Sreyoshi
-            </Link>
+            </span>
           </div>
           <span className="text-[8px] md:text-[9px] uppercase tracking-[0.25em] text-[#5A655D] font-medium -mt-0.5 md:-mt-1">
             Shop. Love. Live.
@@ -145,8 +142,8 @@ export default function Navbar() {
 
             return (
               <div key={categoryId} className="static group py-5">
-                <Link
-                  href={`/shop?category=${categoryId}`}
+                <span
+                  onClick={() => router.push(`/shop?category=${categoryId}`)}
                   className="hover:text-black transition-colors flex items-center gap-0.5 cursor-pointer"
                 >
                   {category.name}
@@ -154,7 +151,7 @@ export default function Navbar() {
                     size={14}
                     className="opacity-60 group-hover:rotate-180 transition-transform duration-300"
                   />
-                </Link>
+                </span>
 
                 {subCategories.length > 0 && (
                   <div
@@ -175,12 +172,14 @@ export default function Navbar() {
                             {(sub.items || []).map(
                               (item: any, itemIdx: number) => (
                                 <li key={itemIdx}>
-                                  <Link
-                                    href={`/shop?subCategory=${encodeURIComponent(item.name)}`}
-                                    className="font-sans text-xs text-[#5A655D] hover:text-[#1A2E22] hover:font-medium transition-all block whitespace-nowrap"
+                                  <span
+                                    onClick={() => {
+                                      router.push(`/shop?subCategory=${encodeURIComponent(item.name)}`);
+                                    }}
+                                    className="font-sans text-xs text-[#5A655D] hover:text-[#1A2E22] hover:font-medium transition-all block whitespace-nowrap cursor-pointer"
                                   >
                                     {item.name}
-                                  </Link>
+                                  </span>
                                 </li>
                               ),
                             )}
@@ -195,7 +194,7 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* SEARCH BAR, WISHLIST, USER PROFILE & CART */}
+        {/* SEARCH BAR, WISHLIST, USER PROFILE & CART (DESKTOP) */}
         <div className="hidden md:flex items-center gap-4 grow max-w-lg justify-end">
           {/* SEARCH BAR */}
           <div ref={searchRef} className="relative w-full max-w-64">
@@ -225,10 +224,7 @@ export default function Navbar() {
                     >
                       <div className="w-10 h-10 rounded-lg bg-gray-100 relative overflow-hidden shrink-0">
                         <Image
-                          src={
-                            product.images?.[0] ||
-                            "https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=100"
-                          }
+                          src={product.images?.[0] || "https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=100"}
                           alt={product.name}
                           fill
                           sizes="40px"
@@ -252,7 +248,7 @@ export default function Navbar() {
 
           {/* RIGHT ACTION BUTTONS CONTAINER */}
           <div className="flex items-center gap-4 shrink-0">
-            {/* USER PROFILE / SIGN IN CONTROLLER */}
+            {/* USER PROFILE */}
             <div ref={profileRef} className="relative flex items-center">
               {session ? (
                 <div
@@ -267,18 +263,23 @@ export default function Navbar() {
                     <User strokeWidth={1.5} className="w-7 h-7" />
                   </button>
 
-                  {/* Profile Dropdown */}
                   {showProfileDropdown && (
                     <div className="absolute right-0 mt-0 w-48 bg-white border border-gray-100 rounded-2xl shadow-xl p-2 z-50 font-sans">
-                      <Link
-                        href="/dashboard"
-                        className="w-full block text-left px-3 py-2 text-xs text-[#2C3E35] hover:bg-gray-50 rounded-xl mt-1 transition-colors font-medium"
+                      <button
+                        onClick={() => {
+                          setShowProfileDropdown(false);
+                          router.push("/dashboard");
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs text-[#2C3E35] hover:bg-gray-50 rounded-xl mt-1 transition-colors font-medium cursor-pointer"
                       >
                         Dashboard
-                      </Link>
+                      </button>
                       <button
-                        onClick={() => signOut()}
-                        className="w-full text-left px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 rounded-xl mt-0.5 transition-colors font-medium"
+                        onClick={() => {
+                          setShowProfileDropdown(false);
+                          signOut();
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 rounded-xl mt-0.5 transition-colors font-medium cursor-pointer"
                       >
                         Sign Out
                       </button>
@@ -286,37 +287,35 @@ export default function Navbar() {
                   )}
                 </div>
               ) : (
-                <Link
-                  href="/signin"
-                  className="text-xs font-semibold uppercase tracking-wider text-gray-700 hover:text-[#1A2E22] border border-gray-300 rounded-full px-4 py-2 hover:border-[#1A2E22] bg-white/40 transition-all shadow-sm whitespace-nowrap inline-block"
+                <button
+                  onClick={() => router.push("/signin")}
+                  className="text-xs font-semibold uppercase tracking-wider text-gray-700 hover:text-[#1A2E22] border border-gray-300 rounded-full px-4 py-2 hover:border-[#1A2E22] bg-white/40 transition-all shadow-sm whitespace-nowrap inline-block cursor-pointer"
                 >
                   Sign In
-                </Link>
+                </button>
               )}
             </div>
 
-            {/* WISHLIST (DESKTOP) */}
-            <Link
-              href="/wishlist"
-              onClick={handleWishlistClick} // 🎯 মেইন ফিক্স ৩: লগইন না থাকলে রিডাইরেক্ট কন্ডিশন সেট হলো
-              className="relative p-1 text-gray-700 hover:text-[#FF3F6C] transition-colors shrink-0"
+            {/* WISHLIST */}
+            <span
+              onClick={(e: any) => { handleWishlistClick(e); if(session) router.push("/wishlist"); }}
+              className="relative p-1 text-gray-700 hover:text-[#FF3F6C] transition-colors shrink-0 cursor-pointer"
             >
               <Heart
                 strokeWidth={1.5}
                 className={`w-7 h-7 ${session && wishlistItems.length > 0 ? "text-[#FF3F6C] fill-[#FF3F6C]" : ""}`}
               />
-              {/* 🎯 মেইন ফিক্স ৪: সাইন-ইন অবস্থায় লাইভ উইশলিস্ট আইটেম কাউন্টের ব্যাজ লোড হবে */}
               {session && wishlistItems.length > 0 && (
                 <span className="absolute top-0 right-0 bg-[#FF3F6C] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center translate-x-1 -translate-y-1 animate-pulse">
                   {wishlistItems.length}
                 </span>
               )}
-            </Link>
+            </span>
 
             {/* CART */}
-            <Link
-              href="/cart"
-              className="relative p-1 text-gray-700 hover:text-black transition-colors shrink-0"
+            <span
+              onClick={() => router.push("/cart")}
+              className="relative p-1 text-gray-700 hover:text-black transition-colors shrink-0 cursor-pointer"
             >
               <ShoppingBag strokeWidth={1.5} className="w-7 h-7" />
               {totalCartItems > 0 && (
@@ -324,38 +323,42 @@ export default function Navbar() {
                   {totalCartItems}
                 </span>
               )}
-            </Link>
+            </span>
           </div>
         </div>
 
-        {/* MOBILE ACTIONS */}
-        <div className="flex items-center gap-3 lg:hidden">
+        {/* MOBILE ACTIONS (১০০% ফিক্সড পজিশনিং ও ইভেন্ট হ্যান্ডলার) */}
+        <div className="flex items-center gap-3 lg:hidden relative z-[100]">
           {/* MOBILE USER PROFILE DROPDOWN */}
           {session ? (
-            <div className="relative">
+            <div className="relative" ref={profileRef}>
               <button
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                className="text-gray-700 hover:text-black p-1 focus:outline-none"
+                className="text-gray-700 hover:text-black p-1 focus:outline-none flex items-center"
               >
                 <User strokeWidth={1.5} className="w-6 h-6" />
               </button>
 
-              {/* Mobile Profile Dropdown Box */}
+              {/* 🎯 মেইন মোবাইল ফিক্স: right-2 এবং অতি উচ্চ z-[999] প্রোপার্টি দিয়ে সামনে আনা হয়েছে */}
               {showProfileDropdown && (
-                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-xl shadow-xl p-1.5 z-50 font-sans">
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setShowProfileDropdown(false)}
-                    className="w-full block text-left px-3 py-2 text-xs text-[#2C3E35] hover:bg-gray-50 rounded-lg font-medium"
-                  >
-                    Dashboard
-                  </Link>
+                <div className="absolute right-0 mt-3 w-44 bg-white border border-gray-200 rounded-xl shadow-2xl p-2 z-[999] font-sans right-2 top-full">
                   <button
                     onClick={() => {
                       setShowProfileDropdown(false);
+                      setIsOpen(false);
+                      router.push("/dashboard");
+                    }}
+                    className="w-full text-left px-3 py-2.5 text-[13px] text-[#2C3E35] bg-gray-50/50 hover:bg-gray-100 rounded-lg font-semibold block cursor-pointer"
+                  >
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      setIsOpen(false);
                       signOut();
                     }}
-                    className="w-full text-left px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 rounded-lg font-medium mt-0.5"
+                    className="w-full text-left px-3 py-2.5 text-[13px] text-rose-600 hover:bg-rose-50 rounded-lg font-medium mt-1 block cursor-pointer"
                   >
                     Sign Out
                   </button>
@@ -363,41 +366,45 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <Link
-              href="/signin"
-              className="text-xs font-bold uppercase text-gray-700 border border-gray-300 rounded-full px-3 py-1 bg-white shadow-sm whitespace-nowrap"
+            <button
+              onClick={() => router.push("/signin")}
+              className="text-xs font-bold uppercase text-gray-700 border border-gray-300 rounded-full px-3 py-1 bg-white shadow-sm whitespace-nowrap cursor-pointer"
             >
               Sign In
-            </Link>
+            </button>
           )}
 
           {/* WISHLIST (MOBILE) */}
-          <Link
-            href="/wishlist"
-            onClick={handleWishlistClick} // 🎯 মেইন ফিক্স ৫: মোবাইল ভিউতেও রিডাইরেক্ট সিকিউরিটি হ্যান্ডলার যুক্ত হলো
-            className="relative p-1 text-gray-700 shrink-0"
+          <span
+            onClick={(e: any) => {
+              handleWishlistClick(e);
+              setIsOpen(false);
+              if (session) router.push("/wishlist");
+            }} 
+            className="relative p-1 text-gray-700 shrink-0 cursor-pointer"
           >
             <Heart
               strokeWidth={1.5}
               className={`w-6 h-6 ${session && wishlistItems.length > 0 ? "text-[#FF3F6C] fill-[#FF3F6C]" : ""}`}
             />
-            {/* 🎯 মেইন ফিক্স ৬: মোবাইল ভিউর জন্য লাইভ উইশলিস্ট ব্যাজ কাউন্টার */}
             {session && wishlistItems.length > 0 && (
               <span className="absolute top-0 right-0 bg-[#FF3F6C] text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center translate-x-1 -translate-y-1 animate-pulse">
                 {wishlistItems.length}
               </span>
             )}
-          </Link>
+          </span>
 
-          <Link href="/cart" className="relative p-1 text-gray-700 shrink-0">
+          {/* CART (MOBILE) */}
+          <span onClick={() => { setIsOpen(false); router.push("/cart"); }} className="relative p-1 text-gray-700 shrink-0 cursor-pointer">
             <ShoppingBag strokeWidth={1.5} className="w-6 h-6" />
             {totalCartItems > 0 && (
               <span className="absolute top-0 right-0 bg-[#2D4A3E] text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center translate-x-1 -translate-y-1">
                 {totalCartItems}
               </span>
             )}
-          </Link>
+          </span>
 
+          {/* HAMBURGER TRIGGER */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="text-[#1A2E22] p-1 shrink-0"
@@ -409,7 +416,7 @@ export default function Navbar() {
 
       {/* MOBILE DROP-DOWN MENU PANEL */}
       {isOpen && (
-        <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 px-6 py-4 flex flex-col gap-2 shadow-md max-h-[80vh] overflow-y-auto transition-all">
+        <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 px-6 py-4 flex flex-col gap-2 shadow-md max-h-[80vh] overflow-y-auto transition-all z-40">
           {/* MOBILE SEARCH */}
           <div ref={searchRef} className="relative w-full mb-2">
             <input
@@ -450,14 +457,16 @@ export default function Navbar() {
                           <div className="grid grid-cols-2 gap-x-2 gap-y-1">
                             {(sub.items || []).map(
                               (item: any, itemIdx: number) => (
-                                <Link
+                                <span
                                   key={itemIdx}
-                                  href={`/shop?subCategory=${encodeURIComponent(item.name)}`}
-                                  onClick={() => setIsOpen(false)}
-                                  className="text-xs text-[#5A655D] py-0.5 hover:text-black"
+                                  onClick={() => {
+                                    setIsOpen(false);
+                                    router.push(`/shop?subCategory=${encodeURIComponent(item.name)}`);
+                                  }}
+                                  className="text-xs text-[#5A655D] py-0.5 hover:text-black cursor-pointer"
                                 >
                                   {item.name}
-                                </Link>
+                                </span>
                               ),
                             )}
                           </div>
