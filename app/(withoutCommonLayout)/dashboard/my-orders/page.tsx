@@ -27,7 +27,7 @@ const getSafeId = (productField: any): string => {
   return String(productField);
 };
 
-// 💡 ১. স্মার্ট ইমেজ কম্পোনেন্ট (মোবাইল ফ্রেন্ডলি সাইজ)
+// 💡 ১. スマート ইমেজ কম্পোনেন্ট (মোবাইল ফ্রেন্ডলি সাইজ)
 function IndividualProductImage({ itemField, allProducts }: { itemField: any; allProducts: any[] }) {
   const safeId = getSafeId(itemField?.product);
   
@@ -127,7 +127,14 @@ export default function MyOrdersPage() {
     );
   }
 
-  const sortedOrders = [...rawOrders].sort((a: any, b: any) => {
+  // 🎯 মেইন ফিক্স: সব অর্ডার থেকে শুধুমাত্র কারেন্ট লগইন করা ইউজারের অর্ডারগুলো ফিল্টার করা হলো
+  const myFilteredOnlyOrders = rawOrders.filter((order: any) => {
+    const orderUserId = getSafeId(order.user);
+    return orderUserId === userId; 
+  });
+
+  // ফিল্টার করা অর্ডারের ওপর বেস করে ডেট সর্টিং হচ্ছে
+  const sortedOrders = [...myFilteredOnlyOrders].sort((a: any, b: any) => {
     const dateA = new Date(a.createdAt?.$date || a.createdAt).getTime();
     const dateB = new Date(b.createdAt?.$date || b.createdAt).getTime();
     return dateB - dateA;
@@ -149,14 +156,14 @@ export default function MyOrdersPage() {
     <div className="w-full bg-[#FAFAFA] min-h-screen p-3 md:p-6 text-[#1E1E1E] font-sans">
       <div className="max-w-5xl mx-auto">
         
-        {/* FILTER HEADER (মোবাইলে উপর নিচে সুন্দর এলাইনমেন্ট) */}
+        {/* FILTER HEADER */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
           <div>
             <h1 className="font-sans font-bold text-[22px] md:text-[28px] text-[#0A1128] tracking-tight">My Orders</h1>
             <p className="text-[12px] md:text-[14px] text-gray-400 mt-0.5">{filteredOrders.length} total orders</p>
           </div>
           
-          {/* ফিল্টার বাটন গ্ৰুপ (মোবাইলে স্ক্রোল হবে এবং ভাঙবে না) */}
+          {/* ফিল্টার বাটন গ্ৰুপ */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 -mx-3 px-3 lg:mx-0 lg:px-0 scrollbar-none snap-x">
             {filterOptions.map((filter) => (
               <button
@@ -189,7 +196,7 @@ export default function MyOrdersPage() {
               return (
                 <div key={orderStringId || idx} className="p-4 md:p-5 border border-gray-100 bg-white rounded-2xl flex flex-col gap-4 shadow-2xs">
                   
-                  {/* CARD HEADER (মোবাইলে গ্রিড লেআউট যাতে ডেটা সুন্দর দেখায়) */}
+                  {/* CARD HEADER */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-gray-100 pb-3">
                     <div className="grid grid-cols-2 gap-y-3 gap-x-6 sm:flex sm:items-center sm:gap-10 md:gap-14 text-[12px] md:text-[13px]">
                       <div>
@@ -208,7 +215,6 @@ export default function MyOrdersPage() {
                       </div>
                     </div>
                     
-                    {/* স্ট্যাটাস ব্যাজ (মোবাইলে লেফট এবং ডেসকটপে রাইট এলাইনড) */}
                     <div className="self-start sm:self-auto">
                       <span className={`inline-block px-2.5 py-0.5 rounded-lg text-[11px] md:text-[12px] font-bold border border-transparent capitalize ${getStatusBadgeStyle(currentStatus)}`}>
                         • {currentStatus}
@@ -216,7 +222,7 @@ export default function MyOrdersPage() {
                     </div>
                   </div>
 
-                  {/* CARD BODY (মোবাইলে কলাম লেআউট) */}
+                  {/* CARD BODY */}
                   <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
                     <div className="flex items-start sm:items-center gap-3 md:gap-4 flex-1 min-w-0">
                       
@@ -242,14 +248,13 @@ export default function MyOrdersPage() {
                       </div>
                     </div>
 
-                    {/* ACTIONS & AMOUNT (মোবাইলে ফুল উইডথ রেসপন্সিভ ডিজাইন) */}
+                    {/* ACTIONS & AMOUNT */}
                     <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3 md:gap-4 shrink-0 border-t md:border-t-0 pt-3 md:pt-0 border-gray-50 mt-1 md:mt-0">
                       <div className="md:text-right">
                         <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider hidden sm:block">Total Amount</p>
                         <p className="text-[16px] md:text-[18px] font-extrabold text-[#1E1E1E]">৳{order.totalPrice || "0"}</p>
                       </div>
                       
-                      {/* বাটন গ্ৰুপ (মোবাইলে পাশাপাশি সুন্দর ফিট হবে) */}
                       <div className="flex items-center gap-2">
                         <button onClick={() => setActiveOrderId(orderStringId)} className="flex items-center gap-1 px-3 py-1.5 md:px-4 md:py-2 rounded-xl border border-gray-200 text-[12px] md:text-[13px] font-bold text-[#555555] hover:bg-gray-50 cursor-pointer shadow-2xs bg-white">
                           <Eye size={14} /> <span className="hidden xs:inline">Details</span>
@@ -273,7 +278,7 @@ export default function MyOrdersPage() {
           )}
         </div>
 
-        {/* PAGINATION (মোবাইলে সহজে ক্লিকের উপযোগী করা হয়েছে) */}
+        {/* PAGINATION */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-6 pt-2">
             <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="px-3 py-1.5 md:px-4 md:py-2 rounded-xl border border-gray-200 text-[12px] md:text-[13px] font-bold text-gray-500 disabled:opacity-40 bg-white cursor-pointer shadow-2xs">

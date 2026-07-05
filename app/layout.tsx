@@ -4,7 +4,7 @@ import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
 import QueryProvider from "@/lib/QueryProvider"; 
 import { SessionProvider } from "next-auth/react"; 
-
+import { Toaster } from 'react-hot-toast';
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -36,7 +36,7 @@ export default function RootLayout({
             <AppProvider>
        
               {children}
-              
+              <Toaster position="top-center" reverseOrder={false} />
             </AppProvider>
           </QueryProvider>
         </SessionProvider>

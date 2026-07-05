@@ -6,7 +6,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation"; 
 import { ChevronRight, Truck, CreditCard, Landmark, ArrowLeft, X, Loader2 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
-import { useDeliveryCalculator } from "@/hooks/useDeliveryCalculator"; // 🎯 ডায়নামিক হুক ইম্পোর্ট
+import { useDeliveryCalculator } from "@/hooks/useDeliveryCalculator"; 
+import { useUserData } from "@/hooks/useUserData"; 
+import toast from "react-hot-toast";
 
 export default function CheckoutPage() {
   const router = useRouter(); 
@@ -21,11 +23,10 @@ export default function CheckoutPage() {
     email: "",
     phone: "",
     address: "",
-    city: "dhaka", // 🎯 ডিফল্ট ভ্যালু ঢাকা সেট করা
+    city: "dhaka", 
     postalCode: "",
   });
 
-  // 🎯 হুক থেকে লাইভ ডেলিভারি চার্জ, জোনের নাম, লোডিং স্টেট এবং সব জোনের ডাটা (allZones) আনা হলো
   const { deliveryCharge, zoneName, isCalculating, allZones } = useDeliveryCalculator(formData.city);
 
   const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -36,9 +37,13 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ব্যাকএন্ডের জন্য অর্ডার অবজেক্ট রেডি করার ফাংশন
+  const { user: backendUser } = useUserData();
+
   const prepareOrderData = () => {
+    const mongoUserId = backendUser?._id || backendUser?.id || null;
+
     return {
+      user: mongoUserId, 
       orderItems: cart.map(item => ({
         product: item.id,
         quantity: item.quantity,
@@ -52,7 +57,7 @@ export default function CheckoutPage() {
         city: formData.city.toLowerCase().trim(), 
         email: formData.email
       },
-      totalPrice: cartTotal, // ব্যাকএন্ড শুধু প্রোডাক্ট সাবটোটাল রিসিভ করবে, ডেলিভারি চার্জ ব্যাকএন্ড নিজে যোগ করবে
+      totalPrice: cartTotal, 
       paymentMethod: paymentMethod === "SSL" ? "SSLCommerz" : "COD",
     };
   };
@@ -62,7 +67,6 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      // ১. স্টক লাইভ ভ্যালিডেশন চেক
       const response = await fetch("http://localhost:8080/api/v1/products/validate-cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,7 +90,7 @@ export default function CheckoutPage() {
         }
 
         if (isStockTampered) {
-          alert("🚨 Some products in your cart just went out of stock. Redirecting to cart.");
+          toast.error("🚨 Some products in your cart just went out of stock. Redirecting to cart.");
           if (validateAndSyncCart) await validateAndSyncCart();
           router.push("/cart"); 
           return;
@@ -99,7 +103,7 @@ export default function CheckoutPage() {
         await executeOrderCreation(); 
       }
     } catch (error) {
-      alert("Validation failed before placing order. Please try again.");
+      toast.error("Validation failed before placing order. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -123,16 +127,15 @@ export default function CheckoutPage() {
       }
 
       if (paymentMethod === "SSL" && result.data.redirectUrl) {
-        // উইন্ডো অবজেক্ট সরাসরি এডিট না করে assign মেথড ব্যবহার (Next.js Compiler Safe)
         window.location.assign(result.data.redirectUrl); 
       } else {
-        alert("Order Placed Successfully via Cash on Delivery!");
+        toast.success("Order Placed Successfully via Cash on Delivery!");
         if (clearCart) clearCart(); 
         setIsModalOpen(false);
         router.push("/payment/success");
       }
     } catch (error: any) {
-      alert(`Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -153,7 +156,6 @@ export default function CheckoutPage() {
   return (
     <section className="w-full bg-[#FAF9F6] min-h-screen pt-28 pb-12 px-4 md:px-16 lg:px-24">
       <div className="container mx-auto max-w-6xl">
-        
         <nav className="flex items-center gap-2 text-xs font-sans text-gray-400 mb-8">
           <Link href="/cart" className="hover:text-[#1E2E24] transition-colors">Cart</Link>
           <ChevronRight size={12} />
@@ -161,10 +163,7 @@ export default function CheckoutPage() {
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* LEFT SIDE: FORM */}
           <form onSubmit={handlePlaceOrderSubmit} className="lg:col-span-7 bg-white rounded-2xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.01)] border border-gray-100/60">
-            
             <div className="mb-8">
               <h3 className="font-serif text-xl text-[#1E2E24] mb-4 font-normal">Contact Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -198,7 +197,6 @@ export default function CheckoutPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 🎯 ডাটাবেজ থেকে আসা ডায়নামিক ড্রপডাউন সিলেক্ট জোন */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium text-gray-600">City / Shipping Zone *</label>
                   <select 
@@ -263,7 +261,6 @@ export default function CheckoutPage() {
             </button>
           </form>
 
-          {/* RIGHT SIDE: SUMMARY */}
           <div className="lg:col-span-5 bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] border border-gray-100/60 sticky top-28">
             <h3 className="font-serif text-xl text-[#1E2E24] mb-6 font-normal pb-3 border-b border-gray-100">Order Summary</h3>
             <div className="flex flex-col gap-4 max-h-[280px] overflow-y-auto pr-1 mb-6">
@@ -314,7 +311,6 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* CONFIRM MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative">
