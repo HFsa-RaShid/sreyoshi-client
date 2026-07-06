@@ -8,8 +8,9 @@ import { Heart, ArrowLeft, Plus, Minus, Loader2 } from "lucide-react";
 import { ProductShade } from "@/Types/types";
 import { useGetSingleProductForCustomer } from "@/hooks/useCustomerData";
 import { useWishlist } from "@/hooks/useWishlist"; 
-import ProductReviews from "@/components/ProductReviews";
+
 import { useApp } from "@/context/AppContext";
+import ProductReviews from "@/components/ProductReviews";
 
 type TabType = "desc" | "howToUse" | "reviews";
 
@@ -347,3 +348,5 @@ export default function ProductDetailsPage() {
     </div>
   );
 }
+
+
