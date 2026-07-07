@@ -84,7 +84,7 @@
 
 //     try {
 //       const response = await fetch(
-//         "http://localhost:8080/api/v1/products/validate-cart",
+//         "https://sreyoshi-server.vercel.app/api/v1/products/validate-cart",
 //         {
 //           method: "POST",
 //           headers: { "Content-Type": "application/json" },
@@ -139,7 +139,7 @@
 
 //     try {
 //       const response = await fetch(
-//         "http://localhost:8080/api/v1/orders/create-order",
+//         "https://sreyoshi-server.vercel.app/api/v1/orders/create-order",
 //         {
 //           method: "POST",
 //           headers: { "Content-Type": "application/json" },
@@ -521,8 +521,6 @@
 //   );
 // }
 
-
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -589,7 +587,9 @@ export default function CheckoutPage() {
         product: item.id,
         quantity: item.quantity,
         price: item.price,
-        shadeName: item.selectedShade ? item.selectedShade.shadeName : "NoShade",
+        shadeName: item.selectedShade
+          ? item.selectedShade.shadeName
+          : "NoShade",
       })),
       shippingAddress: {
         name: `${formData.firstName} ${formData.lastName}`,
@@ -610,7 +610,7 @@ export default function CheckoutPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/v1/products/validate-cart",
+        "https://sreyoshi-server.vercel.app/api/v1/products/validate-cart",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -670,7 +670,7 @@ export default function CheckoutPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/v1/orders/create-order",
+        "https://sreyoshi-server.vercel.app/api/v1/orders/create-order",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -687,7 +687,9 @@ export default function CheckoutPage() {
       if (paymentMethod === "SSL" && result.data.redirectUrl) {
         window.location.assign(result.data.redirectUrl);
       } else {
-        toast.success("Order Placed Successfully! Stock holds in Pending status.");
+        toast.success(
+          "Order Placed Successfully! Stock holds in Pending status.",
+        );
         if (clearCart) clearCart();
         setIsModalOpen(false);
         router.push("/payment/success");
@@ -1028,7 +1030,8 @@ export default function CheckoutPage() {
             <p className="text-sm text-gray-500 mb-6 leading-relaxed">
               You are placing an order using{" "}
               <strong className="text-[#2C3E30]">Cash on Delivery (COD)</strong>
-              . Your items will be reserved safely under pending status. You will pay total{" "}
+              . Your items will be reserved safely under pending status. You
+              will pay total{" "}
               <strong className="text-[#2C3E30]">
                 ৳{grandTotal.toFixed(2)}
               </strong>{" "}

@@ -47,7 +47,7 @@ export default function Navbar() {
   const profileRef = useRef<HTMLDivElement>(null);
 
   const { data: categoriesData = [] } = useGetCategoriesForCustomer();
-  const { data: productsData = [] } = [] || useGetProductsForCustomer();
+  const { data: productsData = [] } = useGetProductsForCustomer() as { data: Product[] };
 
   useEffect(() => {
     const handleScroll = () => {

@@ -1,7 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8080/api/v1';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  "https://sreyoshi-server.vercel.app/api/v1";
 const API_BASE_URL = `${BASE_URL}/notifications`;
 
 export const useNotification = (userId: string, page: number = 1) => {
@@ -9,7 +11,7 @@ export const useNotification = (userId: string, page: number = 1) => {
 
   // নোটিফিকেশন লিস্ট গেট করা
   const { data, isLoading } = useQuery({
-    queryKey: ['notifications', userId, page],
+    queryKey: ["notifications", userId, page],
     queryFn: async () => {
       if (!userId) return null;
       const res = await axios.get(`${API_BASE_URL}/${userId}?page=${page}`);
@@ -21,22 +23,23 @@ export const useNotification = (userId: string, page: number = 1) => {
   // ১. অল নোটিফিকেশন রিড করা
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
-      const res = await axios.patch(`${API_BASE_URL}/mark-all-read`, { userId });
+      const res = await axios.patch(`${API_BASE_URL}/mark-all-read`, {
+        userId,
+      });
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
     },
   });
 
-  
   const markSingleReadMutation = useMutation({
     mutationFn: async (notificationId: string) => {
       const res = await axios.patch(`${API_BASE_URL}/${notificationId}/read`);
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
     },
   });
 
@@ -47,13 +50,18 @@ export const useNotification = (userId: string, page: number = 1) => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
     },
   });
 
   return {
     notifications: data?.data || [],
-    meta: data?.meta || { page: 1, totalPages: 1, totalUnread: 0, totalNotifications: 0 },
+    meta: data?.meta || {
+      page: 1,
+      totalPages: 1,
+      totalUnread: 0,
+      totalNotifications: 0,
+    },
     isLoading,
     markAllAsRead: markAllReadMutation.mutateAsync,
     markSingleAsRead: markSingleReadMutation.mutateAsync, // এক্সপোর্ট করা হলো
