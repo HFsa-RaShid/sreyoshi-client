@@ -1,3 +1,5 @@
+
+
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // "use client";
@@ -5,6 +7,7 @@
 // import React, { useState, useEffect, useMemo } from "react";
 // import { useSearchParams, useRouter } from "next/navigation";
 // import {
+//   Star,
 //   ChevronDown,
 //   ChevronUp,
 //   SlidersHorizontal,
@@ -95,18 +98,16 @@
 //     return fallback.data || fallback.brands || [];
 //   }, [brandsData]);
 
-//   // 📋 বুলেটিপ্রুফ ব্র্যান্ড ম্যাচিং হেল্পার ফাংশন (ID, Name বা Slug যেকোনো একটির সাথে ম্যাচ করানোর জন্য)
+//   // 📋 বুলেটিপ্রুফ ব্র্যান্ড ম্যাচিং হেল্পার ফাংশন
 //   const isProductMatchingBrand = (product: any, targetBrandIdOrName: string) => {
 //     if (!product.brand) return false;
     
 //     const target = String(targetBrandIdOrName).toLowerCase().trim();
 
-//     // যদি প্রোডাক্টের ভেতর ব্র্যান্ডটি ডিরেক্ট স্ট্রিং (আইডি বা নাম) হিসেবে থাকে
 //     if (typeof product.brand === "string") {
 //       return product.brand.toLowerCase().trim() === target;
 //     }
 
-//     // যদি প্রোডাক্টের ভেতর ব্র্যান্ড অবজেক্ট আকারে থাকে
 //     if (typeof product.brand === "object") {
 //       const bObj = product.brand as any;
 //       const bId = bObj._id?.$oid || bObj._id;
@@ -123,7 +124,7 @@
 //     return false;
 //   };
 
-//   // 🎯 প্রোডাক্ট কাউন্ট মেথড (আপডেটেড ও ফিক্সড)
+//   // 🎯 প্রোডাক্ট কাউন্ট মেথড
 //   const getProductCount = (
 //     type: "category" | "subGroup" | "item" | "brand", 
 //     name: string,
@@ -141,7 +142,6 @@
 //       if (type === "item")
 //         return product.itemName?.toLowerCase() === name.toLowerCase();
       
-//       // 🎯 ব্র্যান্ড কাউন্ট ওয়াইল্ডকার্ড ফিক্স
 //       if (type === "brand") {
 //         return isProductMatchingBrand(product, name);
 //       }
@@ -186,10 +186,9 @@
 //     }
 //   };
 
-//   // প্রথম অবস্থায় ৫টি ব্র্যান্ড দেখাবে (সার্চ বার মুছে ফেলায় ডিরেক্ট স্লাইস করা হলো)
 //   const displayedBrands = showAllBrands ? rawBrands : rawBrands.slice(0, 5);
 
-//   // 🎯 ফিল্টারিং এবং সর্টিং মেকানিজম (নিখুঁত ওয়াইল্ডকার্ড ম্যাচিং)
+//   // 🎯 ফিল্টারিং এবং সর্টিং মেকানিজম
 //   const filteredProducts = useMemo(() => {
 //     if (!productsData) return [];
 
@@ -215,7 +214,6 @@
 //           return false;
 //         }
 
-//         // 🎯 ব্র্যান্ড ফিল্টারিং লজিক (মাল্টিপল চেকবক্স সিকিউরড ফিক্স)
 //         if (selectedBrands.length > 0) {
 //           const matchedWithAnySelected = selectedBrands.some((brandIdOrName) =>
 //             isProductMatchingBrand(product, brandIdOrName)
@@ -246,12 +244,16 @@
 //           return false;
 //         }
 
-//         if (
-//           selectedPromotions.length > 0 &&
-//           (!product.promotion ||
-//             !selectedPromotions.includes(product.promotion as PromotionTag))
-//         ) {
-//           return false;
+//         // 🎯 বুলেটিপ্রুফ প্রমোশন ফিল্টার (কেস-ইনসেন্সিটিভ ম্যাচিং সহ)
+//         if (selectedPromotions.length > 0) {
+//           if (!product.promotion) return false;
+          
+//           const pPromoClean = String(product.promotion).toLowerCase().trim();
+//           const hasMatchedPromo = selectedPromotions.some(
+//             (selectedPromo) => String(selectedPromo).toLowerCase().trim() === pPromoClean
+//           );
+          
+//           if (!hasMatchedPromo) return false;
 //         }
 
 //         return true;
@@ -318,7 +320,7 @@
 //             <h2 className="text-xl font-serif font-bold text-[#1A2E22]">
 //               Filter Options
 //             </h2>
-//             {(selectedCategories.length > 0 || selectedSubCategory || selectedBrands.length > 0 || selectedSkinTypes.length > 0 || priceRange < 5000) && (
+//             {(selectedCategories.length > 0 || selectedSubCategory || selectedBrands.length > 0 || selectedSkinTypes.length > 0 || priceRange < 5000 || selectedRatings.length > 0 || selectedPromotions.length > 0) && (
 //               <button onClick={handleClearAll} className="text-xs font-bold text-rose-500 hover:underline">
 //                 Clear All
 //               </button>
@@ -412,7 +414,7 @@
 //           </div>
 //           <hr className="my-5 border-gray-100" />
 
-//           {/* 📸 BRAND FILTER SECTION (সার্চ বার ছাড়া একদম ক্লিন) */}
+//           {/* 📸 BRAND FILTER SECTION */}
 //           <div className="mb-6">
 //             <h3 className="text-sm font-bold text-[#1A2E22] mb-3">
 //               Filter by Brand
@@ -426,7 +428,6 @@
 //                 </div>
 //               ) : displayedBrands.length > 0 ? (
 //                 displayedBrands.map((brand: any) => {
-//                   // এখানে আইডি, স্লাগ বা নাম যেকোনো একটি ট্র্যাকিং ভ্যালু হিসেবে সেভ হবে
 //                   const brandIdentifier = brand?._id?.$oid || brand?._id || String(brand?.slug || brand?.name);
 //                   const isBrandChecked = selectedBrands.includes(brandIdentifier);
 //                   const totalBrandProducts = getProductCount("brand", brandIdentifier);
@@ -492,6 +493,58 @@
 //             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-1">Price</h3>
 //             <p className="text-xs text-gray-500 mb-3">৳0.00 - ৳{priceRange.toFixed(2)}</p>
 //             <input type="range" min="0" max="5000" value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full accent-[#2D4A3E] cursor-pointer" />
+//           </div>
+//           <hr className="my-5 border-gray-100" />
+
+//           {/* 🎯 REVIEW / RATING (ডেস্কটপ ভিউতে যোগ করা হলো) */}
+//           <div className="mb-6">
+//             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">
+//               Review
+//             </h3>
+//             <div className="flex flex-col gap-2.5">
+//               {[5, 4, 3, 2, 1].map((stars) => (
+//                 <label key={stars} className="flex items-center gap-3 cursor-pointer text-sm">
+//                   <input
+//                     type="checkbox"
+//                     checked={selectedRatings.includes(stars)}
+//                     onChange={() => toggleFilter(selectedRatings, setSelectedRatings, stars)}
+//                     className="w-4 h-4 rounded accent-[#2D4A3E]"
+//                   />
+//                   <div className="flex items-center text-amber-400 gap-0.5">
+//                     {[...Array(5)].map((_, i) => (
+//                       <Star
+//                         key={i}
+//                         size={14}
+//                         fill={i < stars ? "currentColor" : "none"}
+//                         className={i < stars ? "" : "text-gray-200"}
+//                       />
+//                     ))}
+//                   </div>
+//                   <span className="text-xs text-gray-500">{stars} Star</span>
+//                 </label>
+//               ))}
+//             </div>
+//           </div>
+//           <hr className="my-5 border-gray-100" />
+
+//           {/* 🎯 BY PROMOTIONS (ডেস্কটপ ভিউতে যোগ করা হলো) */}
+//           <div className="mb-6">
+//             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">
+//               By Promotions
+//             </h3>
+//             <div className="flex flex-col gap-2.5 text-sm">
+//               {(["New Arrivals", "Best Sellers", "Trending"] as PromotionTag[]).map((promo) => (
+//                 <label key={promo} className="flex items-center gap-3 cursor-pointer">
+//                   <input
+//                     type="checkbox"
+//                     checked={selectedPromotions.includes(promo)}
+//                     onChange={() => toggleFilter(selectedPromotions, setSelectedPromotions, promo)}
+//                     className="w-4 h-4 rounded accent-[#2D4A3E]"
+//                   />
+//                   {promo}
+//                 </label>
+//               ))}
+//             </div>
 //           </div>
 //         </div>
 
@@ -575,12 +628,11 @@
 //   );
 // }
 
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Star,
@@ -600,7 +652,8 @@ import ShopFilterDrawer from "./ShopFilterDrawer";
 import ShopProductCard from "./ShopProductCard";
 import { ShopProductSkeleton } from "@/components/Shared/ShopProductSkeleton/ShopProductSkeleton";
 
-export default function ShopPage() {
+// 🎯 ১. আসল শপ পেজের লজিক আলাদা কম্পোনেন্টে নিয়ে আসা হলো
+function ShopContent() {
   const { addToCart } = useApp();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -820,7 +873,7 @@ export default function ShopPage() {
           return false;
         }
 
-        // 🎯 বুলেটিপ্রুফ প্রমোশন ফিল্টার (কেস-ইনসেন্সিটিভ ম্যাচিং সহ)
+        // 🎯 বুলেটিপ্রুফ প্রমোশন ফিল্টার (কেস-ইনসেন্সিティブ ম্যাচিং সহ)
         if (selectedPromotions.length > 0) {
           if (!product.promotion) return false;
           
@@ -1072,7 +1125,7 @@ export default function ShopPage() {
           </div>
           <hr className="my-5 border-gray-100" />
 
-          {/* 🎯 REVIEW / RATING (ডেস্কটপ ভিউতে যোগ করা হলো) */}
+          {/* 🎯 REVIEW / RATING */}
           <div className="mb-6">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">
               Review
@@ -1103,7 +1156,7 @@ export default function ShopPage() {
           </div>
           <hr className="my-5 border-gray-100" />
 
-          {/* 🎯 BY PROMOTIONS (ডেস্কটপ ভিউতে যোগ করা হলো) */}
+          {/* 🎯 BY PROMOTIONS */}
           <div className="mb-6">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">
               By Promotions
@@ -1201,5 +1254,18 @@ export default function ShopPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 🎯 ২. মেইন এক্সপোর্ট হিসেবে ShopPage কম্পোনেন্টকে <Suspense> দিয়ে মুড়িয়ে দেওয়া হলো
+export default function ShopPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF9F6]">
+        <div className="animate-pulse text-[#2D4A3E] font-medium">Loading Shop...</div>
+      </div>
+    }>
+      <ShopContent />
+    </Suspense>
   );
 }
