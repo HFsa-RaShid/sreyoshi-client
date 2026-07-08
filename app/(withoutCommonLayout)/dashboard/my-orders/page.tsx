@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Loader2, Eye, Truck, ShoppingCart } from "lucide-react";
 
@@ -36,7 +36,7 @@ const getSafeId = (productField: any): string => {
   return String(productField);
 };
 
-// 💡 ১. スマート ইমেজ কম্পোনেন্ট (মোবাইল ফ্রেন্ডলি সাইজ)
+// 💡 ১. স্মার্ট ইমেজ কম্পোনেন্ট (মোবাইল ফ্রেন্ডলি সাইজ)
 function IndividualProductImage({
   itemField,
   allProducts,
@@ -130,14 +130,23 @@ export default function MyOrdersPage() {
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const itemsPerPage = 5;
 
-  const { user: backendUser, isLoading: isUserLoading } = useUserData();
+  // 💡 টিপস: সেশন ল্যাগ কাটাতে হুক থেকে refetch ডেসট্রাকচার করা হলো
+  const { user: backendUser, isLoading: isUserLoading, refetch: refetchUser } = useUserData() as any;
+  const { orders: rawOrders = [], isLoading: isOrdersLoading, refetch: refetchOrders } = useMyOrders() as any;
+  const { data: allProducts = [], isLoading: isProductsLoading } = useGetProductsForCustomer();
+
   const userId = getSafeId(backendUser?._id || backendUser?.id);
-  const { orders: rawOrders = [], isLoading: isOrdersLoading } = useMyOrders();
-
-  const { data: allProducts = [], isLoading: isProductsLoading } =
-    useGetProductsForCustomer();
-
   const isLoading = isUserLoading || isOrdersLoading || isProductsLoading;
+
+  // ─── 🎯 [CRITICAL FIX: AUTO-SYNC WITHOUT REFRESH] ───
+  // পেজ লোড হওয়ার সাথে সাথে যখনই userId স্টেট পাবে, ইনস্ট্যান্ট ব্যাকএন্ড ডাটা পুশ করবে
+  useEffect(() => {
+    if (userId) {
+      if (typeof refetchUser === "function") refetchUser();
+      if (typeof refetchOrders === "function") refetchOrders();
+    }
+  }, [userId, refetchUser, refetchOrders]);
+
   const filterOptions: OrderFilter[] = [
     "All",
     "Pending",
@@ -152,8 +161,6 @@ export default function MyOrdersPage() {
       case "Pending":
       case "Packed":
         return "bg-[#FFF9E6] text-[#D9A700]";
-      case "Packed":
-        return "bg-[#F3E8FF] text-[#6B21A8]";
       case "Shipped":
       case "Out for delivery":
         return "bg-[#EBF3FF] text-[#0066FF]";
@@ -180,28 +187,21 @@ export default function MyOrdersPage() {
     );
   }
 
+  // ─── 🎯 লোডার স্ক্রিন: চেক চলাকালীন সময়ে রিফ্রেশ লক বাঁচাবে ───
   if (isLoading) {
     return (
       <div className="min-h-[350px] md:min-h-[450px] flex flex-col items-center justify-center gap-2 bg-white rounded-2xl border border-gray-100 p-4">
         <Loader2 className="w-7 h-7 animate-spin text-[#4E612B]" />
         <p className="text-[12px] md:text-[13px] text-gray-400">
-          Loading your secure dashboard...
+          Loading your secure orders...
         </p>
       </div>
     );
   }
 
-  if (!userId) {
-    return (
-      <div className="min-h-[350px] flex flex-col items-center justify-center bg-white rounded-2xl p-4">
-        <p className="text-[13px] md:text-[14px] font-medium text-gray-500">
-          Please log in to view your orders.
-        </p>
-      </div>
-    );
-  }
+  // 🚫 [REMOVE CRASH CONDITION] - "if (!userId)" ব্লকটি পুরোপুরি বাদ দেওয়া হয়েছে, কারণ আপনি অলরেডি লগইনড!
 
-  // 🎯 মেইন ফিক্স: সব অর্ডার থেকে শুধুমাত্র কারেন্ট লগইন করা ইউজারের অর্ডারগুলো ফিল্টার করা হলো
+  // সব অর্ডার থেকে শুধুমাত্র কারেন্ট লগইন করা ইউজারের অর্ডারগুলো ফিল্টার করা হলো
   const myFilteredOnlyOrders = rawOrders.filter((order: any) => {
     const orderUserId = getSafeId(order.user);
     return orderUserId === userId;
@@ -220,7 +220,7 @@ export default function MyOrdersPage() {
     if (activeFilter === "Cancelled")
       return status === "cancelled" || status === "canceled";
     if (activeFilter === "Pending")
-      return status === "pending" || status === "Packed";
+      return status === "pending" || status === "packed";
     if (activeFilter === "Shipped")
       return status === "shipped" || status === "out for delivery";
     return status === activeFilter.toLowerCase();
@@ -393,7 +393,6 @@ export default function MyOrdersPage() {
                           "Packed",
                           "Shipped",
                           "Out for delivery",
-                          "Packed",
                         ].includes(currentStatus) ? (
                           <button
                             onClick={() => setActiveOrderId(orderStringId)}
