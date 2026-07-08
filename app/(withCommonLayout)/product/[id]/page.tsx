@@ -1,7 +1,9 @@
+
+
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client";
 
-// import React, { useState, useEffect } from "react";
+// import React, { useState } from "react";
 // import { useParams, useRouter } from "next/navigation";
 // import { useSession } from "next-auth/react"; 
 // import { Heart, ArrowLeft, Plus, Minus, Loader2 } from "lucide-react";
@@ -11,6 +13,8 @@
 
 // import { useApp } from "@/context/AppContext";
 // import ProductReviews from "@/components/ProductReviews";
+// import RelatedProducts from "./components/RelatedProducts";
+// import RecommendedProducts from "./components/RecommendedProducts";
 
 // type TabType = "desc" | "howToUse" | "reviews";
 
@@ -25,33 +29,11 @@
 
 //   const [activeTab, setActiveTab] = useState<TabType>("desc");
 //   const [quantity, setQuantity] = useState(1);
-//   const [selectedImg, setSelectedImg] = useState<string>("");
-//   const [selectedShade, setSelectedShade] = useState<ProductShade | null>(null);
 //   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
-//   useEffect(() => {
-//     if (product) {
-//       if (product.shades && product.shades.length > 0) {
-//         const firstActiveShade = product.shades.find((s: any) => s.status === "Active") || product.shades[0];
-//         setSelectedShade(firstActiveShade);
-        
-//         if (firstActiveShade?.shadeImage) {
-//           setSelectedImg(firstActiveShade.shadeImage);
-//         } else if (product.commonImages && product.commonImages.length > 0) {
-//           setSelectedImg(product.commonImages[0]);
-//         }
-//       } else if (product.commonImages && product.commonImages.length > 0) {
-//         setSelectedImg(product.commonImages[0]);
-//       }
-//     }
-//   }, [product]);
-
-//   const handleShadeSelect = (shade: ProductShade) => {
-//     setSelectedShade(shade);
-//     if (shade.shadeImage) {
-//       setSelectedImg(shade.shadeImage);
-//     }
-//   };
+//   // 🎯 Local State Management without triggering cascading render inside useEffect
+//   const [userSelectedShade, setUserSelectedShade] = useState<ProductShade | null>(null);
+//   const [userSelectedImg, setUserSelectedImg] = useState<string>("");
 
 //   if (isLoading) {
 //     return (
@@ -72,6 +54,26 @@
 //       </div>
 //     );
 //   }
+
+//   // 🎯 DETERMINISTIC DERIVED STATES (কোনো useEffect ছাড়া ইনিশিয়াল ভ্যালু নির্ধারণ)
+//   const defaultShade = product.shades && product.shades.length > 0
+//     ? (product.shades.find((s: any) => s.status === "Active") || product.shades[0])
+//     : null;
+
+//   const selectedShade = userSelectedShade || defaultShade;
+
+//   const defaultImg = selectedShade?.shadeImage 
+//     ? selectedShade.shadeImage 
+//     : (product.commonImages && product.commonImages.length > 0 ? product.commonImages[0] : "");
+
+//   const selectedImg = userSelectedImg || defaultImg;
+
+//   const handleShadeSelect = (shade: ProductShade) => {
+//     setUserSelectedShade(shade);
+//     if (shade.shadeImage) {
+//       setUserSelectedImg(shade.shadeImage);
+//     }
+//   };
 
 //   const currentAvailableStock = product.shades && product.shades.length > 0
 //     ? (selectedShade ? selectedShade.stock : 0)
@@ -117,7 +119,12 @@
 
 //   const handleCategoryNavigation = (type: "category" | "subCategory" | "itemName" | "brand", value: string) => {
 //     if (!value) return;
-//     router.push(`/shop?${type}=${encodeURIComponent(value)}`);
+//     let queryKey = type as string;
+//     if (type === "subCategory") queryKey = "subcategory";
+//     if (type === "itemName") queryKey = "itemname";
+//     if (type === "brand") queryKey = "brand";
+    
+//     router.push(`/shop?${queryKey}=${encodeURIComponent(value)}`);
 //   };
 
 //   return (
@@ -129,19 +136,17 @@
 //         </button>
 
 //         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-//           {/* ================= LEFT GALLERY (পারফেক্ট মিডিয়াম সাইজ) ================= */}
+//           {/* ================= LEFT GALLERY ================= */}
 //           <div className="flex flex-col items-center lg:items-start w-full">
-//             {/* 🎯 মেইন ইমেজ কন্টেইনার - max-w-lg করা হয়েছে যা একদম পারফেক্ট স্ট্যান্ডার্ড লুক দেয় */}
 //             <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
 //               <img src={selectedImg || "/placeholder.png"} alt={product.name} className="w-full h-full object-cover transition-all duration-300" />
 //             </div>
             
-//             {/* 🎯 থাম্বনেইল গ্রিড - মেইন ইমেজের সাথে সামঞ্জস্য রেখে ৪ কলাম করা হয়েছে */}
 //             <div className="grid grid-cols-4 gap-3 w-full max-w-lg">
 //               {product.commonImages?.map((img: string, idx: number) => (
 //                 <div 
 //                   key={idx} 
-//                   onClick={() => setSelectedImg(img)}
+//                   onClick={() => setUserSelectedImg(img)}
 //                   className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all ${selectedImg === img ? "border-[#E92C66]" : "border-transparent opacity-70 hover:opacity-100"}`}
 //                 >
 //                   <img src={img} alt={`view-${idx}`} className="w-full h-full object-cover" />
@@ -276,12 +281,12 @@
 //             </div>
 
 //             <div className="border-t border-gray-100 pt-5 text-xs space-y-2.5 text-gray-600">
-//               <div className="grid grid-cols-[100px_1fr] items-start">
+//               <div className="grid grid-cols-[130px_1fr] items-start">
 //                 <span className="font-semibold text-gray-500">SKU</span>
 //                 <span className="text-gray-800 font-medium">: {product.productCode || "N/A"}</span>
 //               </div>
-//               <div className="grid grid-cols-[100px_1fr] items-start">
-//                 <span className="font-semibold text-gray-500">Categories</span>
+//               <div className="grid grid-cols-[130px_1fr] items-start">
+//                 <span className="font-semibold text-gray-500">Category</span>
 //                 <div className="text-gray-800 font-medium">
 //                   : {" "}
 //                   {categoryName && (
@@ -299,7 +304,7 @@
 //                   )}
 //                 </div>
 //               </div>
-//               <div className="grid grid-cols-[100px_1fr] items-start">
+//               <div className="grid grid-cols-[130px_1fr] items-start">
 //                 <span className="font-semibold text-gray-500">Brands</span>
 //                 <span 
 //                   onClick={() => handleCategoryNavigation("brand", brandId || brandName)} 
@@ -326,11 +331,9 @@
 //             ))}
 //           </div>
 
-//           {/* 🎯 আপনার সেই সাদা কন্টেইনার (ডিজাইন অপরিবর্তিত, শুধু overflow-hidden ও text-left নিশ্চিত করা হয়েছে) */}
 //           <div className="w-full max-w-3xl mx-auto bg-white p-6 rounded-2xl border border-gray-100 overflow-hidden text-left">
 //             {activeTab === "desc" && (
 //               <div className="w-full">
-//                 {/* 🎯 break-all এবং whitespace-pre-line দিয়ে রিচ-টেক্সট ব্রেক ফিক্স করা হয়েছে */}
 //                 <div 
 //                   dangerouslySetInnerHTML={{ __html: product.description || "<p>No description available.</p>" }} 
 //                   className="prose text-xs text-gray-600 leading-relaxed [word-break:break-word] break-all whitespace-pre-line" 
@@ -341,7 +344,6 @@
             
 //             {activeTab === "howToUse" && (
 //               <div className="w-full">
-//                 {/* 🎯 এখানে [word-break:break-word], break-all এবং whitespace-pre-line যোগ করায় লাইন বড় হলে ১০০% নিচে নামবে */}
 //                 <div 
 //                   dangerouslySetInnerHTML={{ __html: product.howToUse || "<p>Apply smoothly over wet body structure skin surface.</p>" }} 
 //                   className="prose text-xs text-gray-600 leading-relaxed [word-break:break-word] break-all whitespace-pre-line" 
@@ -357,11 +359,16 @@
 //           </div>
 //         </div>
 
+//         {/* ================= DYNAMIC PRODUCTS CARDS SECTIONS ================= */}
+//         <div className="mt-20 space-y-16">
+//           <RelatedProducts currentProduct={product} />
+//           <RecommendedProducts />
+//         </div>
+
 //       </div>
 //     </div>
 //   );
 // }
-
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -369,10 +376,12 @@
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react"; 
+import Image from "next/image"; // 🎯 next/image ইম্পোর্ট করা হলো
 import { Heart, ArrowLeft, Plus, Minus, Loader2 } from "lucide-react";
 import { ProductShade } from "@/Types/types";
 import { useGetSingleProductForCustomer } from "@/hooks/useCustomerData";
 import { useWishlist } from "@/hooks/useWishlist"; 
+import { useBrands } from "@/hooks/useBrands"; 
 
 import { useApp } from "@/context/AppContext";
 import ProductReviews from "@/components/ProductReviews";
@@ -389,12 +398,13 @@ export default function ProductDetailsPage() {
 
   const { wishlistItems, toggleWishlist, isTogglingWishlist } = useWishlist();
   const { data: product, isLoading, isError } = useGetSingleProductForCustomer(id as string);
+  const { brandsData } = useBrands(); 
 
   const [activeTab, setActiveTab] = useState<TabType>("desc");
   const [quantity, setQuantity] = useState(1);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
-  // 🎯 Local State Management without triggering cascading render inside useEffect
+  // Local State Management 
   const [userSelectedShade, setUserSelectedShade] = useState<ProductShade | null>(null);
   const [userSelectedImg, setUserSelectedImg] = useState<string>("");
 
@@ -418,7 +428,7 @@ export default function ProductDetailsPage() {
     );
   }
 
-  // 🎯 DETERMINISTIC DERIVED STATES (কোনো useEffect ছাড়া ইনিশিয়াল ভ্যালু নির্ধারণ)
+  // DETERMINISTIC DERIVED STATES
   const defaultShade = product.shades && product.shades.length > 0
     ? (product.shades.find((s: any) => s.status === "Active") || product.shades[0])
     : null;
@@ -450,8 +460,10 @@ export default function ProductDetailsPage() {
   
   const categoryId = typeof product.category === "object" ? (product.category as any)?._id : "";
   const categoryName = typeof product.category === "object" ? (product.category as any)?.name : product.category;
-  const brandName = typeof product.brand === "object" ? (product.brand as any)?.name : "Sreyoshi Group";
-  const brandId = typeof product.brand === "object" ? (product.brand as any)?._id : "";
+  
+  const brandId = typeof product.brand === "object" ? (product.brand as any)?._id : (product.brand || "");
+  const foundBrandObj = brandsData?.find((b: any) => b._id === brandId);
+  const brandName = typeof product.brand === "object" ? (product.brand as any)?.name : (foundBrandObj ? foundBrandObj.name : "Sreyoshi");
 
   const discountAmount = product.oldPrice && product.oldPrice > product.price ? product.oldPrice - product.price : 0;
   const discountPercentage = product.oldPrice && product.oldPrice > product.price 
@@ -487,7 +499,8 @@ export default function ProductDetailsPage() {
     if (type === "itemName") queryKey = "itemname";
     if (type === "brand") queryKey = "brand";
     
-    router.push(`/shop?${queryKey}=${encodeURIComponent(value)}`);
+    const finalValue = type === "brand" ? brandId : value;
+    router.push(`/shop?${queryKey}=${encodeURIComponent(finalValue)}`);
   };
 
   return (
@@ -501,8 +514,16 @@ export default function ProductDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           {/* ================= LEFT GALLERY ================= */}
           <div className="flex flex-col items-center lg:items-start w-full">
+            {/* 🎯 মেইন ইমেজ কন্টেইনারে fill প্রপার্টি দিয়ে রেসপন্সিভ করা হয়েছে */}
             <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
-              <img src={selectedImg || "/placeholder.png"} alt={product.name} className="w-full h-full object-cover transition-all duration-300" />
+              <Image 
+                src={selectedImg || "/placeholder.png"} 
+                alt={product.name || "Product Image"} 
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover transition-all duration-300" 
+              />
             </div>
             
             <div className="grid grid-cols-4 gap-3 w-full max-w-lg">
@@ -510,9 +531,15 @@ export default function ProductDetailsPage() {
                 <div 
                   key={idx} 
                   onClick={() => setUserSelectedImg(img)}
-                  className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all ${selectedImg === img ? "border-[#E92C66]" : "border-transparent opacity-70 hover:opacity-100"}`}
+                  className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all relative ${selectedImg === img ? "border-[#E92C66]" : "border-transparent opacity-70 hover:opacity-100"}`}
                 >
-                  <img src={img} alt={`view-${idx}`} className="w-full h-full object-cover" />
+                  <Image 
+                    src={img} 
+                    alt={`view-${idx}`} 
+                    fill
+                    sizes="25vw"
+                    className="object-cover" 
+                  />
                 </div>
               ))}
             </div>
@@ -667,11 +694,12 @@ export default function ProductDetailsPage() {
                   )}
                 </div>
               </div>
+              
               <div className="grid grid-cols-[130px_1fr] items-start">
                 <span className="font-semibold text-gray-500">Brands</span>
                 <span 
-                  onClick={() => handleCategoryNavigation("brand", brandId || brandName)} 
-                  className="text-[#E92C66] underline font-semibold cursor-pointer"
+                  onClick={() => handleCategoryNavigation("brand", brandId)} 
+                  className="text-[#E92C66] underline font-semibold cursor-pointer transition-colors"
                 >
                   : {brandName}
                 </span>

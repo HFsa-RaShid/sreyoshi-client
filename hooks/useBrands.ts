@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // @/hooks/useBrands.ts
 import { IBrandDocument } from "@/Types/types";
 import { useQuery } from "@tanstack/react-query";
