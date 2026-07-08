@@ -1,3 +1,6 @@
+
+
+// /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client";
 
 // import React, { useState } from "react";
@@ -53,6 +56,7 @@
 
 //   const { user: backendUser } = useUserData();
 
+//   // 🎯 ব্যাকএন্ডের নতুন ইন্টারফেস অনুযায়ী ডেটা প্রিপেয়ার করার ফাংশন
 //   const prepareOrderData = () => {
 //     const mongoUserId = backendUser?._id || backendUser?.id || null;
 
@@ -78,6 +82,7 @@
 //     };
 //   };
 
+//   // 🎯 অর্ডার সাবমিটের পূর্বে ব্যাকএন্ডের রিভার্স স্টকের সাথে ম্যাচ করে রিয়েল-টাইম স্টক চেক করার লজিক
 //   const handlePlaceOrderSubmit = async (e: React.FormEvent) => {
 //     e.preventDefault();
 //     setLoading(true);
@@ -91,7 +96,7 @@
 //           body: JSON.stringify({
 //             items: cart.map((item) => ({
 //               id: item.id,
-//               shadeName: item.selectedShade?.shadeName,
+//               shadeName: item.selectedShade?.shadeName || "NoShade",
 //             })),
 //           }),
 //         },
@@ -104,7 +109,10 @@
 //         let isStockTampered = false;
 
 //         for (const item of cart) {
-//           const currentAvailableStock = freshStocks[item.cartItemId] ?? 0;
+//           // 🎯 কার্ট আইটেম আইডির কী তৈরি করে ব্যাকএন্ড রেসপন্সের স্টক চেক করা হচ্ছে
+//           const shadeKey = `${item.id}-${item.selectedShade?.shadeName || "NoShade"}`;
+//           const currentAvailableStock = freshStocks[shadeKey] ?? 0;
+
 //           if (item.quantity > currentAvailableStock) {
 //             isStockTampered = true;
 //             break;
@@ -113,7 +121,7 @@
 
 //         if (isStockTampered) {
 //           toast.error(
-//             "🚨 Some products in your cart just went out of stock. Redirecting to cart.",
+//             "🚨 Some products in your cart just went out of stock or are reserved. Redirecting to cart...",
 //           );
 //           if (validateAndSyncCart) await validateAndSyncCart();
 //           router.push("/cart");
@@ -121,6 +129,7 @@
 //         }
 //       }
 
+//       // ভ্যালিডেশন সাকসেস হলে পেমেন্ট মেথড অনুযায়ী অর্ডার এক্সিকিউট করা হবে
 //       if (paymentMethod === "COD") {
 //         setIsModalOpen(true);
 //       } else {
@@ -133,6 +142,7 @@
 //     }
 //   };
 
+//   // 🎯 ব্যাকএন্ডের সাথে কানেক্ট করে ফাইনাল অর্ডার তৈরি এবং রিভার্স স্টক হোল্ড করার মেকানিজম
 //   const executeOrderCreation = async () => {
 //     setLoading(true);
 //     const apiData = prepareOrderData();
@@ -156,7 +166,9 @@
 //       if (paymentMethod === "SSL" && result.data.redirectUrl) {
 //         window.location.assign(result.data.redirectUrl);
 //       } else {
-//         toast.success("Order Placed Successfully via Cash on Delivery!");
+//         toast.success(
+//           "Order Placed Successfully! Stock holds in Pending status.",
+//         );
 //         if (clearCart) clearCart();
 //         setIsModalOpen(false);
 //         router.push("/payment/success");
@@ -399,11 +411,15 @@
 //               disabled={loading || isCalculating}
 //               className="w-full bg-[#2C3E30] hover:bg-[#1A261D] text-white font-sans text-sm font-medium py-3.5 rounded-full shadow-sm transition-colors mt-4 disabled:opacity-50"
 //             >
-//               {loading
-//                 ? "Packed..."
-//                 : paymentMethod === "SSL"
-//                   ? "Proceed to Secure Payment"
-//                   : "Place Order"}
+//               {loading ? (
+//                 <div className="flex items-center justify-center gap-2">
+//                   <Loader2 size={16} className="animate-spin" /> Processing...
+//                 </div>
+//               ) : paymentMethod === "SSL" ? (
+//                 "Proceed to Secure Payment"
+//               ) : (
+//                 "Place Order"
+//               )}
 //             </button>
 //           </form>
 
@@ -493,11 +509,12 @@
 //             <p className="text-sm text-gray-500 mb-6 leading-relaxed">
 //               You are placing an order using{" "}
 //               <strong className="text-[#2C3E30]">Cash on Delivery (COD)</strong>
-//               . You will pay total{" "}
+//               . Your items will be reserved safely under pending status. You
+//               will pay total{" "}
 //               <strong className="text-[#2C3E30]">
 //                 ৳{grandTotal.toFixed(2)}
 //               </strong>{" "}
-//               when the product is delivered to your address.
+//               upon delivery.
 //             </p>
 //             <div className="flex gap-3 justify-end">
 //               <button
@@ -509,7 +526,7 @@
 //               <button
 //                 onClick={executeOrderCreation}
 //                 disabled={loading}
-//                 className="px-6 py-2 rounded-full bg-[#2C3E30] hover:bg-[#1A261D] text-white text-sm font-medium transition-colors"
+//                 className="px-6 py-2 rounded-full bg-[#2C3E30] hover:bg-[#1A261D] text-white text-sm font-medium transition-colors flex items-center gap-2"
 //               >
 //                 {loading ? "Confirming..." : "Confirm Order"}
 //               </button>
@@ -521,10 +538,12 @@
 //   );
 // }
 
+
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -545,6 +564,8 @@ import toast from "react-hot-toast";
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart, validateAndSyncCart } = useApp();
+  const { user: backendUser, isLoading: isUserLoading } = useUserData(); // 🎯 ইউজারের লোডিং স্টেট নেওয়া হলো
+  
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "SSL">("COD");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -558,6 +579,14 @@ export default function CheckoutPage() {
     city: "dhaka",
     postalCode: "",
   });
+
+  // ─── 🎯 [FIX 1: ROUTER GUARD] লগইন না থাকলে জোরপূর্বক লগইন পেজে পাঠানো ───
+  useEffect(() => {
+    if (!isUserLoading && !backendUser) {
+      toast.error("Please login first to proceed to checkout!");
+      router.push("/login?redirect=/checkout"); // 💡 লগইন করার পর যেন আবার চেকআউটে ফিরে আসে
+    }
+  }, [backendUser, isUserLoading, router]);
 
   const { deliveryCharge, zoneName, isCalculating, allZones } =
     useDeliveryCalculator(formData.city);
@@ -575,9 +604,7 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const { user: backendUser } = useUserData();
-
-  // 🎯 ব্যাকএন্ডের নতুন ইন্টারফেস অনুযায়ী ডেটা প্রিপেয়ার করার ফাংশন
+  // 🎯 ব্যাকএন্ডের নতুন ইন্টারফেস অনুযায়ী ডেটা প্রিপেয়ার করার ফাংশন
   const prepareOrderData = () => {
     const mongoUserId = backendUser?._id || backendUser?.id || null;
 
@@ -606,6 +633,14 @@ export default function CheckoutPage() {
   // 🎯 অর্ডার সাবমিটের পূর্বে ব্যাকএন্ডের রিভার্স স্টকের সাথে ম্যাচ করে রিয়েল-টাইম স্টক চেক করার লজিক
   const handlePlaceOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // ─── 🎯 [FIX 2: SUBMIT GUARD] সাবমিট করার সময় টোস্ট মেসেজ দিয়ে সিকিউরিটি লক করা ───
+    if (!backendUser) {
+      toast.error("Authentication required! Please log in to complete your order.");
+      router.push("/login?redirect=/checkout");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -630,7 +665,6 @@ export default function CheckoutPage() {
         let isStockTampered = false;
 
         for (const item of cart) {
-          // 🎯 কার্ট আইটেম আইডির কী তৈরি করে ব্যাকএন্ড রেসপন্সের স্টক চেক করা হচ্ছে
           const shadeKey = `${item.id}-${item.selectedShade?.shadeName || "NoShade"}`;
           const currentAvailableStock = freshStocks[shadeKey] ?? 0;
 
@@ -650,21 +684,27 @@ export default function CheckoutPage() {
         }
       }
 
-      // ভ্যালিডেশন সাকসেস হলে পেমেন্ট মেথড অনুযায়ী অর্ডার এক্সিকিউট করা হবে
       if (paymentMethod === "COD") {
         setIsModalOpen(true);
       } else {
         await executeOrderCreation();
       }
     } catch (error) {
+      console.log("Validation error:", error);
       toast.error("Validation failed before placing order. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🎯 ব্যাকএন্ডের সাথে কানেক্ট করে ফাইনাল অর্ডার তৈরি এবং রিভার্স স্টক হোল্ড করার মেকানিজম
+  // 🎯 ফাইনাল অর্ডার তৈরি এবং রিভার্স স্টক হোল্ড করার মেকানিজম
   const executeOrderCreation = async () => {
+    // ─── 🎯 [FIX 3: API GUARD] কোনো কারণে এপিআই রিকোয়েস্ট যেন ইউজার ছাড়া না যায় ───
+    if (!backendUser) {
+      toast.error("Session expired. Please login again.");
+      return;
+    }
+
     setLoading(true);
     const apiData = prepareOrderData();
 
@@ -700,6 +740,16 @@ export default function CheckoutPage() {
       setLoading(false);
     }
   };
+
+  // ─── 🎯 ইউজার ডেটা লোড হওয়ার সময় একটি সুন্দর ব্লিংকিং লোডার স্ক্রিন ───
+  if (isUserLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAF9F6]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#2C3E30]" />
+        <p className="text-xs text-gray-400 mt-2 font-sans tracking-wide">Securing connection...</p>
+      </div>
+    );
+  }
 
   if (
     !cart ||
