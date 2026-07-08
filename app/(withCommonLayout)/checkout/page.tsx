@@ -695,7 +695,7 @@ export default function CheckoutPage() {
     // ─── 🎯 [DOUBLE SAFETY CHECK] ───
     if (!backendUser) {
       toast.error("Session expired. Please login again.");
-      router.push("/login?redirect=/checkout");
+      router.push("/signin");
       return;
     }
 
