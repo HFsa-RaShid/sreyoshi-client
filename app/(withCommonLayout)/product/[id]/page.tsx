@@ -313,7 +313,7 @@ export default function ProductDetailsPage() {
         </div>
 
         {/* ================= BOTTOM TABS DETAILS ================= */}
-        <div className="mt-16 border-t border-gray-100 pt-10">
+        {/* <div className="mt-16 border-t border-gray-100 pt-10">
           <div className="flex justify-center gap-4 mb-8">
             {([ "desc", "howToUse", "reviews" ] as TabType[]).map((tab) => (
               <button
@@ -340,6 +340,50 @@ export default function ProductDetailsPage() {
 
             {activeTab === "reviews" && (
               <ProductReviews productId={product._id as string} />
+            )}
+          </div>
+        </div> */}
+        {/* ================= BOTTOM TABS DETAILS ================= */}
+        <div className="mt-16 border-t border-gray-100 pt-10">
+          <div className="flex justify-center gap-4 mb-8">
+            {([ "desc", "howToUse", "reviews" ] as TabType[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-2.5 rounded-xl font-sans font-bold text-xs uppercase tracking-wide transition-all ${activeTab === tab ? "bg-[#1A2E22] text-white shadow-sm" : "bg-white text-black hover:bg-gray-200"}`}
+              >
+                {tab === "desc" ? "Full Description" : tab === "howToUse" ? "Features & Details" : `Reviews (${product.ratingCount || 0})`}
+              </button>
+            ))}
+          </div>
+
+          {/* 🎯 আপনার সেই সাদা কন্টেইনার (ডিজাইন অপরিবর্তিত, শুধু overflow-hidden ও text-left নিশ্চিত করা হয়েছে) */}
+          <div className="w-full max-w-3xl mx-auto bg-white p-6 rounded-2xl border border-gray-100 overflow-hidden text-left">
+            {activeTab === "desc" && (
+              <div className="w-full">
+                {/* 🎯 break-all এবং whitespace-pre-line দিয়ে রিচ-টেক্সট ব্রেক ফিক্স করা হয়েছে */}
+                <div 
+                  dangerouslySetInnerHTML={{ __html: product.description || "<p>No description available.</p>" }} 
+                  className="prose text-xs text-gray-600 leading-relaxed [word-break:break-word] break-all whitespace-pre-line" 
+                />
+                <p className="text-[11px] font-bold text-gray-800 mt-4">* Online Exclusive Offer.</p>
+              </div>
+            )}
+            
+            {activeTab === "howToUse" && (
+              <div className="w-full">
+                {/* 🎯 এখানে [word-break:break-word], break-all এবং whitespace-pre-line যোগ করায় লাইন বড় হলে ১০০% নিচে নামবে */}
+                <div 
+                  dangerouslySetInnerHTML={{ __html: product.howToUse || "<p>Apply smoothly over wet body structure skin surface.</p>" }} 
+                  className="prose text-xs text-gray-600 leading-relaxed [word-break:break-word] break-all whitespace-pre-line" 
+                />
+              </div>
+            )}
+
+            {activeTab === "reviews" && (
+              <div className="w-full">
+                <ProductReviews productId={product._id as string} />
+              </div>
             )}
           </div>
         </div>
