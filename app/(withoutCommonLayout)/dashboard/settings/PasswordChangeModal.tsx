@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
@@ -47,9 +48,15 @@ export default function PasswordChangeModal({ isOpen, onClose }: PasswordChangeM
       return;
     }
 
+    // ─── 🎯 [NEW: FRONTEND STRONG PASSWORD VALIDATION] ───
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+    if (!strongPasswordRegex.test(formData.newPassword)) {
+      setError("New password must contain at least one uppercase letter, one lowercase letter, and one number!");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // আপনার useUserData হুকের changePassword মিউটেশন কল করা হচ্ছে
       await changePassword({
         oldPassword: formData.oldPassword,
         newPassword: formData.newPassword,
@@ -58,7 +65,6 @@ export default function PasswordChangeModal({ isOpen, onClose }: PasswordChangeM
       setSuccess(true);
       setFormData({ oldPassword: "", newPassword: "", confirmPassword: "" });
       
-      // ২ সেকেন্ড পর মডালটি অটোমেটিক বন্ধ হয়ে যাবে
       setTimeout(() => {
         onClose();
         setSuccess(false);
