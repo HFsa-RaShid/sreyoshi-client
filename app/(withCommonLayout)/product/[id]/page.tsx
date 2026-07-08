@@ -313,37 +313,6 @@ export default function ProductDetailsPage() {
         </div>
 
         {/* ================= BOTTOM TABS DETAILS ================= */}
-        {/* <div className="mt-16 border-t border-gray-100 pt-10">
-          <div className="flex justify-center gap-4 mb-8">
-            {([ "desc", "howToUse", "reviews" ] as TabType[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2.5 rounded-xl font-sans font-bold text-xs uppercase tracking-wide transition-all ${activeTab === tab ? "bg-[#1A2E22] text-white shadow-sm" : "bg-white text-black hover:bg-gray-200"}`}
-              >
-                {tab === "desc" ? "Full Description" : tab === "howToUse" ? "Features & Details" : `Reviews (${product.ratingCount || 0})`}
-              </button>
-            ))}
-          </div>
-
-          <div className="text-sm leading-relaxed text-gray-600 max-w-3xl mx-auto bg-white p-6 rounded-2xl border border-gray-100">
-            {activeTab === "desc" && (
-              <div>
-                <div dangerouslySetInnerHTML={{ __html: product.description || "<p>No description available.</p>" }} className="prose text-xs text-gray-600 leading-relaxed" />
-                <p className="text-[11px] font-bold text-gray-800 mt-4">* Online Exclusive Offer.</p>
-              </div>
-            )}
-            
-            {activeTab === "howToUse" && (
-              <div dangerouslySetInnerHTML={{ __html: product.howToUse || "<p>Apply smoothly over wet body structure skin surface.</p>" }} className="prose text-xs text-gray-600 leading-relaxed" />
-            )}
-
-            {activeTab === "reviews" && (
-              <ProductReviews productId={product._id as string} />
-            )}
-          </div>
-        </div> */}
-        {/* ================= BOTTOM TABS DETAILS ================= */}
         <div className="mt-16 border-t border-gray-100 pt-10">
           <div className="flex justify-center gap-4 mb-8">
             {([ "desc", "howToUse", "reviews" ] as TabType[]).map((tab) => (
