@@ -631,7 +631,7 @@ export default function CheckoutPage() {
     if (!backendUser) {
       toast.error("Please login first to complete your order!");
       // লগইন করার পর যেন ইউজার আবার সোজা চেকআউট পেজে ব্যাক আসে, তাই কুয়েরি প্যারামিটারসহ রিডাইরেক্ট করা হলো
-      router.push("/login?redirect=/checkout");
+      router.push("/signin");
       return;
     }
 
