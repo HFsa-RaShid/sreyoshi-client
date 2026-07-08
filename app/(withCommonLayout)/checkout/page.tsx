@@ -543,7 +543,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -564,7 +564,7 @@ import toast from "react-hot-toast";
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart, validateAndSyncCart } = useApp();
-  const { user: backendUser, isLoading: isUserLoading } = useUserData(); // 🎯 ইউজারের লোডিং স্টেট নেওয়া হলো
+  const { user: backendUser } = useUserData(); // 🎯 ইউজার সেশন ডাটা
   
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "SSL">("COD");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -579,14 +579,6 @@ export default function CheckoutPage() {
     city: "dhaka",
     postalCode: "",
   });
-
-  // ─── 🎯 [FIX 1: ROUTER GUARD] লগইন না থাকলে জোরপূর্বক লগইন পেজে পাঠানো ───
-  useEffect(() => {
-    if (!isUserLoading && !backendUser) {
-      toast.error("Please login first to proceed to checkout!");
-      router.push("/login?redirect=/checkout"); // 💡 লগইন করার পর যেন আবার চেকআউটে ফিরে আসে
-    }
-  }, [backendUser, isUserLoading, router]);
 
   const { deliveryCharge, zoneName, isCalculating, allZones } =
     useDeliveryCalculator(formData.city);
@@ -630,13 +622,15 @@ export default function CheckoutPage() {
     };
   };
 
-  // 🎯 অর্ডার সাবমিটের পূর্বে ব্যাকএন্ডের রিভার্স স্টকের সাথে ম্যাচ করে রিয়েল-টাইম স্টক চেক করার লজিক
+  // 🎯 অর্ডার সাবমিটের পূর্বে স্টক এবং লগইন স্টেট চেক করার লজিক
   const handlePlaceOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ─── 🎯 [FIX 2: SUBMIT GUARD] সাবমিট করার সময় টোস্ট মেসেজ দিয়ে সিকিউরিটি লক করা ───
+    // ─── 🎯 [CRITICAL FIX: LOGIN CHECK ON BUTTON CLICK] ───
+    // ইউজার পেজে আসতে পারবে, কিন্তু অর্ডার প্লেস বাটনে ক্লিক করলেই লগইন চেক হবে।
     if (!backendUser) {
-      toast.error("Authentication required! Please log in to complete your order.");
+      toast.error("Please login first to complete your order!");
+      // লগইন করার পর যেন ইউজার আবার সোজা চেকআউট পেজে ব্যাক আসে, তাই কুয়েরি প্যারামিটারসহ রিডাইরেক্ট করা হলো
       router.push("/login?redirect=/checkout");
       return;
     }
@@ -690,18 +684,18 @@ export default function CheckoutPage() {
         await executeOrderCreation();
       }
     } catch (error) {
-      console.log("Validation error:", error);
       toast.error("Validation failed before placing order. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🎯 ফাইনাল অর্ডার তৈরি এবং রিভার্স স্টক হোল্ড করার মেকানিজম
+  // 🎯 ব্যাকএন্ডের সাথে কানেক্ট করে ফাইনাল অর্ডার তৈরি এবং রিভার্স স্টক হোল্ড করার মেকানিজম
   const executeOrderCreation = async () => {
-    // ─── 🎯 [FIX 3: API GUARD] কোনো কারণে এপিআই রিকোয়েস্ট যেন ইউজার ছাড়া না যায় ───
+    // ─── 🎯 [DOUBLE SAFETY CHECK] ───
     if (!backendUser) {
       toast.error("Session expired. Please login again.");
+      router.push("/login?redirect=/checkout");
       return;
     }
 
@@ -740,16 +734,6 @@ export default function CheckoutPage() {
       setLoading(false);
     }
   };
-
-  // ─── 🎯 ইউজার ডেটা লোড হওয়ার সময় একটি সুন্দর ব্লিংকিং লোডার স্ক্রিন ───
-  if (isUserLoading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAF9F6]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#2C3E30]" />
-        <p className="text-xs text-gray-400 mt-2 font-sans tracking-wide">Securing connection...</p>
-      </div>
-    );
-  }
 
   if (
     !cart ||
