@@ -1,11 +1,11 @@
 
 
 
-
+// /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client";
 
-// import React, { useState } from "react";
-// import { X, ChevronUp, ChevronDown, Star, Search } from "lucide-react";
+// import React, { useState, useMemo } from "react";
+// import { X, ChevronUp, ChevronDown, Star } from "lucide-react";
 // import { Category, SkinType, PromotionTag } from "@/Types/types";
 // import { useBrands } from "@/hooks/useBrands"; 
 
@@ -65,28 +65,20 @@
   
 //   // 🎯 useBrands হুক থেকে ডাটা রিসিভ করা হচ্ছে
 //   const { brandsData } = useBrands();
-  
-//   // 📋 'Identifier expected' এরর এড়াতে ডাটা এক্সট্রাকশন লজিক ক্লীন করা হলো
-//   const getRawBrands = (): any[] => {
+//   const [showAllBrands, setShowAllBrands] = useState(false);
+
+//   // সেফটি গার্ড: ব্র্যান্ড ডাটা অবজেক্ট বা অ্যারো যাই হোক নিরাপদে এক্সট্রাক্ট করা
+//   const rawBrands = useMemo(() => {
 //     if (!brandsData) return [];
 //     if (Array.isArray(brandsData)) return brandsData;
 //     const fallback = brandsData as any;
 //     return fallback.data || fallback.brands || [];
-//   };
-
-//   const rawBrands = getRawBrands();
-//   const [brandSearch, setBrandSearch] = useState("");
-//   const [showAllBrands, setShowAllBrands] = useState(false);
+//   }, [brandsData]);
 
 //   if (!isOpen) return null;
 
-//   // 🔍 সার্চ ফিল্টারিং লজিক
-//   const filteredBrands = rawBrands.filter((brand: any) =>
-//     brand?.name?.toLowerCase().includes(brandSearch.toLowerCase().trim())
-//   );
-
-//   // 📋 প্রথম অবস্থায় ৫টি ব্র্যান্ড দেখাবে
-//   const displayedBrands = showAllBrands ? filteredBrands : filteredBrands.slice(0, 5);
+//   // 🎯 সার্চ বার ছাড়া প্রথম অবস্থায় ৫টি ব্র্যান্ড স্লাইস করা হলো
+//   const displayedBrands = showAllBrands ? rawBrands : rawBrands.slice(0, 5);
 
 //   return (
 //     <>
@@ -193,40 +185,30 @@
 //         </div>
 //         <hr className="my-5 border-gray-100" />
 
-//         {/* 📸 BRAND FILTER SECTION */}
+//         {/* 📸 BRAND FILTER SECTION (সার্চ বার ছাড়া একদম ক্লিন মোবাইল ভিউ) */}
 //         <div className="mb-6">
 //           <h3 className="text-sm font-bold text-[#1A2E22] mb-3">
 //             Filter by Brand
 //           </h3>
-          
-//           <div className="relative mb-4">
-//             <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
-//             <input
-//               type="text"
-//               placeholder="Search Brand..."
-//               value={brandSearch}
-//               onChange={(e) => setBrandSearch(e.target.value)}
-//               className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 font-medium text-slate-700"
-//             />
-//           </div>
 
 //           <div className="flex flex-col gap-3 max-h-[320px] overflow-y-auto scrollbar-none pr-1">
 //             {displayedBrands.length > 0 ? (
 //               displayedBrands.map((brand: any) => {
-//                 const brandId = brand?._id?.$oid || brand?._id || String(brand?.slug || brand?.name);
-//                 const isBrandChecked = selectedBrands.includes(brandId);
-//                 const totalBrandProducts = getProductCount("brand", brandId);
+//                 // মেইন পেজের সাথে সিঙ্ক রেখে আইডি ট্র্যাকিং ভ্যালু জেনারেট করা হলো
+//                 const brandIdentifier = brand?._id?.$oid || brand?._id || String(brand?.slug || brand?.name);
+//                 const isBrandChecked = selectedBrands.includes(brandIdentifier);
+//                 const totalBrandProducts = getProductCount("brand", brandIdentifier);
 
 //                 return (
 //                   <label
-//                     key={brandId}
+//                     key={brandIdentifier}
 //                     className="flex items-center justify-between cursor-pointer group select-none text-slate-600 hover:text-slate-900"
 //                   >
 //                     <div className="flex items-center gap-3">
 //                       <input
 //                         type="checkbox"
 //                         checked={isBrandChecked}
-//                         onChange={() => toggleFilter(selectedBrands, setSelectedBrands, brandId)}
+//                         onChange={() => toggleFilter(selectedBrands, setSelectedBrands, brandIdentifier)}
 //                         className="w-4 h-4 rounded border-slate-300 text-[#2D4A3E] focus:ring-[#2D4A3E] accent-[#2D4A3E]"
 //                       />
 //                       <span className="text-sm font-medium capitalize">
@@ -244,7 +226,7 @@
 //             )}
 //           </div>
 
-//           {filteredBrands.length > 5 && (
+//           {rawBrands.length > 5 && (
 //             <button
 //               onClick={() => setShowAllBrands(!showAllBrands)}
 //               className="text-xs font-bold text-rose-500 hover:text-rose-600 mt-4 cursor-pointer block transition-all"
@@ -361,7 +343,6 @@
 // }
 
 
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -424,7 +405,6 @@ export default function ShopFilterDrawer({
   setSelectedBrands,
 }: ShopFilterDrawerProps) {
   
-  // 🎯 useBrands হুক থেকে ডাটা রিসিভ করা হচ্ছে
   const { brandsData } = useBrands();
   const [showAllBrands, setShowAllBrands] = useState(false);
 
@@ -438,7 +418,6 @@ export default function ShopFilterDrawer({
 
   if (!isOpen) return null;
 
-  // 🎯 সার্চ বার ছাড়া প্রথম অবস্থায় ৫টি ব্র্যান্ড স্লাইস করা হলো
   const displayedBrands = showAllBrands ? rawBrands : rawBrands.slice(0, 5);
 
   return (
@@ -546,7 +525,7 @@ export default function ShopFilterDrawer({
         </div>
         <hr className="my-5 border-gray-100" />
 
-        {/* 📸 BRAND FILTER SECTION (সার্চ বার ছাড়া একদম ক্লিন মোবাইল ভিউ) */}
+        {/* 📸 BRAND FILTER SECTION */}
         <div className="mb-6">
           <h3 className="text-sm font-bold text-[#1A2E22] mb-3">
             Filter by Brand
@@ -555,21 +534,28 @@ export default function ShopFilterDrawer({
           <div className="flex flex-col gap-3 max-h-[320px] overflow-y-auto scrollbar-none pr-1">
             {displayedBrands.length > 0 ? (
               displayedBrands.map((brand: any) => {
-                // মেইন পেজের সাথে সিঙ্ক রেখে আইডি ট্র্যাকিং ভ্যালু জেনারেট করা হলো
-                const brandIdentifier = brand?._id?.$oid || brand?._id || String(brand?.slug || brand?.name);
-                const isBrandChecked = selectedBrands.includes(brandIdentifier);
-                const totalBrandProducts = getProductCount("brand", brandIdentifier);
+                // 🎯 বুলেটিপ্রুফ স্ট্রিং আইডি এক্সট্রাকশন লজিক
+                const brandIdentifier = 
+                  brand?._id && typeof brand._id === "object" && "$oid" in brand._id 
+                    ? String(brand._id.$oid) 
+                    : String(brand?._id || "");
+
+                // যদি আইডি কোনো কারণে ফেইল করে তবে সেফটি ফলব্যাক হিসেবে নাম বা স্লাগ ব্যবহার করা
+                const finalKey = brandIdentifier && brandIdentifier !== "undefined" ? brandIdentifier : String(brand?.slug || brand?.name);
+
+                const isBrandChecked = selectedBrands.includes(finalKey);
+                const totalBrandProducts = getProductCount("brand", finalKey);
 
                 return (
                   <label
-                    key={brandIdentifier}
+                    key={finalKey}
                     className="flex items-center justify-between cursor-pointer group select-none text-slate-600 hover:text-slate-900"
                   >
                     <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
                         checked={isBrandChecked}
-                        onChange={() => toggleFilter(selectedBrands, setSelectedBrands, brandIdentifier)}
+                        onChange={() => toggleFilter(selectedBrands, setSelectedBrands, finalKey)}
                         className="w-4 h-4 rounded border-slate-300 text-[#2D4A3E] focus:ring-[#2D4A3E] accent-[#2D4A3E]"
                       />
                       <span className="text-sm font-medium capitalize">
