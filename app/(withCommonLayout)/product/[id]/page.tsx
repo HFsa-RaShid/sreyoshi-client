@@ -649,7 +649,7 @@ export default function ProductDetailsPage() {
                 <span className="text-gray-800 font-medium">: {product.productCode || "N/A"}</span>
               </div>
               <div className="grid grid-cols-[130px_1fr] items-start">
-                <span className="font-semibold text-gray-500">Related Categories</span>
+                <span className="font-semibold text-gray-500">Category</span>
                 <div className="text-gray-800 font-medium">
                   : {" "}
                   {categoryName && (

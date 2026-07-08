@@ -4,7 +4,6 @@
 import React from "react";
 import { useGetProductsForCustomer } from "@/hooks/useCustomerData";
 import { useApp } from "@/context/AppContext";
-
 import { ShopProductSkeleton } from "@/components/Shared/ShopProductSkeleton/ShopProductSkeleton";
 import ShopProductCard from "@/app/(withCommonLayout)/shop/ShopProductCard";
 
@@ -12,13 +11,24 @@ export default function RecommendedProducts() {
   const { addToCart } = useApp();
   const { data: productsData = [], isLoading } = useGetProductsForCustomer() as { data: any[]; isLoading: boolean };
 
-  // রিকমেন্ডেড বা ট্রেন্ডিং ফিল্টার লজিক
+  // 🎯 রেটিংয়ের ওপর বেস করে সর্টিং লজিক (Highest Rating First)
   const recommendedItems = React.useMemo(() => {
     if (!productsData) return [];
     
     return productsData
-      .filter((p: any) => p.status === "Active" && (p.promotion === "Trending" || p.promotion === "Best Sellers" || p.rating >= 4))
-      .slice(0, 4); // ৪টি রিকমেন্ডেড প্রোডাক্ট
+      .filter((p: any) => p.status === "Active") // শুধুমাত্র একটিভ প্রোডাক্ট ফিল্টার
+      .sort((a: any, b: any) => {
+        const ratingA = a.rating || 0;
+        const ratingB = b.rating || 0;
+        
+        // ১. যার রেtaining বেশি সে আগে আসবে
+        if (ratingB !== ratingA) {
+          return ratingB - ratingA;
+        }
+        // ২. রেটিং সমান হলে বেশি ভোট পাওয়া (ratingCount) প্রোডাক্ট আগে আসবে
+        return (b.ratingCount || 0) - (a.ratingCount || 0);
+      })
+      .slice(0, 4); // টপ ৪টি হাইয়েস্ট রেটেড প্রোডাক্ট দেখাবে
   }, [productsData]);
 
   if (isLoading) {
