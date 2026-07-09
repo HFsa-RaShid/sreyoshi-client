@@ -565,7 +565,8 @@ export default function ProductDetailsPage() {
           </div>
 
           {/* ================= RIGHT DETAILS INFO ================= */}
-          <div className="flex flex-col justify-between space-y-6 overflow-hidden">
+          {/* 🎯 overflow-hidden সরিয়ে overflow-visible করা হলো যাতে Shade এর Ring বা বর্ডার কেটে না যায় */}
+          <div className="flex flex-col justify-between space-y-6 overflow-visible">
             <div className="space-y-4">
               <h1 className="text-xl md:text-2xl font-sans font-semibold text-gray-800 tracking-tight">{product.name}</h1>
               <p className="text-xs text-gray-400 font-medium">Size: {product.weightOrVolume} {product.unit}</p>
@@ -611,7 +612,8 @@ export default function ProductDetailsPage() {
                   <h3 className="text-xs font-bold text-gray-700 mb-2">
                     Select Shade: <span className="text-[#E92C66] ml-1 font-semibold">{selectedShade?.shadeName || "None"}</span>
                   </h3>
-                  <div className="flex flex-wrap gap-2.5">
+                  {/* 🎯 p-1 ও overflow-visible দেওয়া হয়েছে যাতে রিং ট্রানজিশনের সময় বর্ডার ফুল দেখা যায় */}
+                  <div className="flex flex-wrap gap-2.5 p-1 overflow-visible">
                     {product.shades.map((shade: ProductShade, idx: number) => {
                       if (shade.status === "Inactive") return null;
                       const isShadeSelected = selectedShade?.shadeName === shade.shadeName;
@@ -673,14 +675,16 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            {/* 📸 BRIEF DESCRIPTION SECTION (FIXED WORD BREAK) */}
-            <div className="pt-2 border-t border-gray-100 max-w-full">
+            {/* 🎯 BRIEF DESCRIPTION (Read More / Read Less টগল এবং অক্ষরের ভাঙন ১০০% ফিক্সড) */}
+            <div className="pt-2 border-t border-gray-100 w-full">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Brief Description</p>
               <div 
-                className={`text-xs text-gray-600 leading-relaxed transition-all break-words whitespace-normal w-full`}
+                className={`text-xs text-gray-600 leading-relaxed [word-break:keep-all] break-words whitespace-normal ${
+                  !isDescExpanded ? "line-clamp-3 text-ellipsis overflow-hidden" : ""
+                }`}
                 dangerouslySetInnerHTML={{ __html: product.description || "<p>No description available.</p>" }}
               />
-              {product.description && product.description.length > 150 && (
+              {product.description && product.description.replace(/<[^>]*>/g, '').length > 150 && (
                 <button 
                   onClick={() => setIsDescExpanded(!isDescExpanded)} 
                   className="text-[#E92C66] text-xs font-bold mt-1 hover:underline block"
@@ -728,7 +732,7 @@ export default function ProductDetailsPage() {
           </div>
         </div>
 
-        {/* ================= BOTTOM TABS DETAILS (FIXED WORD BREAK) ================= */}
+        {/* ================= BOTTOM TABS DETAILS ================= */}
         <div className="mt-16 border-t border-gray-100 pt-10">
           <div className="flex justify-center gap-4 mb-8">
             {([ "desc", "howToUse", "reviews" ] as TabType[]).map((tab) => (
@@ -747,7 +751,7 @@ export default function ProductDetailsPage() {
               <div className="w-full">
                 <div 
                   dangerouslySetInnerHTML={{ __html: product.description || "<p>No description available.</p>" }} 
-                  className="prose max-w-none text-xs text-gray-600 leading-relaxed break-words whitespace-normal" 
+                  className="prose max-w-none text-xs text-gray-600 leading-relaxed [word-break:keep-all] break-words whitespace-normal" 
                 />
                 <p className="text-[11px] font-bold text-gray-800 mt-4">* Online Exclusive Offer.</p>
               </div>
@@ -757,7 +761,7 @@ export default function ProductDetailsPage() {
               <div className="w-full">
                 <div 
                   dangerouslySetInnerHTML={{ __html: product.howToUse || "<p>Apply smoothly over wet body structure skin surface.</p>" }} 
-                  className="prose max-w-none text-xs text-gray-600 leading-relaxed break-words whitespace-normal" 
+                  className="prose max-w-none text-xs text-gray-600 leading-relaxed [word-break:keep-all] break-words whitespace-normal" 
                 />
               </div>
             )}
