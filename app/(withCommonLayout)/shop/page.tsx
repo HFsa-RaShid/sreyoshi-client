@@ -619,9 +619,9 @@ function ShopContent() {
                 `Showing 1-${filteredProducts.length} of ${filteredProducts.length} results`
               )}
             </p>
-            <div className="flex items-center gap-2 self-end sm:self-auto">
+            <div className="flex items-center gap-2 self-start sm:self-auto">
               
-              <span className="text-sm text-gray-500">Sort by :</span>
+              {/* <span className="text-sm text-gray-500">Sort by :</span> */}
               <div className="relative bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-sm font-medium flex items-center gap-4 shadow-sm">
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="appearance-none bg-transparent pr-6 outline-none cursor-pointer font-sans text-xs">
                   <option value="latest">Latest Arrivals (Default)</option>
