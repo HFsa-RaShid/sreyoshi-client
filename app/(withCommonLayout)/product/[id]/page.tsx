@@ -1,15 +1,15 @@
-
-
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client";
 
 // import React, { useState } from "react";
 // import { useParams, useRouter } from "next/navigation";
 // import { useSession } from "next-auth/react"; 
+// import Image from "next/image"; // 🎯 next/image ইম্পোর্ট করা হলো
 // import { Heart, ArrowLeft, Plus, Minus, Loader2 } from "lucide-react";
 // import { ProductShade } from "@/Types/types";
 // import { useGetSingleProductForCustomer } from "@/hooks/useCustomerData";
 // import { useWishlist } from "@/hooks/useWishlist"; 
+// import { useBrands } from "@/hooks/useBrands"; 
 
 // import { useApp } from "@/context/AppContext";
 // import ProductReviews from "@/components/ProductReviews";
@@ -26,12 +26,13 @@
 
 //   const { wishlistItems, toggleWishlist, isTogglingWishlist } = useWishlist();
 //   const { data: product, isLoading, isError } = useGetSingleProductForCustomer(id as string);
+//   const { brandsData } = useBrands(); 
 
 //   const [activeTab, setActiveTab] = useState<TabType>("desc");
 //   const [quantity, setQuantity] = useState(1);
 //   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
-//   // 🎯 Local State Management without triggering cascading render inside useEffect
+//   // Local State Management 
 //   const [userSelectedShade, setUserSelectedShade] = useState<ProductShade | null>(null);
 //   const [userSelectedImg, setUserSelectedImg] = useState<string>("");
 
@@ -55,7 +56,7 @@
 //     );
 //   }
 
-//   // 🎯 DETERMINISTIC DERIVED STATES (কোনো useEffect ছাড়া ইনিশিয়াল ভ্যালু নির্ধারণ)
+//   // DETERMINISTIC DERIVED STATES
 //   const defaultShade = product.shades && product.shades.length > 0
 //     ? (product.shades.find((s: any) => s.status === "Active") || product.shades[0])
 //     : null;
@@ -87,8 +88,10 @@
   
 //   const categoryId = typeof product.category === "object" ? (product.category as any)?._id : "";
 //   const categoryName = typeof product.category === "object" ? (product.category as any)?.name : product.category;
-//   const brandName = typeof product.brand === "object" ? (product.brand as any)?.name : "Sreyoshi Group";
-//   const brandId = typeof product.brand === "object" ? (product.brand as any)?._id : "";
+  
+//   const brandId = typeof product.brand === "object" ? (product.brand as any)?._id : (product.brand || "");
+//   const foundBrandObj = brandsData?.find((b: any) => b._id === brandId);
+//   const brandName = typeof product.brand === "object" ? (product.brand as any)?.name : (foundBrandObj ? foundBrandObj.name : "Sreyoshi");
 
 //   const discountAmount = product.oldPrice && product.oldPrice > product.price ? product.oldPrice - product.price : 0;
 //   const discountPercentage = product.oldPrice && product.oldPrice > product.price 
@@ -124,7 +127,8 @@
 //     if (type === "itemName") queryKey = "itemname";
 //     if (type === "brand") queryKey = "brand";
     
-//     router.push(`/shop?${queryKey}=${encodeURIComponent(value)}`);
+//     const finalValue = type === "brand" ? brandId : value;
+//     router.push(`/shop?${queryKey}=${encodeURIComponent(finalValue)}`);
 //   };
 
 //   return (
@@ -138,8 +142,16 @@
 //         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
 //           {/* ================= LEFT GALLERY ================= */}
 //           <div className="flex flex-col items-center lg:items-start w-full">
+//             {/* 🎯 মেইন ইমেজ কন্টেইনারে fill প্রপার্টি দিয়ে রেসপন্সিভ করা হয়েছে */}
 //             <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
-//               <img src={selectedImg || "/placeholder.png"} alt={product.name} className="w-full h-full object-cover transition-all duration-300" />
+//               <Image 
+//                 src={selectedImg || "/placeholder.png"} 
+//                 alt={product.name || "Product Image"} 
+//                 fill
+//                 priority
+//                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+//                 className="object-cover transition-all duration-300" 
+//               />
 //             </div>
             
 //             <div className="grid grid-cols-4 gap-3 w-full max-w-lg">
@@ -147,9 +159,15 @@
 //                 <div 
 //                   key={idx} 
 //                   onClick={() => setUserSelectedImg(img)}
-//                   className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all ${selectedImg === img ? "border-[#E92C66]" : "border-transparent opacity-70 hover:opacity-100"}`}
+//                   className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all relative ${selectedImg === img ? "border-[#E92C66]" : "border-transparent opacity-70 hover:opacity-100"}`}
 //                 >
-//                   <img src={img} alt={`view-${idx}`} className="w-full h-full object-cover" />
+//                   <Image 
+//                     src={img} 
+//                     alt={`view-${idx}`} 
+//                     fill
+//                     sizes="25vw"
+//                     className="object-cover" 
+//                   />
 //                 </div>
 //               ))}
 //             </div>
@@ -304,11 +322,12 @@
 //                   )}
 //                 </div>
 //               </div>
+              
 //               <div className="grid grid-cols-[130px_1fr] items-start">
 //                 <span className="font-semibold text-gray-500">Brands</span>
 //                 <span 
-//                   onClick={() => handleCategoryNavigation("brand", brandId || brandName)} 
-//                   className="text-[#E92C66] underline font-semibold cursor-pointer"
+//                   onClick={() => handleCategoryNavigation("brand", brandId)} 
+//                   className="text-[#E92C66] underline font-semibold cursor-pointer transition-colors"
 //                 >
 //                   : {brandName}
 //                 </span>
@@ -331,7 +350,7 @@
 //             ))}
 //           </div>
 
-//           <div className="w-full max-w-3xl mx-auto bg-white p-6 rounded-2xl border border-gray-100 overflow-hidden text-left">
+//           <div className="w-full max-w-5xl mx-auto bg-white p-6 rounded-2xl border border-gray-100 overflow-hidden text-left">
 //             {activeTab === "desc" && (
 //               <div className="w-full">
 //                 <div 
@@ -370,13 +389,14 @@
 //   );
 // }
 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react"; 
-import Image from "next/image"; // 🎯 next/image ইম্পোর্ট করা হলো
+import Image from "next/image"; 
 import { Heart, ArrowLeft, Plus, Minus, Loader2 } from "lucide-react";
 import { ProductShade } from "@/Types/types";
 import { useGetSingleProductForCustomer } from "@/hooks/useCustomerData";
@@ -514,7 +534,6 @@ export default function ProductDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           {/* ================= LEFT GALLERY ================= */}
           <div className="flex flex-col items-center lg:items-start w-full">
-            {/* 🎯 মেইন ইমেজ কন্টেইনারে fill প্রপার্টি দিয়ে রেসপন্সিভ করা হয়েছে */}
             <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
               <Image 
                 src={selectedImg || "/placeholder.png"} 
@@ -546,7 +565,7 @@ export default function ProductDetailsPage() {
           </div>
 
           {/* ================= RIGHT DETAILS INFO ================= */}
-          <div className="flex flex-col justify-between space-y-6">
+          <div className="flex flex-col justify-between space-y-6 overflow-hidden">
             <div className="space-y-4">
               <h1 className="text-xl md:text-2xl font-sans font-semibold text-gray-800 tracking-tight">{product.name}</h1>
               <p className="text-xs text-gray-400 font-medium">Size: {product.weightOrVolume} {product.unit}</p>
@@ -654,10 +673,11 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-gray-100">
+            {/* 📸 BRIEF DESCRIPTION SECTION (FIXED WORD BREAK) */}
+            <div className="pt-2 border-t border-gray-100 max-w-full">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Brief Description</p>
               <div 
-                className={`text-xs text-gray-600 leading-relaxed transition-all ${!isDescExpanded ? "line-clamp-3" : ""}`}
+                className={`text-xs text-gray-600 leading-relaxed transition-all break-words whitespace-normal w-full`}
                 dangerouslySetInnerHTML={{ __html: product.description || "<p>No description available.</p>" }}
               />
               {product.description && product.description.length > 150 && (
@@ -708,7 +728,7 @@ export default function ProductDetailsPage() {
           </div>
         </div>
 
-        {/* ================= BOTTOM TABS DETAILS ================= */}
+        {/* ================= BOTTOM TABS DETAILS (FIXED WORD BREAK) ================= */}
         <div className="mt-16 border-t border-gray-100 pt-10">
           <div className="flex justify-center gap-4 mb-8">
             {([ "desc", "howToUse", "reviews" ] as TabType[]).map((tab) => (
@@ -722,12 +742,12 @@ export default function ProductDetailsPage() {
             ))}
           </div>
 
-          <div className="w-full max-w-3xl mx-auto bg-white p-6 rounded-2xl border border-gray-100 overflow-hidden text-left">
+          <div className="w-full max-w-5xl mx-auto bg-white p-6 rounded-2xl border border-gray-100 overflow-hidden text-left">
             {activeTab === "desc" && (
               <div className="w-full">
                 <div 
                   dangerouslySetInnerHTML={{ __html: product.description || "<p>No description available.</p>" }} 
-                  className="prose text-xs text-gray-600 leading-relaxed [word-break:break-word] break-all whitespace-pre-line" 
+                  className="prose max-w-none text-xs text-gray-600 leading-relaxed break-words whitespace-normal" 
                 />
                 <p className="text-[11px] font-bold text-gray-800 mt-4">* Online Exclusive Offer.</p>
               </div>
@@ -737,7 +757,7 @@ export default function ProductDetailsPage() {
               <div className="w-full">
                 <div 
                   dangerouslySetInnerHTML={{ __html: product.howToUse || "<p>Apply smoothly over wet body structure skin surface.</p>" }} 
-                  className="prose text-xs text-gray-600 leading-relaxed [word-break:break-word] break-all whitespace-pre-line" 
+                  className="prose max-w-none text-xs text-gray-600 leading-relaxed break-words whitespace-normal" 
                 />
               </div>
             )}
