@@ -349,14 +349,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { X, ChevronUp, ChevronDown, Star } from "lucide-react";
+import React, { useState, useMemo, useRef } from "react";
+import { X, ChevronUp, ChevronDown, Star, Filter } from "lucide-react";
 import { Category, SkinType, PromotionTag } from "@/Types/types";
 import { useBrands } from "@/hooks/useBrands"; 
 
 interface ShopFilterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpen: () => void; // নতুন প্রপ্স: ড্রয়ার ওপেন করার জন্য
   categoriesData: Category[];
   selectedCategories: string[];
   openCategoryMenu: string | null;
@@ -380,7 +381,6 @@ interface ShopFilterDrawerProps {
     setList: React.Dispatch<React.SetStateAction<T[]>>,
     value: T,
   ) => void;
-  
   selectedBrands: string[];
   setSelectedBrands: React.Dispatch<React.SetStateAction<string[]>>;
 }
@@ -388,6 +388,7 @@ interface ShopFilterDrawerProps {
 export default function ShopFilterDrawer({
   isOpen,
   onClose,
+  onOpen,
   categoriesData,
   selectedCategories,
   openCategoryMenu,
@@ -410,8 +411,26 @@ export default function ShopFilterDrawer({
   
   const { brandsData } = useBrands();
   const [showAllBrands, setShowAllBrands] = useState(false);
+  
+  // 🖐️ সোয়াইপ (Swipe to Close) ডিটেকশন লজিক
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
 
-  // সেফটি গার্ড: ব্র্যান্ড ডাটা অবজেক্ট বা অ্যারো যাই হোক নিরাপদে এক্সট্রাক্ট করা
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    // যদি ইউজার বাম দিকে ৫০ পিক্সেলের বেশি সোয়াইপ করে, তবে ড্রয়ার ক্লোজ হবে
+    if (touchStartX.current - touchEndX.current > 50) {
+      onClose();
+    }
+  };
+
   const rawBrands = useMemo(() => {
     if (!brandsData) return [];
     if (Array.isArray(brandsData)) return brandsData;
@@ -419,33 +438,50 @@ export default function ShopFilterDrawer({
     return fallback.data || fallback.brands || [];
   }, [brandsData]);
 
-  if (!isOpen) return null;
-
   const displayedBrands = showAllBrands ? rawBrands : rawBrands.slice(0, 5);
 
   return (
     <>
+      {/* 🛑 ভাসমান ফিল্টার বাটন (Floating Filter Button) - শুধুমাত্র মোবাইলের জন্য */}
+      {!isOpen && (
+        <button
+          onClick={onOpen}
+          className="lg:hidden fixed bottom-6 right-6 bg-[#2D4A3E] text-white p-4 rounded-full shadow-2xl z-40 flex items-center gap-2 active:scale-95 transition-all"
+        >
+          <Filter size={20} />
+          <span className="text-xs font-bold uppercase tracking-wider">Filter</span>
+        </button>
+      )}
+
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/40 z-50 transition-opacity lg:hidden"
-        onClick={onClose}
-      />
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-50 transition-opacity lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
       {/* Drawer Body */}
-      <div className="fixed top-0 left-0 min-h-screen h-fit w-[300px] bg-white z-50 p-6 shadow-2xl transition-transform duration-300 transform lg:hidden overflow-y-auto max-h-screen scrollbar-none">
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className={`fixed top-0 left-0 min-h-screen h-fit w-[300px] bg-white z-50 p-6 shadow-2xl transition-transform duration-300 lg:hidden overflow-y-auto max-h-screen scrollbar-none ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* উপরের হেডার এবং ক্লোজ বাটন */}
         <div className="flex items-center justify-between mb-6 border-b pb-4">
-          <h2 className="text-xl font-serif font-bold text-[#1A2E22]">
-            Filter Options
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-gray-100 rounded-full text-gray-500"
-          >
+          <div className="flex flex-col">
+            <h2 className="text-xl font-serif font-bold text-[#1A2E22]">Filter Options</h2>
+            <span className="text-[10px] text-gray-400">Swipe left to close ➔</span>
+          </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full text-gray-500">
             <X size={18} />
           </button>
         </div>
 
-        {/* DYNAMIC NESTED CATEGORIES */}
+        {/* PRODUCT CATEGORIES */}
         <div className="mb-6">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#1A2E22] mb-4 opacity-50">
             Product Categories
@@ -459,25 +495,15 @@ export default function ShopFilterDrawer({
               return (
                 <div key={category._id} className="flex flex-col">
                   <div
-                    onClick={() => {
-                      handleCategorySelect(category._id);
-                      // আপনি যদি মেইন ক্যাটাগরি সিলেক্ট করলেও ড্রয়ার বন্ধ করতে চান, তবে নিচের লাইনটি আনকমেন্ট করুন:
-                      // onClose();
-                    }}
+                    onClick={() => handleCategorySelect(category._id)}
                     className={`flex justify-between items-center font-sans text-sm font-bold cursor-pointer transition-colors py-1 ${isCatSelected ? "text-[#FF3F6C]" : "text-[#1A2E22] hover:text-[#FF3F6C]"}`}
                   >
                     <span>{category.name}</span>
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`text-[10px] font-sans px-2 py-0.5 rounded-full ${isCatSelected ? "bg-[#FF3F6C] text-white" : "bg-gray-100 text-gray-500"}`}
-                      >
+                      <span className={`text-[10px] font-sans px-2 py-0.5 rounded-full ${isCatSelected ? "bg-[#FF3F6C] text-white" : "bg-gray-100 text-gray-500"}`}>
                         {totalCatProducts}
                       </span>
-                      {isCatOpen ? (
-                        <ChevronUp size={14} className="opacity-60" />
-                      ) : (
-                        <ChevronDown size={14} className="opacity-60" />
-                      )}
+                      {isCatOpen ? <ChevronUp size={14} className="opacity-60" /> : <ChevronDown size={14} className="opacity-60" />}
                     </div>
                   </div>
 
@@ -497,8 +523,7 @@ export default function ShopFilterDrawer({
 
                             <ul className="flex flex-col gap-1.5 pl-2 mb-1">
                               {sub.items.map((item, iIdx) => {
-                                const isItemActive =
-                                  selectedSubCategory?.toLowerCase() === item?.name?.toLowerCase();
+                                const isItemActive = selectedSubCategory?.toLowerCase() === item?.name?.toLowerCase();
                                 const totalItemProducts = getProductCount("item", item?.name);
 
                                 return (
@@ -506,13 +531,11 @@ export default function ShopFilterDrawer({
                                     key={iIdx}
                                     onClick={() => {
                                       handleSubCategoryItemSelect(item.name);
-                                      onClose();
+                                      onClose(); 
                                     }}
                                     className={`flex justify-between items-center text-xs font-medium cursor-pointer py-0.5 transition-all ${isItemActive ? "text-[#1A2E22] font-bold" : "text-[#5A655D] hover:text-[#1A2E22]"}`}
                                   >
-                                    <span className="truncate max-w-[160px]">
-                                      {item.name}
-                                    </span>
+                                    <span className="truncate max-w-[160px]">{item.name}</span>
                                     <span className="text-[10px] bg-gray-50 text-gray-400 font-normal px-1.5 py-0.2 rounded-full font-sans">
                                       {totalItemProducts}
                                     </span>
@@ -532,42 +555,27 @@ export default function ShopFilterDrawer({
         </div>
         <hr className="my-5 border-gray-100" />
 
-        {/* 📸 BRAND FILTER SECTION */}
+        {/* BRAND FILTER SECTION */}
         <div className="mb-6">
-          <h3 className="text-sm font-bold text-[#1A2E22] mb-3">
-            Filter by Brand
-          </h3>
-
+          <h3 className="text-sm font-bold text-[#1A2E22] mb-3">Filter by Brand</h3>
           <div className="flex flex-col gap-3 max-h-[320px] overflow-y-auto scrollbar-none pr-1">
             {displayedBrands.length > 0 ? (
               displayedBrands.map((brand: any) => {
-                const brandIdentifier = 
-                  brand?._id && typeof brand._id === "object" && "$oid" in brand._id 
-                    ? String(brand._id.$oid) 
-                    : String(brand?._id || "");
-
+                const brandIdentifier = brand?._id && typeof brand._id === "object" && "$oid" in brand._id ? String(brand._id.$oid) : String(brand?._id || "");
                 const finalKey = brandIdentifier && brandIdentifier !== "undefined" ? brandIdentifier : String(brand?.slug || brand?.name);
                 const isBrandChecked = selectedBrands.includes(finalKey);
                 const totalBrandProducts = getProductCount("brand", finalKey);
 
                 return (
-                  <label
-                    key={finalKey}
-                    className="flex items-center justify-between cursor-pointer group select-none text-slate-600 hover:text-slate-900"
-                  >
+                  <label key={finalKey} className="flex items-center justify-between cursor-pointer group select-none text-slate-600 hover:text-slate-900">
                     <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
                         checked={isBrandChecked}
-                        onChange={() => {
-                          toggleFilter(selectedBrands, setSelectedBrands, finalKey);
-                          onClose(); /* 🎯 ব্র্যান্ড সিলেক্ট করলে ড্রয়ার বন্ধ হবে */
-                        }}
+                        onChange={() => toggleFilter(selectedBrands, setSelectedBrands, finalKey)} // 🎯 অটো ক্লোজ রিমুভড
                         className="w-4 h-4 rounded border-slate-300 text-[#2D4A3E] focus:ring-[#2D4A3E] accent-[#2D4A3E]"
                       />
-                      <span className="text-sm font-medium capitalize">
-                        {brand.name}
-                      </span>
+                      <span className="text-sm font-medium capitalize">{brand.name}</span>
                     </div>
                     <span className="bg-slate-100 text-slate-500 text-[11px] font-semibold px-2 py-0.5 rounded-full font-mono min-w-[24px] text-center">
                       {totalBrandProducts}
@@ -579,12 +587,8 @@ export default function ShopFilterDrawer({
               <p className="text-xs text-slate-400 italic py-1">No brands found!</p>
             )}
           </div>
-
           {rawBrands.length > 5 && (
-            <button
-              onClick={() => setShowAllBrands(!showAllBrands)}
-              className="text-xs font-bold text-rose-500 hover:text-rose-600 mt-4 cursor-pointer block transition-all"
-            >
+            <button onClick={() => setShowAllBrands(!showAllBrands)} className="text-xs font-bold text-rose-500 hover:text-rose-600 mt-4 cursor-pointer block transition-all">
               {showAllBrands ? "Show less" : "Show more"}
             </button>
           )}
@@ -593,32 +597,18 @@ export default function ShopFilterDrawer({
 
         {/* BY SKIN TYPE */}
         <div className="mb-6">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">
-            By Skin Type
-          </h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">By Skin Type</h3>
           <div className="flex flex-col gap-2.5 text-sm text-[#1A2E22]">
             <label className="flex items-center gap-3 cursor-pointer font-medium text-gray-400">
-              <input
-                type="checkbox"
-                checked={selectedSkinTypes.length === 0}
-                onChange={() => {
-                  setSelectedSkinTypes([]);
-                  onClose(); /* 🎯 রিসেট দিলে ড্রয়ার বন্ধ হবে */
-                }} 
-                className="w-4 h-4 rounded accent-[#2D4A3E]"
-              />
+              <input type="checkbox" checked={selectedSkinTypes.length === 0} onChange={() => setSelectedSkinTypes([])} className="w-4 h-4 rounded accent-[#2D4A3E]" />
               All Skin Types (Reset)
             </label>
-
             {(["Normal", "Oily", "Dry", "Combination", "Sensitive"] as SkinType[]).map((type) => (
               <label key={type} className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedSkinTypes.includes(type)}
-                  onChange={() => {
-                    toggleFilter(selectedSkinTypes, setSelectedSkinTypes, type);
-                    onClose(); /* 🎯 স্কিন টাইপ সিলেক্ট করলে ড্রয়ার বন্ধ হবে */
-                  }}
+                  onChange={() => toggleFilter(selectedSkinTypes, setSelectedSkinTypes, type)} // 🎯 অটো ক্লোজ রিমুভড
                   className="w-4 h-4 rounded accent-[#2D4A3E]"
                 />
                 {type}
@@ -630,50 +620,27 @@ export default function ShopFilterDrawer({
 
         {/* PRICE RANGE */}
         <div className="mb-6">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-1">
-            Price
-          </h3>
-          <p className="text-xs text-gray-500 mb-3">
-            ৳0.00 - ৳{priceRange.toFixed(2)}
-          </p>
-          <input
-            type="range"
-            min="0"
-            max="5000"
-            value={priceRange}
-            onChange={(e) => setPriceRange(Number(e.target.value))}
-            // মোবাইল টাচ বা ড্র্যাগ শেষ করার পর যদি ড্রয়ার বন্ধ করতে চান, তবে অন-চেঞ্জের বদলে "onMouseUp" বা "onTouchEnd" এ onClose() দিতে পারেন। 
-            // আপাতত প্রাইস স্লাইডারে অটো ক্লোজ না দেওয়াই ভালো, কারণ ইউজার প্রাইস পজিশন ঠিক করতে চান।
-            className="w-full accent-[#2D4A3E] cursor-pointer"
-          />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-1">Price</h3>
+          <p className="text-xs text-gray-500 mb-3">৳0.00 - ৳{priceRange.toFixed(2)}</p>
+          <input type="range" min="0" max="5000" value={priceRange} onChange={(e) => setPriceRange(Number(e.target.value))} className="w-full accent-[#2D4A3E] cursor-pointer" />
         </div>
         <hr className="my-5 border-gray-100" />
 
         {/* REVIEW / RATING */}
         <div className="mb-6">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">
-            Review
-          </h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">Review</h3>
           <div className="flex flex-col gap-2.5">
             {[5, 4, 3, 2, 1].map((stars) => (
               <label key={stars} className="flex items-center gap-3 cursor-pointer text-sm">
                 <input
                   type="checkbox"
                   checked={selectedRatings.includes(stars)}
-                  onChange={() => {
-                    toggleFilter(selectedRatings, setSelectedRatings, stars);
-                    onClose(); /* 🎯 রেটিং সিলেক্ট করলে ড্রয়ার বন্ধ হবে */
-                  }}
+                  onChange={() => toggleFilter(selectedRatings, setSelectedRatings, stars)} // 🎯 অটো ক্লোজ রিমুভড
                   className="w-4 h-4 rounded accent-[#2D4A3E]"
                 />
                 <div className="flex items-center text-amber-400 gap-0.5">
                   {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={14}
-                      fill={i < stars ? "currentColor" : "none"}
-                      className={i < stars ? "" : "text-gray-200"}
-                    />
+                    <Star key={i} size={14} fill={i < stars ? "currentColor" : "none"} className={i < stars ? "" : "text-gray-200"} />
                   ))}
                 </div>
                 <span className="text-xs text-gray-500">{stars} Star</span>
@@ -685,19 +652,14 @@ export default function ShopFilterDrawer({
 
         {/* BY PROMOTIONS */}
         <div className="mb-6">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">
-            By Promotions
-          </h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A2E22] mb-3">By Promotions</h3>
           <div className="flex flex-col gap-2.5 text-sm">
             {(["New Arrivals", "Best Sellers", "Trending"] as PromotionTag[]).map((promo) => (
               <label key={promo} className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedPromotions.includes(promo)}
-                  onChange={() => {
-                    toggleFilter(selectedPromotions, setSelectedPromotions, promo);
-                    onClose(); /* 🎯 প্রমোশন ট্যাগ সিলেক্ট করলে ড্রয়ার বন্ধ হবে */
-                  }}
+                  onChange={() => toggleFilter(selectedPromotions, setSelectedPromotions, promo)} // 🎯 অটো ক্লোজ রিমুভড
                   className="w-4 h-4 rounded accent-[#2D4A3E]"
                 />
                 {promo}

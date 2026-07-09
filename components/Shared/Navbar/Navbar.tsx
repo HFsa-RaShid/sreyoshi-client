@@ -353,7 +353,7 @@ export default function Navbar() {
             )}
           </Link>
 
-          {/* CART (MOBILE) */}
+        
           <Link href="/cart" onClick={() => setIsOpen(false)} className="relative p-1 text-gray-700 shrink-0 cursor-pointer">
             <ShoppingBag strokeWidth={1.5} className="w-6 h-6" />
             {totalCartItems > 0 && (
@@ -363,7 +363,7 @@ export default function Navbar() {
             )}
           </Link>
 
-          {/* HAMBURGER TRIGGER */}
+         
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="text-[#1A2E22] p-1 shrink-0"
@@ -374,7 +374,7 @@ export default function Navbar() {
       </div>
 
       {/* MOBILE DROP-DOWN MENU PANEL */}
-      {isOpen && (
+      {/* {isOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 px-6 py-4 flex flex-col gap-2 shadow-md max-h-[85vh] overflow-y-auto transition-all z-50">
           
           {session ? (
@@ -408,7 +408,7 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* MOBILE SEARCH */}
+        
           <div ref={searchRef} className="relative w-full mb-2">
             <input
               type="text"
@@ -466,6 +466,86 @@ export default function Navbar() {
               </div>
             );
           })}
+        </div>
+      )} */}
+
+      {isOpen && (
+        <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 px-6 py-4 flex flex-col gap-2 shadow-md max-h-[85vh] overflow-y-auto transition-all z-50">
+          
+          {session ? (
+            <div className="flex flex-col gap-1.5 border-b border-gray-100 pb-3 mb-2 font-sans">
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="w-full flex items-center gap-2 px-4 py-3 bg-[#1A2E22] text-white text-sm font-semibold rounded-xl active:scale-[0.98] transition-all"
+              >
+                <LayoutDashboard size={18} strokeWidth={2} />
+                Go to Dashboard
+              </Link>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  signOut();
+                }}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-rose-600 bg-rose-50 hover:bg-rose-100 text-xs font-medium rounded-xl transition-colors"
+              >
+                <LogOut size={16} />
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/signin"
+              onClick={() => setIsOpen(false)}
+              className="w-full text-center block px-4 py-3 bg-gray-100 text-[#1A2E22] text-sm font-bold rounded-xl mb-2"
+            >
+              SIGN IN
+            </Link>
+          )}
+
+          {/* MOBILE SEARCH */}
+          <div ref={searchRef} className="relative w-full mb-2">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search products..."
+              className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-4 pr-10 text-sm focus:outline-none"
+            />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
+          </div>
+
+          {/* 🎯 ক্লিন মোবাইল অপশন: ক্লিক করলেই সরাসরি শপ পেইজে ফিল্টারসহ নিয়ে যাবে */}
+          <div className="flex flex-col gap-1">
+  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">
+    Categories
+  </p>
+
+  {/* 🌟 নতুন যুক্ত করা হলো: All Products অপশন */}
+  <Link
+    href="/shop"
+    onClick={() => setIsOpen(false)}
+    className="w-full text-left font-bold py-3 px-3 bg-gray-50 text-rose-600 rounded-xl text-sm transition-colors block border border-dashed border-rose-200 mb-1"
+  >
+    🛍️ All Products
+  </Link>
+
+  {/* বাকি ডাইনামিক ক্যাটাগরিগুলো */}
+  {(categoriesData || []).map((category: any) => {
+    const categoryId = category._id || category.id;
+
+    return (
+      <Link
+        key={categoryId}
+        href={`/shop?category=${categoryId}`}
+        onClick={() => setIsOpen(false)}
+        className="w-full text-left font-medium py-3 px-3 hover:bg-gray-50 rounded-xl text-[#2C3E35] text-sm transition-colors block"
+      >
+        {category.name}
+      </Link>
+    );
+  })}
+</div>
         </div>
       )}
     </nav>
