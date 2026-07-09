@@ -173,8 +173,8 @@ export default function ProductDetailsPage() {
           </div>
 
           {/* ================= RIGHT DETAILS INFO ================= */}
-          {/* 🎯 overflow-visible নিশ্চিত করে যাতে বাটন রিং কেটে না যায় */}
-          <div className="flex flex-col justify-between space-y-6 overflow-visible">
+          {/* 🎯 কন্টেইনার উইডথ লক করতে max-w-full এবং রিং কাট যাতে না যায় তার জন্য overflow-visible */}
+          <div className="flex flex-col justify-between space-y-6 overflow-visible w-full max-w-full">
             <div className="space-y-4">
               <h1 className="text-xl md:text-2xl font-sans font-semibold text-gray-800 tracking-tight">{product.name}</h1>
               <p className="text-xs text-gray-400 font-medium">Size: {product.weightOrVolume} {product.unit}</p>
@@ -282,14 +282,22 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            {/* 🎯 BRIEF DESCRIPTION (শব্দ যেন কোনোভাবেই মাঝখান থেকে না ভাঙে তার ফাইনাল ফিক্স) */}
-            <div className="pt-2 border-t border-gray-100 w-full">
+            {/* ================= BRIEF DESCRIPTION (ফাইনাল আলটিমেট ফিক্স) ================= */}
+            {/* 🎯 এখানে w-full max-w-full এবং কড়া ইনলাইন সিএসএস প্রয়োগ করা হয়েছে */}
+            <div className="pt-2 border-t border-gray-100 w-full max-w-full overflow-hidden">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Brief Description</p>
               <div 
-                className={`text-xs text-gray-600 leading-relaxed break-normal hyphens-none whitespace-normal tracking-normal ${
-                  !isDescExpanded ? "line-clamp-3 text-ellipsis overflow-hidden" : ""
+                className={`text-xs text-gray-600 leading-relaxed w-full max-w-full ${
+                  !isDescExpanded ? "line-clamp-3 overflow-hidden text-ellipsis" : ""
                 }`}
-                style={{ wordBreak: "normal", overflowWrap: "normal" }}
+                style={{ 
+                  wordBreak: "keep-all", 
+                  overflowWrap: "break-word", 
+                  whiteSpace: "normal",
+                  display: !isDescExpanded ? "-webkit-box" : "block",
+                  WebkitLineClamp: !isDescExpanded ? 3 : "unset",
+                  WebkitBoxOrient: "vertical"
+                }}
                 dangerouslySetInnerHTML={{ __html: product.description || "<p>No description available.</p>" }}
               />
               {product.description && product.description.replace(/<[^>]*>/g, '').length > 150 && (
@@ -356,22 +364,22 @@ export default function ProductDetailsPage() {
 
           <div className="w-full max-w-5xl mx-auto bg-white p-6 rounded-2xl border border-gray-100 overflow-hidden text-left">
             {activeTab === "desc" && (
-              <div className="w-full">
+              <div className="w-full max-w-full overflow-hidden">
                 <div 
                   dangerouslySetInnerHTML={{ __html: product.description || "<p>No description available.</p>" }} 
-                  className="prose max-w-none text-xs text-gray-600 leading-relaxed break-normal hyphens-none whitespace-normal tracking-normal" 
-                  style={{ wordBreak: "normal", overflowWrap: "normal" }}
+                  className="prose max-w-none text-xs text-gray-600 leading-relaxed w-full" 
+                  style={{ wordBreak: "keep-all", overflowWrap: "break-word", whiteSpace: "normal" }}
                 />
                 <p className="text-[11px] font-bold text-gray-800 mt-4">* Online Exclusive Offer.</p>
               </div>
             )}
             
             {activeTab === "howToUse" && (
-              <div className="w-full">
+              <div className="w-full max-w-full overflow-hidden">
                 <div 
                   dangerouslySetInnerHTML={{ __html: product.howToUse || "<p>Apply smoothly over wet body structure skin surface.</p>" }} 
-                  className="prose max-w-none text-xs text-gray-600 leading-relaxed break-normal hyphens-none whitespace-normal tracking-normal" 
-                  style={{ wordBreak: "normal", overflowWrap: "normal" }}
+                  className="prose max-w-none text-xs text-gray-600 leading-relaxed w-full" 
+                  style={{ wordBreak: "keep-all", overflowWrap: "break-word", whiteSpace: "normal" }}
                 />
               </div>
             )}
