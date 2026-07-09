@@ -1,5 +1,3 @@
-
-
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client";
 
@@ -538,8 +536,6 @@
 //   );
 // }
 
-
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -565,7 +561,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart, validateAndSyncCart } = useApp();
   const { user: backendUser } = useUserData(); // 🎯 ইউজার সেশন ডাটা
-  
+
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "SSL">("COD");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);

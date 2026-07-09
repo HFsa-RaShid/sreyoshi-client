@@ -231,7 +231,6 @@
 //   );
 // }
 
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -275,7 +274,9 @@ export default function SignUpPage() {
     // ২. স্ট্রং পাসওয়ার্ড কন্ডিশন (কমপক্ষে ১টি বড় হাতের অক্ষর, ১টি ছোট হাতের অক্ষর এবং ১টি সংখ্যা)
     const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
     if (!strongPasswordRegex.test(password)) {
-      setError("Password must contain at least one uppercase letter, one lowercase letter, and one number!");
+      setError(
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number!",
+      );
       return;
     }
 
@@ -302,7 +303,7 @@ export default function SignUpPage() {
             phone: phone.trim(),
             password,
             confirmPassword,
-            role: "user", 
+            role: "user",
           }),
         },
       );
@@ -462,7 +463,8 @@ export default function SignUpPage() {
           >
             {loading ? (
               <>
-                <Loader2 size={16} className="animate-spin" /> Creating Account...
+                <Loader2 size={16} className="animate-spin" /> Creating
+                Account...
               </>
             ) : (
               "Sign Up"
