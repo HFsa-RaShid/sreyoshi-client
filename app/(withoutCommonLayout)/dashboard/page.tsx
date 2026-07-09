@@ -299,7 +299,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo } from "react";
 import {
   ShoppingBag,
   Clock,
@@ -312,6 +312,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useUserData } from "@/hooks/useUserData";
 import { useMyOrders } from "@/hooks/useGetOrderDetails";
 import {
@@ -327,7 +328,6 @@ import {
   Cell,
 } from "recharts";
 
-// মঙ্গোডিবি অবজেক্ট আইডি ক্লিনার
 const getSafeId = (userField: any): string => {
   if (!userField) return "";
   if (typeof userField === "string") return userField;
@@ -335,36 +335,26 @@ const getSafeId = (userField: any): string => {
 };
 
 export default function DashboardHomePage() {
-  const { user: backendUser, isLoading: isUserLoading, refetch: refetchUser } = useUserData() as any;
-  const { orders: rawOrders = [], isLoading: isOrdersLoading, refetch: refetchOrders } = useMyOrders() as any;
+  const { data: session } = useSession();
+  const { user: backendUser, isLoading: isUserLoading } = useUserData() as any;
+  const { orders: rawOrders = [], isLoading: isOrdersLoading } = useMyOrders() as any;
 
-  const userId = getSafeId(backendUser?._id || backendUser?.id);
-  
-  // ─── 🎯 [CRITICAL FIX]: rawOrders.length === 0 কন্ডিশনটি বাদ দেওয়া হলো যেন নতুন ইউজাররা লোডিং-এ না আটকে থাকে ───
-  const isPageLoading = isUserLoading || isOrdersLoading || !userId;
+  const currentUser = backendUser || session?.user;
+  const userId = getSafeId(currentUser?._id || currentUser?.id);
 
-  // ─── 🎯 [FIXED]: লুপ বা জ্যাম এড়াতে ইনফিনিট এফেক্ট বন্ধ করে শুধু মাউন্ট ও ইউজার আইডি চেঞ্জের ওপর রি-ফেচ রাখা হলো ───
-  useEffect(() => {
-    if (userId) {
-      if (typeof refetchUser === "function") refetchUser();
-      if (typeof refetchOrders === "function") refetchOrders();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  // ডাটা ব্যাকগ্রাউন্ডে লোড হচ্ছে কিনা তা ট্র্যাক করার জন্য
+  const isSyncing = isUserLoading || isOrdersLoading || !userId;
 
   // স্ট্যাটস ও চার্ট ক্যালকুলেশন
   const stats = useMemo(() => {
-    if (!userId) {
+    if (!userId || !Array.isArray(rawOrders)) {
       return {
         totalOrders: 0, pendingCount: 0, deliveredCount: 0, totalSpent: 0,
         areaChartData: [], pieChartData: [], recentOrders: []
       };
     }
 
-    // সেফটি চেক: rawOrders অ্যারে না হলে খালি অ্যারে ব্যাকআপ
-    const ordersArray = Array.isArray(rawOrders) ? rawOrders : [];
-
-    const myOrders = ordersArray.filter(
+    const myOrders = rawOrders.filter(
       (order: any) => getSafeId(order.user) === userId,
     );
 
@@ -411,34 +401,18 @@ export default function DashboardHomePage() {
     return { totalOrders, pendingCount, deliveredCount, totalSpent, areaChartData, pieChartData, recentOrders };
   }, [rawOrders, userId]);
 
-  // স্কেলিটন লোডিং
-  if (isPageLoading) {
-    return (
-      <div className="w-full space-y-6 animate-pulse p-4">
-        <div className="h-32 bg-gray-200 rounded-2xl w-full" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="h-24 bg-gray-200 rounded-2xl" />
-          <div className="h-24 bg-gray-200 rounded-2xl" />
-          <div className="h-24 bg-gray-200 rounded-2xl" />
-          <div className="h-24 bg-gray-200 rounded-2xl" />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          <div className="lg:col-span-8 h-64 bg-gray-200 rounded-2xl" />
-          <div className="lg:col-span-4 h-64 bg-gray-200 rounded-2xl" />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full space-y-6 animate-in fade-in duration-300 font-sans text-[#1E1E1E]">
-      {/* ব্যানার */}
+    <div className="w-full space-y-6 animate-in fade-in duration-200 font-sans text-[#1E1E1E]">
+      
+      {/* ─── ১. ব্যানার (ইনস্ট্যান্ট রেন্ডার হবে সেশনের কল্যাণে) ─── */}
       <div className="relative bg-[#0F1E29] rounded-2xl p-6 md:p-8 text-white overflow-hidden shadow-xs">
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-[#4E612B] rounded-full blur-3xl opacity-40" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-1">
             <span className="text-[11px] bg-[#4E612B] px-2.5 py-1 rounded-full uppercase tracking-wider font-bold">Customer Portal</span>
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight pt-1">Welcome Back, {backendUser?.name || "Premium User"}! 👋</h2>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight pt-1">
+              Welcome Back, {currentUser?.name || "Premium User"}! 👋
+            </h2>
             <p className="text-xs text-gray-400 max-w-xl">Here is your live real-time purchasing summary, account spend tracking, and active order analytics metrics.</p>
           </div>
           <Link href="/dashboard/settings" className="sm:self-center shrink-0 px-5 py-2.5 bg-[#4E612B] hover:bg-[#3D4D22] text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
@@ -447,7 +421,7 @@ export default function DashboardHomePage() {
         </div>
       </div>
 
-      {/* স্ট্যাটস গ্রিড */}
+      {/* ─── ২. কার্ড গ্রিড (শুধু ভ্যালু টুকু স্কেলিটন হবে) ─── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { name: "Total Orders", val: stats.totalOrders, sub: "Placed overall", icon: ShoppingBag, color: "bg-blue-50 text-blue-600 border-blue-100" },
@@ -459,9 +433,13 @@ export default function DashboardHomePage() {
           return (
             <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex items-center gap-4 shadow-2xs">
               <div className={`p-3 rounded-xl border shrink-0 ${item.color}`}><Icon size={20} /></div>
-              <div className="min-w-0">
+              <div className="min-w-0 w-full">
                 <h4 className="text-gray-400 font-bold text-[11px] uppercase tracking-wider truncate">{item.name}</h4>
-                <p className="text-lg md:text-xl font-extrabold text-[#0F1E29] mt-0.5">{item.val}</p>
+                {isSyncing ? (
+                  <div className="h-6 w-14 bg-gray-200 rounded-md animate-pulse mt-1" />
+                ) : (
+                  <p className="text-lg md:text-xl font-extrabold text-[#0F1E29] mt-0.5">{item.val}</p>
+                )}
                 <p className="text-[10px] text-gray-400 mt-0.5 font-medium truncate">{item.sub}</p>
               </div>
             </div>
@@ -469,8 +447,9 @@ export default function DashboardHomePage() {
         })}
       </div>
 
-      {/* চার্টস গ্রিড */}
+      {/* ─── ৩. চার্টস গ্রিড (ডাটা আসার আগ পর্যন্ত লোড অ্যানিমেশন বা স্কেলিটন) ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* এরিয়া চার্ট */}
         <div className="lg:col-span-8 bg-white border border-gray-100 rounded-2xl p-5 shadow-2xs">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -480,7 +459,9 @@ export default function DashboardHomePage() {
             <span className="text-[10px] bg-gray-50 border border-gray-100 px-2 py-1 rounded-md text-gray-500 font-mono">Live</span>
           </div>
           <div className="w-full h-60">
-            {stats.totalOrders === 0 ? (
+            {isSyncing ? (
+              <div className="w-full h-full bg-gray-50 rounded-xl animate-pulse flex items-center justify-center text-xs text-gray-400">Loading charts...</div>
+            ) : stats.totalOrders === 0 ? (
               <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 font-medium">No order data available this week.</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
@@ -502,13 +483,16 @@ export default function DashboardHomePage() {
           </div>
         </div>
 
+        {/* পাই চার্ট */}
         <div className="lg:col-span-4 bg-white border border-gray-100 rounded-2xl p-5 flex flex-col justify-between shadow-2xs">
           <div>
             <h3 className="text-sm font-bold text-[#0F1E29]">Fulfillment Ratio</h3>
             <p className="text-[11px] text-gray-400 font-medium">Status ratio breakdown</p>
           </div>
           <div className="w-full h-35 relative flex items-center justify-center my-2">
-            {stats.totalOrders === 0 ? (
+            {isSyncing ? (
+              <div className="w-24 h-24 rounded-full border-4 border-gray-100 border-t-gray-300 animate-spin" />
+            ) : stats.totalOrders === 0 ? (
               <p className="text-xs text-gray-400 font-medium">No distribution logs.</p>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
@@ -520,13 +504,20 @@ export default function DashboardHomePage() {
                 </PieChart>
               </ResponsiveContainer>
             )}
-            <div className="absolute flex flex-col items-center justify-center">
-              <span className="text-lg font-black text-[#0F1E29]">{stats.totalOrders}</span>
-              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Total</span>
-            </div>
+            {!isSyncing && (
+              <div className="absolute flex flex-col items-center justify-center">
+                <span className="text-lg font-black text-[#0F1E29]">{stats.totalOrders}</span>
+                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Total</span>
+              </div>
+            )}
           </div>
           <div className="space-y-1.5 pt-2 border-t border-gray-50">
-            {stats.pieChartData.length === 0 ? (
+            {isSyncing ? (
+              <div className="space-y-2">
+                <div className="h-3 bg-gray-100 rounded-sm animate-pulse w-full" />
+                <div className="h-3 bg-gray-100 rounded-sm animate-pulse w-2/3" />
+              </div>
+            ) : stats.pieChartData.length === 0 ? (
               <p className="text-[11px] text-gray-400 text-center font-medium">No order statuses to graph.</p>
             ) : (
               stats.pieChartData.map((item, idx) => (
@@ -543,7 +534,7 @@ export default function DashboardHomePage() {
         </div>
       </div>
 
-      {/* সাম্প্রতিক অর্ডার লগ */}
+      {/* ─── ৪. সাম্প্রতিক অর্ডার লগ (আলাদা ৩টি রো-এর সুন্দর স্কেলিটন) ─── */}
       <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-2xs">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -551,11 +542,26 @@ export default function DashboardHomePage() {
             <p className="text-[11px] text-gray-400 font-medium">Instant tracking access for your last 3 orders</p>
           </div>
           <Link href="/dashboard/my-orders" className="text-xs font-bold text-[#4E612B] hover:underline flex items-center gap-0.5">
-            See All Orders <ChevronRight size={14} />
+            See All Orders <ArrowRight size={14} />
           </Link>
         </div>
+        
         <div className="space-y-3">
-          {stats.recentOrders.length === 0 ? (
+          {isSyncing ? (
+            // ৩টি রো বিশিষ্ট নিখুঁত অর্ডার স্কেলিটন
+            [1, 2, 3].map((n) => (
+              <div key={n} className="flex items-center justify-between p-3.5 border border-gray-50 rounded-xl animate-pulse">
+                <div className="flex items-center gap-3 w-1/3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-xl shrink-0" />
+                  <div className="space-y-2 w-full">
+                    <div className="h-3 bg-gray-200 rounded w-3/4" />
+                    <div className="h-2.5 bg-gray-100 rounded w-1/2" />
+                  </div>
+                </div>
+                <div className="h-4 bg-gray-200 rounded w-16" />
+              </div>
+            ))
+          ) : stats.recentOrders.length === 0 ? (
             <div className="text-center py-8 text-xs text-gray-400 font-medium border border-dashed border-gray-100 rounded-xl">You haven&apos;t placed any orders yet.</div>
           ) : (
             stats.recentOrders.map((order: any, idx: number) => {
@@ -590,8 +596,4 @@ export default function DashboardHomePage() {
       </div>
     </div>
   );
-}
-
-function ChevronRight({ size }: { size: number }) {
-  return <ArrowRight size={size} className="rotate-0 shrink-0" />;
 }
