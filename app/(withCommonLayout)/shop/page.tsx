@@ -620,9 +620,7 @@ function ShopContent() {
               )}
             </p>
             <div className="flex items-center gap-2 self-end sm:self-auto">
-              <button onClick={() => setIsDrawerOpen(true)} className="lg:hidden flex items-center gap-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-700 shadow-sm mr-2">
-                <SlidersHorizontal size={14} /> Filter
-              </button>
+              
               <span className="text-sm text-gray-500">Sort by :</span>
               <div className="relative bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-sm font-medium flex items-center gap-4 shadow-sm">
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="appearance-none bg-transparent pr-6 outline-none cursor-pointer font-sans text-xs">
