@@ -1,13 +1,28 @@
+
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client";
 
-// import React from "react";
+// import React, { useEffect } from "react";
 // import Link from "next/link";
+// import { useUserData } from "@/hooks/useUserData";
 // import { useMyOrders } from "@/hooks/useGetOrderDetails";
 // import { Loader2, FileText, Eye, Calendar, CreditCard } from "lucide-react";
 
 // export default function MyInvoicesListPage() {
-//   const { orders = [], isLoading } = useMyOrders();
+//   // 💡 ১. সেশন এবং অর্ডার ডাটা উভয়ই রিফ্রেস করা নিশ্চিত করার জন্য হুক কল
+//   const { user: backendUser, isLoading: isUserLoading, refetch: refetchUser } = useUserData() as any;
+//   const { orders = [], isLoading: isOrdersLoading, refetch: refetchOrders } = useMyOrders() as any;
+  
+//   const userId = backendUser?._id || backendUser?.id;
+//   const isLoading = isUserLoading || isOrdersLoading;
+
+//   // 🎯 ২. অটো-সিঙ্ক মেকানিজম: প্রথমবার পেজে ল্যান্ড করলে রিলোড ছাড়াই ডাটা ফেচ হবে
+//   useEffect(() => {
+//     if (userId) {
+//       if (typeof refetchUser === "function") refetchUser();
+//       if (typeof refetchOrders === "function") refetchOrders();
+//     }
+//   }, [userId, refetchUser, refetchOrders]);
 
 //   // মঙ্গোডিবি আইডি ক্লিন করার হেল্পার
 //   const getSafeId = (idField: any): string => {
@@ -15,13 +30,15 @@
 //     return typeof idField === "object" ? idField.$oid || idField._id || String(idField) : String(idField);
 //   };
 
-//   // 🎯 শুধুমাত্র Paid এবং Delivered/Packed অর্ডারের ইনভয়েসগুলো ফিল্টার করে আনা হচ্ছে
+//   // 🎯 ৩. শুধুমাত্র লগইন করা ইউজারের Paid এবং Delivered/Packed অর্ডারের ইনভয়েসগুলো ফিল্টার করা
 //   const invoiceOrders = orders.filter((order: any) => {
 //     const paymentPaid = order.paymentStatus?.toLowerCase() === "paid";
 //     const statusValid = ["delivered", "packed"].includes(order.orderStatus?.toLowerCase());
-//     return paymentPaid && statusValid;
+//     const isUserOrder = getSafeId(order.user) === getSafeId(userId);
+//     return paymentPaid && statusValid && isUserOrder;
 //   });
 
+//   // লোডিং স্টেট স্ক্রিন
 //   if (isLoading) {
 //     return (
 //       <div className="min-h-[350px] md:min-h-[400px] flex flex-col items-center justify-center gap-2 bg-white rounded-2xl border border-gray-100 p-4">
@@ -98,7 +115,7 @@
 //               })}
 //             </div>
 
-//             {/* 💻 ২. ডেসকটপ ভিউ: ক্লিন টেবিল লেআউট (মাঝারি ও বড় স্ক্রিনের জন্য) */}
+//             {/* 💻 ২. ডেসকটপ ভিউ: ক্লিন টেবিল লেআউট (মাঝারি ও বড় স্ক্রিনের জন্য) */}
 //             <div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-3xs overflow-hidden">
 //               <div className="overflow-x-auto">
 //                 <table className="w-full text-left border-collapse">
@@ -157,6 +174,8 @@
 //   );
 // }
 
+
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -167,14 +186,14 @@ import { useMyOrders } from "@/hooks/useGetOrderDetails";
 import { Loader2, FileText, Eye, Calendar, CreditCard } from "lucide-react";
 
 export default function MyInvoicesListPage() {
-  // 💡 ১. সেশন এবং অর্ডার ডাটা উভয়ই রিফ্রেস করা নিশ্চিত করার জন্য হুক কল
+  // 💡 ১. সেশন এবং অর্ডার ডাটা উভয়ই রিফ্রেস করা নিশ্চিত করার জন্য হুক কল
   const { user: backendUser, isLoading: isUserLoading, refetch: refetchUser } = useUserData() as any;
   const { orders = [], isLoading: isOrdersLoading, refetch: refetchOrders } = useMyOrders() as any;
   
   const userId = backendUser?._id || backendUser?.id;
   const isLoading = isUserLoading || isOrdersLoading;
 
-  // 🎯 ২. অটো-সিঙ্ক মেকানিজম: প্রথমবার পেজে ল্যান্ড করলে রিলোড ছাড়াই ডাটা ফেচ হবে
+  // 🎯 ২. অটো-সিঙ্ক মেকানিজম: প্রথমবার পেজে ল্যান্ড করলে রিলোড ছাড়াই ডাটা ফেচ হবে
   useEffect(() => {
     if (userId) {
       if (typeof refetchUser === "function") refetchUser();
@@ -188,12 +207,11 @@ export default function MyInvoicesListPage() {
     return typeof idField === "object" ? idField.$oid || idField._id || String(idField) : String(idField);
   };
 
-  // 🎯 ৩. শুধুমাত্র লগইন করা ইউজারের Paid এবং Delivered/Packed অর্ডারের ইনভয়েসগুলো ফিল্টার করা
+  // 🎯 ৩. কন্ডিশন ফিক্সড: শুধুমাত্র পেমেন্ট স্ট্যাটাস paid হলেই ইনভয়েস দেখাবে (packed/delivered এর কন্ডিশন বাদ)
   const invoiceOrders = orders.filter((order: any) => {
     const paymentPaid = order.paymentStatus?.toLowerCase() === "paid";
-    const statusValid = ["delivered", "packed"].includes(order.orderStatus?.toLowerCase());
     const isUserOrder = getSafeId(order.user) === getSafeId(userId);
-    return paymentPaid && statusValid && isUserOrder;
+    return paymentPaid && isUserOrder;
   });
 
   // লোডিং স্টেট স্ক্রিন
@@ -218,7 +236,7 @@ export default function MyInvoicesListPage() {
 
         {invoiceOrders.length === 0 ? (
           <div className="text-center py-12 md:py-16 text-[13px] md:text-[14px] text-gray-400 border border-gray-100 rounded-2xl bg-white p-4">
-            No eligible invoices found yet. Invoices are generated once payment is verified and orders are packed/delivered.
+            No eligible invoices found yet. Invoices are generated once payment is verified.
           </div>
         ) : (
           <>
