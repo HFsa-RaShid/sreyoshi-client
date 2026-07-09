@@ -299,7 +299,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import {
   ShoppingBag,
   Clock,
@@ -315,6 +315,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useUserData } from "@/hooks/useUserData";
 import { useMyOrders } from "@/hooks/useGetOrderDetails";
+import { useQueryClient } from "@tanstack/react-query"; // 🎯 ট্রিক ১: কুয়েরি ক্লায়েন্ট ইম্পোর্ট
 import {
   AreaChart,
   Area,
@@ -336,11 +337,23 @@ const getSafeId = (userField: any): string => {
 
 export default function DashboardHomePage() {
   const { data: session } = useSession();
+  const queryClient = useQueryClient(); // 🎯 কুয়েরি ক্লায়েন্ট ইনিশিয়েট করা হলো
+  
   const { user: backendUser, isLoading: isUserLoading } = useUserData() as any;
-  const { orders: rawOrders = [], isLoading: isOrdersLoading } = useMyOrders() as any;
+  const { orders: rawOrders = [], isLoading: isOrdersLoading, refetch } = useMyOrders() as any;
 
   const currentUser = backendUser || session?.user;
   const userId = getSafeId(currentUser?._id || currentUser?.id);
+
+  // ─── 🎯 [MAGIC CACHE TRIGGER]: সাইডবার থেকে এলেই যেন ক্যাশ ডাটা ফোর্স-রেন্ডার হয় ───
+  useEffect(() => {
+    // মাউন্ট হওয়ার সাথে সাথে এই কুয়েরির ক্যাশ ডাটা থাকলে তা ইনস্ট্যান্ট রি-ভ্যালিডেট করবে
+    if (typeof refetch === "function") {
+      refetch();
+    }
+    // গ্লোবাল ক্যাশ স্টেটকে ফ্রেশ করার ট্রিক
+    queryClient.invalidateQueries({ queryKey: ['my-orders'] });
+  }, [refetch, queryClient]);
 
   // ডাটা ব্যাকগ্রাউন্ডে লোড হচ্ছে কিনা তা ট্র্যাক করার জন্য
   const isSyncing = isUserLoading || isOrdersLoading || !userId;
@@ -404,7 +417,7 @@ export default function DashboardHomePage() {
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-200 font-sans text-[#1E1E1E]">
       
-      {/* ─── ১. ব্যানার (ইনস্ট্যান্ট রেন্ডার হবে সেশনের কল্যাণে) ─── */}
+      {/* ১. ব্যানার */}
       <div className="relative bg-[#0F1E29] rounded-2xl p-6 md:p-8 text-white overflow-hidden shadow-xs">
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-[#4E612B] rounded-full blur-3xl opacity-40" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -421,7 +434,7 @@ export default function DashboardHomePage() {
         </div>
       </div>
 
-      {/* ─── ২. কার্ড গ্রিড (শুধু ভ্যালু টুকু স্কেলিটন হবে) ─── */}
+      {/* ২. কার্ড গ্রিড */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { name: "Total Orders", val: stats.totalOrders, sub: "Placed overall", icon: ShoppingBag, color: "bg-blue-50 text-blue-600 border-blue-100" },
@@ -430,12 +443,15 @@ export default function DashboardHomePage() {
           { name: "Total Spent", val: `৳${stats.totalSpent}`, sub: "Valid purchases", icon: DollarSign, color: "bg-purple-50 text-purple-600 border-purple-100" },
         ].map((item, idx) => {
           const Icon = item.icon;
+          // যদি ক্যাশ মেমোরিতে অলরেডি ডাটা থাকে, তবে সে ডাইরেক্ট ডেটা দেখাবে, স্কেলিটন বা লোডিং জ্যাম করবে না
+          const showSkeleton = isSyncing && rawOrders.length === 0;
+
           return (
             <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex items-center gap-4 shadow-2xs">
               <div className={`p-3 rounded-xl border shrink-0 ${item.color}`}><Icon size={20} /></div>
               <div className="min-w-0 w-full">
                 <h4 className="text-gray-400 font-bold text-[11px] uppercase tracking-wider truncate">{item.name}</h4>
-                {isSyncing ? (
+                {showSkeleton ? (
                   <div className="h-6 w-14 bg-gray-200 rounded-md animate-pulse mt-1" />
                 ) : (
                   <p className="text-lg md:text-xl font-extrabold text-[#0F1E29] mt-0.5">{item.val}</p>
@@ -447,9 +463,8 @@ export default function DashboardHomePage() {
         })}
       </div>
 
-      {/* ─── ৩. চার্টস গ্রিড (ডাটা আসার আগ পর্যন্ত লোড অ্যানিমেশন বা স্কেলিটন) ─── */}
+      {/* ৩. চার্টস গ্রিড */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* এরিয়া চার্ট */}
         <div className="lg:col-span-8 bg-white border border-gray-100 rounded-2xl p-5 shadow-2xs">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -459,7 +474,7 @@ export default function DashboardHomePage() {
             <span className="text-[10px] bg-gray-50 border border-gray-100 px-2 py-1 rounded-md text-gray-500 font-mono">Live</span>
           </div>
           <div className="w-full h-60">
-            {isSyncing ? (
+            {isSyncing && rawOrders.length === 0 ? (
               <div className="w-full h-full bg-gray-50 rounded-xl animate-pulse flex items-center justify-center text-xs text-gray-400">Loading charts...</div>
             ) : stats.totalOrders === 0 ? (
               <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 font-medium">No order data available this week.</div>
@@ -490,7 +505,7 @@ export default function DashboardHomePage() {
             <p className="text-[11px] text-gray-400 font-medium">Status ratio breakdown</p>
           </div>
           <div className="w-full h-35 relative flex items-center justify-center my-2">
-            {isSyncing ? (
+            {isSyncing && rawOrders.length === 0 ? (
               <div className="w-24 h-24 rounded-full border-4 border-gray-100 border-t-gray-300 animate-spin" />
             ) : stats.totalOrders === 0 ? (
               <p className="text-xs text-gray-400 font-medium">No distribution logs.</p>
@@ -504,7 +519,7 @@ export default function DashboardHomePage() {
                 </PieChart>
               </ResponsiveContainer>
             )}
-            {!isSyncing && (
+            {!(isSyncing && rawOrders.length === 0) && (
               <div className="absolute flex flex-col items-center justify-center">
                 <span className="text-lg font-black text-[#0F1E29]">{stats.totalOrders}</span>
                 <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Total</span>
@@ -512,7 +527,7 @@ export default function DashboardHomePage() {
             )}
           </div>
           <div className="space-y-1.5 pt-2 border-t border-gray-50">
-            {isSyncing ? (
+            {isSyncing && rawOrders.length === 0 ? (
               <div className="space-y-2">
                 <div className="h-3 bg-gray-100 rounded-sm animate-pulse w-full" />
                 <div className="h-3 bg-gray-100 rounded-sm animate-pulse w-2/3" />
@@ -534,7 +549,7 @@ export default function DashboardHomePage() {
         </div>
       </div>
 
-      {/* ─── ৪. সাম্প্রতিক অর্ডার লগ (আলাদা ৩টি রো-এর সুন্দর স্কেলিটন) ─── */}
+      {/* ৪. সাম্প্রতিক অর্ডার লগ */}
       <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-2xs">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -547,8 +562,7 @@ export default function DashboardHomePage() {
         </div>
         
         <div className="space-y-3">
-          {isSyncing ? (
-            // ৩টি রো বিশিষ্ট নিখুঁত অর্ডার স্কেলিটন
+          {isSyncing && rawOrders.length === 0 ? (
             [1, 2, 3].map((n) => (
               <div key={n} className="flex items-center justify-between p-3.5 border border-gray-50 rounded-xl animate-pulse">
                 <div className="flex items-center gap-3 w-1/3">
