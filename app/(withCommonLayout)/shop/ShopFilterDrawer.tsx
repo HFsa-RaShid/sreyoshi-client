@@ -1,6 +1,5 @@
 
 
-
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client";
 
@@ -63,7 +62,6 @@
 //   setSelectedBrands,
 // }: ShopFilterDrawerProps) {
   
-//   // 🎯 useBrands হুক থেকে ডাটা রিসিভ করা হচ্ছে
 //   const { brandsData } = useBrands();
 //   const [showAllBrands, setShowAllBrands] = useState(false);
 
@@ -77,7 +75,6 @@
 
 //   if (!isOpen) return null;
 
-//   // 🎯 সার্চ বার ছাড়া প্রথম অবস্থায় ৫টি ব্র্যান্ড স্লাইস করা হলো
 //   const displayedBrands = showAllBrands ? rawBrands : rawBrands.slice(0, 5);
 
 //   return (
@@ -185,7 +182,7 @@
 //         </div>
 //         <hr className="my-5 border-gray-100" />
 
-//         {/* 📸 BRAND FILTER SECTION (সার্চ বার ছাড়া একদম ক্লিন মোবাইল ভিউ) */}
+//         {/* 📸 BRAND FILTER SECTION */}
 //         <div className="mb-6">
 //           <h3 className="text-sm font-bold text-[#1A2E22] mb-3">
 //             Filter by Brand
@@ -194,21 +191,28 @@
 //           <div className="flex flex-col gap-3 max-h-[320px] overflow-y-auto scrollbar-none pr-1">
 //             {displayedBrands.length > 0 ? (
 //               displayedBrands.map((brand: any) => {
-//                 // মেইন পেজের সাথে সিঙ্ক রেখে আইডি ট্র্যাকিং ভ্যালু জেনারেট করা হলো
-//                 const brandIdentifier = brand?._id?.$oid || brand?._id || String(brand?.slug || brand?.name);
-//                 const isBrandChecked = selectedBrands.includes(brandIdentifier);
-//                 const totalBrandProducts = getProductCount("brand", brandIdentifier);
+//                 // 🎯 বুলেটিপ্রুফ স্ট্রিং আইডি এক্সট্রাকশন লজিক
+//                 const brandIdentifier = 
+//                   brand?._id && typeof brand._id === "object" && "$oid" in brand._id 
+//                     ? String(brand._id.$oid) 
+//                     : String(brand?._id || "");
+
+//                 // যদি আইডি কোনো কারণে ফেইল করে তবে সেফটি ফলব্যাক হিসেবে নাম বা স্লাগ ব্যবহার করা
+//                 const finalKey = brandIdentifier && brandIdentifier !== "undefined" ? brandIdentifier : String(brand?.slug || brand?.name);
+
+//                 const isBrandChecked = selectedBrands.includes(finalKey);
+//                 const totalBrandProducts = getProductCount("brand", finalKey);
 
 //                 return (
 //                   <label
-//                     key={brandIdentifier}
+//                     key={finalKey}
 //                     className="flex items-center justify-between cursor-pointer group select-none text-slate-600 hover:text-slate-900"
 //                   >
 //                     <div className="flex items-center gap-3">
 //                       <input
 //                         type="checkbox"
 //                         checked={isBrandChecked}
-//                         onChange={() => toggleFilter(selectedBrands, setSelectedBrands, brandIdentifier)}
+//                         onChange={() => toggleFilter(selectedBrands, setSelectedBrands, finalKey)}
 //                         className="w-4 h-4 rounded border-slate-300 text-[#2D4A3E] focus:ring-[#2D4A3E] accent-[#2D4A3E]"
 //                       />
 //                       <span className="text-sm font-medium capitalize">
@@ -342,7 +346,6 @@
 //   );
 // }
 
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -456,7 +459,11 @@ export default function ShopFilterDrawer({
               return (
                 <div key={category._id} className="flex flex-col">
                   <div
-                    onClick={() => handleCategorySelect(category._id)}
+                    onClick={() => {
+                      handleCategorySelect(category._id);
+                      // আপনি যদি মেইন ক্যাটাগরি সিলেক্ট করলেও ড্রয়ার বন্ধ করতে চান, তবে নিচের লাইনটি আনকমেন্ট করুন:
+                      // onClose();
+                    }}
                     className={`flex justify-between items-center font-sans text-sm font-bold cursor-pointer transition-colors py-1 ${isCatSelected ? "text-[#FF3F6C]" : "text-[#1A2E22] hover:text-[#FF3F6C]"}`}
                   >
                     <span>{category.name}</span>
@@ -534,15 +541,12 @@ export default function ShopFilterDrawer({
           <div className="flex flex-col gap-3 max-h-[320px] overflow-y-auto scrollbar-none pr-1">
             {displayedBrands.length > 0 ? (
               displayedBrands.map((brand: any) => {
-                // 🎯 বুলেটিপ্রুফ স্ট্রিং আইডি এক্সট্রাকশন লজিক
                 const brandIdentifier = 
                   brand?._id && typeof brand._id === "object" && "$oid" in brand._id 
                     ? String(brand._id.$oid) 
                     : String(brand?._id || "");
 
-                // যদি আইডি কোনো কারণে ফেইল করে তবে সেফটি ফলব্যাক হিসেবে নাম বা স্লাগ ব্যবহার করা
                 const finalKey = brandIdentifier && brandIdentifier !== "undefined" ? brandIdentifier : String(brand?.slug || brand?.name);
-
                 const isBrandChecked = selectedBrands.includes(finalKey);
                 const totalBrandProducts = getProductCount("brand", finalKey);
 
@@ -555,7 +559,10 @@ export default function ShopFilterDrawer({
                       <input
                         type="checkbox"
                         checked={isBrandChecked}
-                        onChange={() => toggleFilter(selectedBrands, setSelectedBrands, finalKey)}
+                        onChange={() => {
+                          toggleFilter(selectedBrands, setSelectedBrands, finalKey);
+                          onClose(); /* 🎯 ব্র্যান্ড সিলেক্ট করলে ড্রয়ার বন্ধ হবে */
+                        }}
                         className="w-4 h-4 rounded border-slate-300 text-[#2D4A3E] focus:ring-[#2D4A3E] accent-[#2D4A3E]"
                       />
                       <span className="text-sm font-medium capitalize">
@@ -594,7 +601,10 @@ export default function ShopFilterDrawer({
               <input
                 type="checkbox"
                 checked={selectedSkinTypes.length === 0}
-                onChange={() => setSelectedSkinTypes([])} 
+                onChange={() => {
+                  setSelectedSkinTypes([]);
+                  onClose(); /* 🎯 রিসেট দিলে ড্রয়ার বন্ধ হবে */
+                }} 
                 className="w-4 h-4 rounded accent-[#2D4A3E]"
               />
               All Skin Types (Reset)
@@ -605,7 +615,10 @@ export default function ShopFilterDrawer({
                 <input
                   type="checkbox"
                   checked={selectedSkinTypes.includes(type)}
-                  onChange={() => toggleFilter(selectedSkinTypes, setSelectedSkinTypes, type)}
+                  onChange={() => {
+                    toggleFilter(selectedSkinTypes, setSelectedSkinTypes, type);
+                    onClose(); /* 🎯 স্কিন টাইপ সিলেক্ট করলে ড্রয়ার বন্ধ হবে */
+                  }}
                   className="w-4 h-4 rounded accent-[#2D4A3E]"
                 />
                 {type}
@@ -629,6 +642,8 @@ export default function ShopFilterDrawer({
             max="5000"
             value={priceRange}
             onChange={(e) => setPriceRange(Number(e.target.value))}
+            // মোবাইল টাচ বা ড্র্যাগ শেষ করার পর যদি ড্রয়ার বন্ধ করতে চান, তবে অন-চেঞ্জের বদলে "onMouseUp" বা "onTouchEnd" এ onClose() দিতে পারেন। 
+            // আপাতত প্রাইস স্লাইডারে অটো ক্লোজ না দেওয়াই ভালো, কারণ ইউজার প্রাইস পজিশন ঠিক করতে চান।
             className="w-full accent-[#2D4A3E] cursor-pointer"
           />
         </div>
@@ -645,7 +660,10 @@ export default function ShopFilterDrawer({
                 <input
                   type="checkbox"
                   checked={selectedRatings.includes(stars)}
-                  onChange={() => toggleFilter(selectedRatings, setSelectedRatings, stars)}
+                  onChange={() => {
+                    toggleFilter(selectedRatings, setSelectedRatings, stars);
+                    onClose(); /* 🎯 রেটিং সিলেক্ট করলে ড্রয়ার বন্ধ হবে */
+                  }}
                   className="w-4 h-4 rounded accent-[#2D4A3E]"
                 />
                 <div className="flex items-center text-amber-400 gap-0.5">
@@ -676,7 +694,10 @@ export default function ShopFilterDrawer({
                 <input
                   type="checkbox"
                   checked={selectedPromotions.includes(promo)}
-                  onChange={() => toggleFilter(selectedPromotions, setSelectedPromotions, promo)}
+                  onChange={() => {
+                    toggleFilter(selectedPromotions, setSelectedPromotions, promo);
+                    onClose(); /* 🎯 প্রমোশন ট্যাগ সিলেক্ট করলে ড্রয়ার বন্ধ হবে */
+                  }}
                   className="w-4 h-4 rounded accent-[#2D4A3E]"
                 />
                 {promo}
