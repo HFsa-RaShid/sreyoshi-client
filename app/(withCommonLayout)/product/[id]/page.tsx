@@ -1,5 +1,6 @@
 
 
+
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client";
 
@@ -18,7 +19,6 @@
 // import RelatedProducts from "./components/RelatedProducts";
 // import RecommendedProducts from "./components/RecommendedProducts";
 // import Breadcrumb from "@/components/Shared/Breadcrumb/Breadcrumb";
-
 
 // type TabType = "desc" | "howToUse" | "reviews";
 
@@ -39,6 +39,7 @@
 //   // Local State Management 
 //   const [userSelectedShade, setUserSelectedShade] = useState<ProductShade | null>(null);
 //   const [userSelectedImg, setUserSelectedImg] = useState<string>("");
+//   const [animateKey, setAnimateKey] = useState(0);
 
 //   if (isLoading) {
 //     return (
@@ -73,10 +74,18 @@
 
 //   const selectedImg = userSelectedImg || defaultImg;
 
+//   // আলতো এবং মসৃণ রাইট-টু-লেফট ট্রানজিশন হ্যান্ডলার
+//   const handleImageChange = (img: string) => {
+//     if (selectedImg !== img) {
+//       setUserSelectedImg(img);
+//       setAnimateKey(prev => prev + 1);
+//     }
+//   };
+
 //   const handleShadeSelect = (shade: ProductShade) => {
 //     setUserSelectedShade(shade);
 //     if (shade.shadeImage) {
-//       setUserSelectedImg(shade.shadeImage);
+//       handleImageChange(shade.shadeImage);
 //     }
 //   };
 
@@ -135,29 +144,43 @@
 //     router.push(`/shop?${queryKey}=${encodeURIComponent(finalValue)}`);
 //   };
 
-// // 📋 ডাইনামিক ব্রেডক্রাম্ব অ্যারে (টাইপ ডিফাইন করে দেওয়া হলো যাতে link অপশনাল হতে পারে)
-// const productBreadcrumbs: { name: string; link?: string }[] = [
-//   { name: "Home", link: "/" },
-//   { name: "Shop", link: "/shop" },
-// ];
+//   const productBreadcrumbs: { name: string; link?: string }[] = [
+//     { name: "Home", link: "/" },
+//     { name: "Shop", link: "/shop" },
+//   ];
 
-// if (categoryName) {
-//   productBreadcrumbs.push({ 
-//     name: categoryName, 
-//     link: `/shop?category=${categoryId || categoryName}` 
-//   });
-// }
+//   if (categoryName) {
+//     productBreadcrumbs.push({ 
+//       name: categoryName, 
+//       link: `/shop?category=${categoryId || categoryName}` 
+//     });
+//   }
 
-// if (product.name) {
-//   // 🎯 এখন আর টাইপস্ক্রিপ্ট এরর দেবে না, কারণ link?: string ডিফাইন করা আছে
-//   productBreadcrumbs.push({ name: product.name });
-// }
+//   if (product.name) {
+//     productBreadcrumbs.push({ name: product.name });
+//   }
 
 //   return (
 //     <div className="min-h-screen pt-16 md:pt-28 pb-16 px-4 md:px-12 text-[#2C3E35]">
+//       {/* গ্লোবাল সিএসএস দিয়ে আলতো স্লাইড ও ফেড-ইন ট্রানজিশন ডিফাইন করা হলো */}
+//       <style jsx global>{`
+//         @keyframes smoothSlideLeft {
+//           0% {
+//             transform: translateX(15px);
+//             opacity: 0.4;
+//           }
+//           100% {
+//             transform: translateX(0);
+//             opacity: 1;
+//           }
+//         }
+//         .animate-gallery-slide {
+//           animation: smoothSlideLeft 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+//         }
+//       `}</style>
+
 //       <div className="container mx-auto p-6 md:p-10 rounded-[32px]">
         
-//         {/* 🎯 ব্রেডক্রাম্ব এখানে বসানো হলো */}
 //         <div className="mb-2 md:mb-4">
 //           <Breadcrumb customItems={productBreadcrumbs} />
 //         </div>
@@ -165,23 +188,29 @@
 //         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
 //           {/* ================= LEFT GALLERY ================= */}
 //           <div className="flex flex-col items-center lg:items-start w-full">
+//             {/* বড় ইমেজ সাইজ আগের মতোই max-w-lg রাখা হয়েছে, যা ডিভাইস অনুযায়ী রেসপনসিভলি সংকুচিত হবে */}
 //             <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
-//               <Image 
-//                 src={selectedImg || "/placeholder.png"} 
-//                 alt={product.name || "Product Image"} 
-//                 fill
-//                 priority
-//                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-//                 className="object-cover transition-all duration-300" 
-//               />
+//               <div key={animateKey} className="w-full h-full relative animate-gallery-slide">
+//                 <Image 
+//                   src={selectedImg || "/placeholder.png"} 
+//                   alt={product.name || "Product Image"} 
+//                   fill
+//                   priority
+//                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+//                   className="object-cover" 
+//                 />
+//               </div>
 //             </div>
             
+//             {/* ছোট থাম্বনেইল কন্টেইনার, এটিও ডিভাইস সাইজ অনুযায়ী ছোট হতে থাকবে */}
 //             <div className="grid grid-cols-4 gap-3 w-full max-w-lg">
 //               {product.commonImages?.map((img: string, idx: number) => (
 //                 <div 
 //                   key={idx} 
-//                   onClick={() => setUserSelectedImg(img)}
-//                   className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all relative ${selectedImg === img ? "border-[#E92C66]" : "border-transparent opacity-70 hover:opacity-100"}`}
+//                   onMouseEnter={() => handleImageChange(img)}
+//                   onClick={() => handleImageChange(img)}
+//                   onTouchStart={() => handleImageChange(img)}
+//                   className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all duration-300 relative ${selectedImg === img ? "border-[#E92C66] scale-[0.98]" : "border-transparent opacity-70 hover:opacity-100"}`}
 //                 >
 //                   <Image 
 //                     src={img} 
@@ -370,20 +399,24 @@
 //         </div>
 
 //         {/* ================= BOTTOM TABS DETAILS ================= */}
-//         <div className="mt-16 border-t border-gray-100 pt-10">
-//           <div className="flex justify-center gap-4 mb-8">
+//         <div className="mt-16 border-t border-gray-200 pt-6">
+//           <div className="flex justify-start gap-8 border-b border-gray-200 pb-0 mb-8 overflow-x-auto whitespace-nowrap">
 //             {([ "desc", "howToUse", "reviews" ] as TabType[]).map((tab) => (
 //               <button
 //                 key={tab}
 //                 onClick={() => setActiveTab(tab)}
-//                 className={`px-6 py-2.5 rounded-xl font-sans font-bold text-xs uppercase tracking-wide transition-all ${activeTab === tab ? "bg-[#1A2E22] text-white shadow-sm" : "bg-white text-black hover:bg-gray-200"}`}
+//                 className={`pb-3 font-sans font-medium text-sm transition-all relative ${
+//                   activeTab === tab 
+//                     ? "text-[#1A2E22] font-semibold after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#1A2E22]" 
+//                     : "text-gray-400 hover:text-gray-600"
+//                 }`}
 //               >
-//                 {tab === "desc" ? "Full Description" : tab === "howToUse" ? "Features & Details" : `Reviews (${product.ratingCount || 0})`}
+//                 {tab === "desc" ? "Description" : tab === "howToUse" ? "Additional Information" : `Review (${product.ratingCount || 0})`}
 //               </button>
 //             ))}
 //           </div>
 
-//           <div className="w-full max-w-5xl mx-auto bg-white p-6 rounded-2xl border border-gray-100 overflow-hidden text-left">
+//           <div className="w-full max-w-5xl mx-auto bg-white py-2 overflow-hidden text-left">
 //             {activeTab === "desc" && (
 //               <div className="w-full max-w-full overflow-hidden">
 //                 <div 
@@ -423,12 +456,12 @@
 //     </div>
 //   );
 // }
-
+// 
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react"; 
 import Image from "next/image"; 
@@ -463,7 +496,11 @@ export default function ProductDetailsPage() {
   // Local State Management 
   const [userSelectedShade, setUserSelectedShade] = useState<ProductShade | null>(null);
   const [userSelectedImg, setUserSelectedImg] = useState<string>("");
-  const [animateKey, setAnimateKey] = useState(0);
+  
+  // অ্যানিমেশনের জন্য স্টেটস
+  const [currentImg, setCurrentImg] = useState<string>("");
+  const [prevImg, setPrevImg] = useState<string>("");
+  const [isAnimating, setIsAnimating] = useState(false);
 
   if (isLoading) {
     return (
@@ -498,12 +535,25 @@ export default function ProductDetailsPage() {
 
   const selectedImg = userSelectedImg || defaultImg;
 
-  // আলতো এবং মসৃণ রাইট-টু-লেফট ট্রানজিশন হ্যান্ডলার
+  // প্রথমবার ইমেজ লোড করার জন্য ইফেক্ট
+  if (!currentImg && selectedImg) {
+    setCurrentImg(selectedImg);
+    setPrevImg(selectedImg);
+  }
+
+  // হোভার চেঞ্জ হ্যান্ডলার যা রাইট টু লেফট ইফেক্ট তৈরি করবে
   const handleImageChange = (img: string) => {
-    if (selectedImg !== img) {
+    if (currentImg !== img && !isAnimating) {
+      setPrevImg(currentImg);
+      setCurrentImg(img);
       setUserSelectedImg(img);
-      setAnimateKey(prev => prev + 1);
+      setIsAnimating(true);
     }
+  };
+
+  // অ্যানিমেশন শেষ হলে স্টেট রিসেট করার জন্য
+  const handleAnimationEnd = () => {
+    setIsAnimating(false);
   };
 
   const handleShadeSelect = (shade: ProductShade) => {
@@ -586,20 +636,45 @@ export default function ProductDetailsPage() {
 
   return (
     <div className="min-h-screen pt-16 md:pt-28 pb-16 px-4 md:px-12 text-[#2C3E35]">
-      {/* গ্লোবাল সিএসএস দিয়ে আলতো স্লাইড ও ফেড-ইন ট্রানজিশন ডিফাইন করা হলো */}
+      {/* গ্লোবাল সিএসএস দিয়ে নিখুঁত ও মসৃণ রাইট টু লেফট স্লাইড ডিফাইন করা হলো */}
       <style jsx global>{`
-        @keyframes smoothSlideLeft {
+        .gallery-viewport {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+        .slide-layer {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+        }
+        .animate-incoming {
+          animation: slideInFromRight 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .animate-outgoing {
+          animation: slideOutToLeft 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes slideInFromRight {
           0% {
-            transform: translateX(15px);
-            opacity: 0.4;
+            transform: translateX(100%);
+            opacity: 0.3;
           }
           100% {
             transform: translateX(0);
             opacity: 1;
           }
         }
-        .animate-gallery-slide {
-          animation: smoothSlideLeft 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        @keyframes slideOutToLeft {
+          0% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(-100%);
+            opacity: 0;
+          }
         }
       `}</style>
 
@@ -612,21 +687,40 @@ export default function ProductDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           {/* ================= LEFT GALLERY ================= */}
           <div className="flex flex-col items-center lg:items-start w-full">
-            {/* বড় ইমেজ সাইজ আগের মতোই max-w-lg রাখা হয়েছে, যা ডিভাইস অনুযায়ী রেসপনসিভলি সংকুচিত হবে */}
+            {/* বড় ইমেজ সাইজ আগের মতোই max-w-lg যা রেসপনসিভলি সংকুচিত হবে */}
             <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
-              <div key={animateKey} className="w-full h-full relative animate-gallery-slide">
-                <Image 
-                  src={selectedImg || "/placeholder.png"} 
-                  alt={product.name || "Product Image"} 
-                  fill
-                  priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover" 
-                />
+              <div className="gallery-viewport">
+                {/* আউটগোয়িং ইমেজ লেয়ার (পুরানো ইমেজ বামে চলে যাবে) */}
+                {isAnimating && (
+                  <div className="slide-layer animate-outgoing">
+                    <Image 
+                      src={prevImg || "/placeholder.png"} 
+                      alt="Previous Image" 
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover" 
+                    />
+                  </div>
+                )}
+                
+                {/* ইনকামিং নতুন ইমেজ লেয়ার (ডান দিক থেকে স্লাইড করে আসবে) */}
+                <div 
+                  className={`slide-layer ${isAnimating ? "animate-incoming" : ""}`}
+                  onAnimationEnd={handleAnimationEnd}
+                >
+                  <Image 
+                    src={currentImg || "/placeholder.png"} 
+                    alt={product.name || "Product Image"} 
+                    fill
+                    priority
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover" 
+                  />
+                </div>
               </div>
             </div>
             
-            {/* ছোট থাম্বনেইল কন্টেইনার, এটিও ডিভাইস সাইজ অনুযায়ী ছোট হতে থাকবে */}
+            {/* ছোট থাম্বনেইল কন্টেইনার, এটিও স্ক্রিন অনুযায়ী ছোট হবে */}
             <div className="grid grid-cols-4 gap-3 w-full max-w-lg">
               {product.commonImages?.map((img: string, idx: number) => (
                 <div 
@@ -835,12 +929,12 @@ export default function ProductDetailsPage() {
                     : "text-gray-400 hover:text-gray-600"
                 }`}
               >
-                {tab === "desc" ? "Description" : tab === "howToUse" ? "Additional Information" : `Review (${product.ratingCount || 0})`}
+                {tab === "desc" ? "Description" : tab === "howToUse" ? "Information" : `Review (${product.ratingCount || 0})`}
               </button>
             ))}
           </div>
 
-          <div className="w-full max-w-5xl mx-auto bg-white py-2 overflow-hidden text-left">
+          <div className="w-full container mx-auto bg-white py-2 overflow-hidden text-left">
             {activeTab === "desc" && (
               <div className="w-full max-w-full overflow-hidden">
                 <div 
@@ -880,4 +974,3 @@ export default function ProductDetailsPage() {
     </div>
   );
 }
-//

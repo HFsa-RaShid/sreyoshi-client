@@ -76,9 +76,9 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-2">
       {/* রিভিউ রাইটিং ফর্ম বা লগইন অ্যালার্ট */}
-      <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
         <h4 className="text-sm font-bold text-[#1A2E22] mb-3 flex items-center gap-2">
           <MessageSquare size={16} /> Share Your Feedback
         </h4>
