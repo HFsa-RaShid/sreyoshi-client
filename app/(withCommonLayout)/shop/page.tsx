@@ -721,8 +721,7 @@ function ShopContent() {
         />
 
         {/* ================= RIGHT SIDE: PRODUCT GRID & TOPBAR ================= */}
-        <div className="lg:col-span-9">
-          {" "}
+           <div className="lg:col-span-3">
           {/* TOPBAR */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <p className="text-sm text-gray-600 font-medium">
@@ -732,43 +731,34 @@ function ShopContent() {
                 `Showing 1-${filteredProducts.length} of ${filteredProducts.length} results`
               )}
             </p>
-            <div className="flex items-center gap-2 self-start sm:self-auto w-full sm:w-auto">
-              <div className="relative bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-sm font-medium flex items-center gap-4 shadow-sm w-full sm:w-auto">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="appearance-none bg-transparent pr-6 outline-none cursor-pointer font-sans text-xs w-full"
-                >
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              
+              {/* <span className="text-sm text-gray-500">Sort by :</span> */}
+              <div className="relative bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-sm font-medium flex items-center gap-4 shadow-sm">
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="appearance-none bg-transparent pr-6 outline-none cursor-pointer font-sans text-xs">
                   <option value="latest">Latest Arrivals (Default)</option>
                   <option value="popularity">Popularity (Sales)</option>
                   <option value="low-to-high">Price: Low to High</option>
                   <option value="high-to-low">Price: High to Low</option>
                   <option value="rating">Highest Rating</option>
                 </select>
-                <ChevronDown
-                  size={14}
-                  className="absolute right-3 pointer-events-none text-gray-500"
-                />
+                <ChevronDown size={14} className="absolute right-3 pointer-events-none text-gray-500" />
               </div>
             </div>
           </div>
-          {/* PRODUCT GRID SECTION */}
+
           {showSkeleton ? (
-         
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
               {[...Array(6)].map((_, idx) => (
                 <ShopProductSkeleton key={idx} />
               ))}
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="bg-white text-center py-20 rounded-2xl border border-dashed border-gray-200 px-4">
-              <p className="text-gray-500 font-medium text-sm md:text-base">
-                No products found matching the criteria.
-              </p>
+            <div className="bg-white text-center py-20 rounded-2xl border border-dashed border-gray-200">
+              <p className="text-gray-500 font-medium">No products found matching the criteria.</p>
             </div>
           ) : (
-           
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
                 <ShopProductCard
                   key={product._id || product.productCode}

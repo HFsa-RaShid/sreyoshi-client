@@ -155,7 +155,7 @@ export default function BestSellers() {
                     <span className="text-[9px] md:text-[11px] text-gray-400 uppercase tracking-wider block mb-0.5">
                       {subCategoryName}
                     </span>
-                    <h3 className="font-sans text-xs md:text-base font-medium text-[#1E2E24] group-hover:text-[#FF3F6C] transition-colors line-clamp-2 leading-tight h-3">
+                    <h3 className="font-sans text-xs md:text-base font-medium text-[#1E2E24] group-hover:text-[#FF3F6C] transition-colors line-clamp-2 leading-tight mb-1">
                       {product.name}
                     </h3>
 
@@ -178,7 +178,7 @@ export default function BestSellers() {
                   </div>
 
                   {/* Price, Metric & Add to Cart Button */}
-                  <div className="flex flex-col gap-1 mt-1.5">
+                  <div className="flex flex-col gap-1 mt-1">
                     <div className="text-[10px] md:text-xs text-gray-400 font-sans">
                       Net: {product.weightOrVolume} {product.unit}
                     </div>
