@@ -1,51 +1,203 @@
 
+// /* eslint-disable @typescript-eslint/no-explicit-any */
+// "use client";
+
+// import React, { useRef } from "react";
+// import Link from "next/link";
+// import Image from "next/image";
+// import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+// import { useGetCategoriesForCustomer } from "@/hooks/useCustomerData"; 
+// import { Category } from "@/Types/types";
+
+
+// export default function CategorySection() {
+//   // ⚡ তানস্ট্যাক কুয়েরি হুক দিয়ে লাইভ ক্যাটাগরি ডাটা ফেচ
+//   const { data: categoriesData, isLoading, error } = useGetCategoriesForCustomer();
+//   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+//   // লোডিং ও এরর হ্যান্ডেলিং
+//   if (isLoading) {
+//     return (
+//       <div className="w-full py-16 px-6 md:px-12 bg-white">
+//         <div className="container mx-auto text-center text-gray-400 font-sans animate-pulse">
+//           Loading Categories...
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   if (error || !categoriesData || categoriesData.length === 0) return null;
+
+//   // ৫টির বেশি ক্যাটাগরি থাকলে স্লাইডার মেকানিজম এক্টিভেট হবে
+//   const isSlider = categoriesData.length > 5;
+
+//   // স্মুথ স্ক্রোল ফাংশন
+//   const handleScroll = (direction: "left" | "right") => {
+//     if (scrollContainerRef.current) {
+//       const { scrollLeft, clientWidth } = scrollContainerRef.current;
+//       const scrollAmount = clientWidth * 0.5; 
+      
+//       scrollContainerRef.current.scrollTo({
+//         left: direction === "left" ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+//         behavior: "smooth",
+//       });
+//     }
+//   };
+
+//   return (
+//     <section className="w-full py-16 px-6 md:px-12 relative group/section">
+//       <div className="container mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-2 items-center">
+        
+//         {/* LEFT TEXT BLOCK */}
+//         <div className="lg:col-span-3 flex flex-col items-start pr-4 z-10">
+//           <h2 className="font-serif text-3xl md:text-4xl text-[#1E2E24] font-normal leading-tight">
+//             Shop by Category
+//           </h2>
+//           <p className="mt-4 text-[#5E6A60] font-sans text-sm md:text-base leading-relaxed max-w-[240px]">
+//             Everything you need for your best skin & hair days.
+//           </p>
+//           <Link 
+//             href="/shop" 
+//             className="mt-6 flex items-center gap-2 text-[#10381a] hover:text-[#457651] font-sans text-sm font-semibold border-b border-[#1E2E24] pb-0.5 transition-opacity group"
+//           >
+//             View All Products
+//             <ArrowRight size={14} className="transform group-hover:translate-x-1 transition-transform" />
+//           </Link>
+//         </div>
+
+//         {/* RIGHT CATEGORIES AREA WITH FLOATING BUTTONS */}
+//         <div className="lg:col-span-9 relative w-full overflow-hidden">
+          
+//           {isSlider && (
+//             <>
+//               <button 
+//                 onClick={() => handleScroll("left")}
+//                 className="absolute left-2 top-[40%] -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md border border-gray-100 flex items-center justify-center text-[#1E2E24] hover:bg-[#1E2E24] hover:text-white transition-all opacity-0 group-hover/section:opacity-100"
+//                 aria-label="Scroll Left"
+//               >
+//                 <ChevronLeft size={20} />
+//               </button>
+//               <button 
+//                 onClick={() => handleScroll("right")}
+//                 className="absolute right-2 top-[40%] -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md border border-gray-100 flex items-center justify-center text-[#1E2E24] hover:bg-[#1E2E24] hover:text-white transition-all opacity-0 group-hover/section:opacity-100"
+//                 aria-label="Scroll Right"
+//               >
+//                 <ChevronRight size={20} />
+//               </button>
+//             </>
+//           )}
+
+//           {/* DYNAMIC GRID / HORIZONTAL SLIDER CONTAINER */}
+//           <div 
+//             ref={scrollContainerRef}
+//             className={`w-full gap-4 pb-4 scrollbar-none snap-x snap-mandatory ${
+//               isSlider 
+//                 ? "flex overflow-x-auto" 
+//                 : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
+//             }`}
+//           >
+//             {(categoriesData as Category[]).map((category: Category) => {
+//               // ব্যাকএন্ড স্কিমা অনুযায়ী ইমেজ অপশনাল, তাই প্লেসহোল্ডার সেফটি চেক
+//               const categoryImage = category.image || "/placeholder.jpg";
+//               const categoryId = category._id;
+
+//               return (
+//                 <div 
+//                   key={categoryId} 
+//                   className={`flex flex-col items-center bg-white rounded-2xl pb-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-gray-100/50 snap-start ${
+//                     isSlider ? "min-w-[45%] sm:min-w-[30%] lg:min-w-[18.8%]" : "w-full"
+//                   }`}
+//                 >
+//                   {/* Image Box */}
+//                   <div className="w-full aspect-[4/5] rounded-t-2xl overflow-hidden bg-[#FAF5F0] relative">
+//                     <Image 
+//                       src={categoryImage} 
+//                       alt={category.name}
+//                       fill
+//                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+//                       className="object-cover transform hover:scale-105 transition-transform duration-700"
+//                       priority={false} // পারফরম্যান্স অপ্টিমাইজেশনের জন্য লেজি লোডিং একটিভ
+//                     />
+//                   </div>
+
+//                   {/* Title */}
+//                   <h3 className="font-serif text-base md:text-md text-[#1E2E24] mt-4 font-normal capitalize px-2 text-center line-clamp-1">
+//                     {category.name}
+//                   </h3>
+                  
+//                   {/* Shop Page Link */}
+//                   <Link 
+//                     href={`/shop?category=${categoryId}`}
+//                     className="mt-1 flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#10381a] font-semibold hover:text-[#457651] transition-colors group"
+//                   >
+//                     Shop Now
+//                     <ArrowRight size={10} className="transform group-hover:translate-x-0.5 transition-transform" />
+//                   </Link>
+//                 </div>
+//               );
+//             })}
+//           </div>
+
+//         </div>
+
+//       </div>
+//     </section>
+//   );
+// }
+
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useGetCategoriesForCustomer } from "@/hooks/useCustomerData"; 
 import { Category } from "@/Types/types";
 
+// 🎯 Swiper Components এবং Styles ইম্পোর্ট
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Navigation } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/navigation";
 
 export default function CategorySection() {
-  // ⚡ তানস্ট্যাক কুয়েরি হুক দিয়ে লাইভ ক্যাটাগরি ডাটা ফেচ
+  // ⚡ তানস্ট্যাক কুয়েরি হুক দিয়ে লাইভ ক্যাটাগরি ডাটা ফেচ
   const { data: categoriesData, isLoading, error } = useGetCategoriesForCustomer();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // লোডিং ও এরর হ্যান্ডেলিং
+  // ─── 🎯 মডার্ন পালসিং কঙ্কাল লোডার (Skeleton Loader) ───
   if (isLoading) {
     return (
-      <div className="w-full py-16 px-6 md:px-12 bg-white">
-        <div className="container mx-auto text-center text-gray-400 font-sans animate-pulse">
-          Loading Categories...
+      <section className="w-full py-16 px-6 md:px-12 bg-white">
+        <div className="container mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-2 items-center">
+          {/* Left Text Skeleton */}
+          <div className="lg:col-span-3 flex flex-col items-start pr-4 animate-pulse">
+            <div className="h-8 bg-gray-200 rounded-md w-48 mb-4" />
+            <div className="h-4 bg-gray-100 rounded-md w-full mb-2" />
+            <div className="h-4 bg-gray-100 rounded-md w-3/4 mb-6" />
+            <div className="h-4 bg-gray-200 rounded-md w-28" />
+          </div>
+          {/* Right Cards Skeleton */}
+          <div className="lg:col-span-9 w-full flex gap-4 overflow-hidden">
+            {[1, 2, 3, 4, 5].map((idx) => (
+              <div key={idx} className="min-w-[45%] sm:min-w-[30%] lg:min-w-[18.8%] flex flex-col items-center bg-white rounded-2xl pb-5 border border-gray-100 animate-pulse">
+                <div className="w-full aspect-[4/5] rounded-t-2xl bg-gray-100" />
+                <div className="h-4 bg-gray-200 rounded-md w-20 mt-4" />
+                <div className="h-3 bg-gray-100 rounded-md w-14 mt-2" />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
     );
   }
 
   if (error || !categoriesData || categoriesData.length === 0) return null;
 
-  // ৫টির বেশি ক্যাটাগরি থাকলে স্লাইডার মেকানিজম এক্টিভেট হবে
-  const isSlider = categoriesData.length > 5;
-
-  // স্মুথ স্ক্রোল ফাংশন
-  const handleScroll = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, clientWidth } = scrollContainerRef.current;
-      const scrollAmount = clientWidth * 0.5; 
-      
-      scrollContainerRef.current.scrollTo({
-        left: direction === "left" ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
   return (
-    <section className="w-full py-16 px-6 md:px-12 relative group/section">
+    <section className="w-full py-16 px-6 md:px-12 relative group/section bg-white">
       <div className="container mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-2 items-center">
         
         {/* LEFT TEXT BLOCK */}
@@ -66,77 +218,87 @@ export default function CategorySection() {
         </div>
 
         {/* RIGHT CATEGORIES AREA WITH FLOATING BUTTONS */}
-        <div className="lg:col-span-9 relative w-full overflow-hidden">
+        <div className="lg:col-span-9 relative w-full">
           
-          {isSlider && (
-            <>
-              <button 
-                onClick={() => handleScroll("left")}
-                className="absolute left-2 top-[40%] -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md border border-gray-100 flex items-center justify-center text-[#1E2E24] hover:bg-[#1E2E24] hover:text-white transition-all opacity-0 group-hover/section:opacity-100"
-                aria-label="Scroll Left"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <button 
-                onClick={() => handleScroll("right")}
-                className="absolute right-2 top-[40%] -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md border border-gray-100 flex items-center justify-center text-[#1E2E24] hover:bg-[#1E2E24] hover:text-white transition-all opacity-0 group-hover/section:opacity-100"
-                aria-label="Scroll Right"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </>
-          )}
+          {/* 🎯 কাস্টম নেভিগেশন বাটন (Swiper এর সাথে লিংক করা) */}
+          <button 
+            id="cat-swiper-prev"
+            className="absolute left-2 top-[40%] -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md border border-gray-100 flex items-center justify-center text-[#1E2E24] hover:bg-[#1E2E24] hover:text-white transition-all opacity-0 group-hover/section:opacity-100 cursor-pointer disabled:opacity-30"
+            aria-label="Scroll Left"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button 
+            id="cat-swiper-next"
+            className="absolute right-2 top-[40%] -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md border border-gray-100 flex items-center justify-center text-[#1E2E24] hover:bg-[#1E2E24] hover:text-white transition-all opacity-0 group-hover/section:opacity-100 cursor-pointer disabled:opacity-30"
+            aria-label="Scroll Right"
+          >
+            <ChevronRight size={20} />
+          </button>
 
-          {/* DYNAMIC GRID / HORIZONTAL SLIDER CONTAINER */}
-          <div 
-            ref={scrollContainerRef}
-            className={`w-full gap-4 pb-4 scrollbar-none snap-x snap-mandatory ${
-              isSlider 
-                ? "flex overflow-x-auto" 
-                : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
-            }`}
+          {/* 🎯 SWIPER SLIDER CONTAINER */}
+          <Swiper
+            modules={[Autoplay, Navigation]}
+            spaceBetween={16} // gap-4 সমপরিমাণ স্পেস
+            slidesPerView={2} // মোবাইলে ডিফল্ট ২টি কার্ড দেখাবে
+            autoplay={{
+              delay: 3000, // ৩ সেকেন্ড পর পর অটো-স্লাইড হবে
+              disableOnInteraction: false, // ইউজার টাচ করার পরেও অটো-স্লাইড বন্ধ হবে না
+            }}
+            navigation={{
+              prevEl: "#cat-swiper-prev",
+              nextEl: "#cat-swiper-next",
+            }}
+            breakpoints={{
+              // 📱 স্মল স্ক্রিন (Mobile)
+              640: {
+                slidesPerView: 3,
+              },
+              // 💻 লার্জ স্ক্রিন (Desktop)
+              1024: {
+                slidesPerView: 5,
+                autoplay: false, // ডেসকটপে অটো-প্লে বন্ধ থাকবে, শুধু বাটন দিয়ে স্লাইড হবে
+              },
+            }}
+            className="w-full pb-4"
           >
             {(categoriesData as Category[]).map((category: Category) => {
-              // ব্যাকএন্ড স্কিমা অনুযায়ী ইমেজ অপশনাল, তাই প্লেসহোল্ডার সেফটি চেক
               const categoryImage = category.image || "/placeholder.jpg";
               const categoryId = category._id;
 
               return (
-                <div 
-                  key={categoryId} 
-                  className={`flex flex-col items-center bg-white rounded-2xl pb-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-gray-100/50 snap-start ${
-                    isSlider ? "min-w-[45%] sm:min-w-[30%] lg:min-w-[18.8%]" : "w-full"
-                  }`}
-                >
-                  {/* Image Box */}
-                  <div className="w-full aspect-[4/5] rounded-t-2xl overflow-hidden bg-[#FAF5F0] relative">
-                    <Image 
-                      src={categoryImage} 
-                      alt={category.name}
-                      fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                      className="object-cover transform hover:scale-105 transition-transform duration-700"
-                      priority={false} // পারফরম্যান্স অপ্টিমাইজেশনের জন্য লেজি লোডিং একটিভ
-                    />
-                  </div>
+                <SwiperSlide key={categoryId}>
+                  <div className="flex flex-col items-center bg-white rounded-2xl pb-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-gray-100/50 w-full">
+                    {/* Image Box */}
+                    <div className="w-full aspect-[4/5] rounded-t-2xl overflow-hidden bg-[#FAF5F0] relative">
+                      <Image 
+                        src={categoryImage} 
+                        alt={category.name}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                        className="object-cover transform hover:scale-105 transition-transform duration-700"
+                        priority={false}
+                      />
+                    </div>
 
-                  {/* Title */}
-                  <h3 className="font-serif text-base md:text-md text-[#1E2E24] mt-4 font-normal capitalize px-2 text-center line-clamp-1">
-                    {category.name}
-                  </h3>
-                  
-                  {/* Shop Page Link */}
-                  <Link 
-                    href={`/shop?category=${categoryId}`}
-                    className="mt-1 flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#10381a] font-semibold hover:text-[#457651] transition-colors group"
-                  >
-                    Shop Now
-                    <ArrowRight size={10} className="transform group-hover:translate-x-0.5 transition-transform" />
-                  </Link>
-                </div>
+                    {/* Title */}
+                    <h3 className="font-serif text-base md:text-md text-[#1E2E24] mt-4 font-normal capitalize px-2 text-center line-clamp-1">
+                      {category.name}
+                    </h3>
+                    
+                    {/* Shop Page Link */}
+                    <Link 
+                      href={`/shop?category=${categoryId}`}
+                      className="mt-1 flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#10381a] font-semibold hover:text-[#457651] transition-colors group"
+                    >
+                      Shop Now
+                      <ArrowRight size={10} className="transform group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
+                  </div>
+                </SwiperSlide>
               );
             })}
-          </div>
+          </Swiper>
 
         </div>
 
