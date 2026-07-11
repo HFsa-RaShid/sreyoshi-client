@@ -1149,7 +1149,7 @@ function ShopContent() {
   return (
     <div className="bg-[#FAF9F6] min-h-screen pt-8 md:pt-28 pb-12 px-4 md:px-12 text-[#2C3E35]">
       <div className="container mx-auto">
-        <div className="mb-2 md:mb-6">
+        <div className="mb-2 md:mb-6 md:pl-2">
           <Breadcrumb />
         </div>
 

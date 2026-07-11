@@ -678,9 +678,9 @@ export default function ProductDetailsPage() {
         }
       `}</style>
 
-      <div className="container mx-auto p-6 rounded-[32px]">
+      <div className="container mx-auto p-4 md:p-6 rounded-[32px]">
         
-        <div className="mb-2 md:mb-4">
+        <div className="mb-2 md:mb-4 md:pl-2">
           <Breadcrumb customItems={productBreadcrumbs} />
         </div>
 
