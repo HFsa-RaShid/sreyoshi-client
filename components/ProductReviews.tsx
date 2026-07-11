@@ -135,7 +135,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
       </div>
 
       {/* রিভিউর তালিকা */}
-      <div className="space-y-4">
+      <div className="space-y-4 pt-2">
         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Customer Reviews</h4>
         
         {isLoading ? (
