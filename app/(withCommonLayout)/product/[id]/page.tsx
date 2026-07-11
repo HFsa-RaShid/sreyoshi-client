@@ -1,3 +1,5 @@
+
+
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client";
 
@@ -5,7 +7,7 @@
 // import { useParams, useRouter } from "next/navigation";
 // import { useSession } from "next-auth/react"; 
 // import Image from "next/image"; 
-// import { Heart, ArrowLeft, Plus, Minus, Loader2 } from "lucide-react";
+// import { Heart, Plus, Minus, Loader2 } from "lucide-react";
 // import { ProductShade } from "@/Types/types";
 // import { useGetSingleProductForCustomer } from "@/hooks/useCustomerData";
 // import { useWishlist } from "@/hooks/useWishlist"; 
@@ -15,6 +17,8 @@
 // import ProductReviews from "@/components/ProductReviews";
 // import RelatedProducts from "./components/RelatedProducts";
 // import RecommendedProducts from "./components/RecommendedProducts";
+// import Breadcrumb from "@/components/Shared/Breadcrumb/Breadcrumb";
+
 
 // type TabType = "desc" | "howToUse" | "reviews";
 
@@ -131,13 +135,32 @@
 //     router.push(`/shop?${queryKey}=${encodeURIComponent(finalValue)}`);
 //   };
 
+// // 📋 ডাইনামিক ব্রেডক্রাম্ব অ্যারে (টাইপ ডিফাইন করে দেওয়া হলো যাতে link অপশনাল হতে পারে)
+// const productBreadcrumbs: { name: string; link?: string }[] = [
+//   { name: "Home", link: "/" },
+//   { name: "Shop", link: "/shop" },
+// ];
+
+// if (categoryName) {
+//   productBreadcrumbs.push({ 
+//     name: categoryName, 
+//     link: `/shop?category=${categoryId || categoryName}` 
+//   });
+// }
+
+// if (product.name) {
+//   // 🎯 এখন আর টাইপস্ক্রিপ্ট এরর দেবে না, কারণ link?: string ডিফাইন করা আছে
+//   productBreadcrumbs.push({ name: product.name });
+// }
+
 //   return (
-//     <div className="min-h-screen pt-28 pb-16 px-4 md:px-12 text-[#2C3E35]">
+//     <div className="min-h-screen pt-16 md:pt-28 pb-16 px-4 md:px-12 text-[#2C3E35]">
 //       <div className="container mx-auto p-6 md:p-10 rounded-[32px]">
         
-//         <button onClick={() => router.back()} className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider opacity-60 hover:opacity-100 mb-8 transition-opacity">
-//           <ArrowLeft size={14} /> Back to Shop
-//         </button>
+//         {/* 🎯 ব্রেডক্রাম্ব এখানে বসানো হলো */}
+//         <div className="mb-2 md:mb-4">
+//           <Breadcrumb customItems={productBreadcrumbs} />
+//         </div>
 
 //         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
 //           {/* ================= LEFT GALLERY ================= */}
@@ -173,7 +196,6 @@
 //           </div>
 
 //           {/* ================= RIGHT DETAILS INFO ================= */}
-//           {/* 🎯 কন্টেইনার উইডথ লক করতে max-w-full এবং রিং কাট যাতে না যায় তার জন্য overflow-visible */}
 //           <div className="flex flex-col justify-between space-y-6 overflow-visible w-full max-w-full">
 //             <div className="space-y-4">
 //               <h1 className="text-xl md:text-2xl font-sans font-semibold text-gray-800 tracking-tight">{product.name}</h1>
@@ -282,8 +304,7 @@
 //               </div>
 //             </div>
 
-//             {/* ================= BRIEF DESCRIPTION (ফাইনাল আলটিমেট ফিক্স) ================= */}
-//             {/* 🎯 এখানে w-full max-w-full এবং কড়া ইনলাইন সিএসএস প্রয়োগ করা হয়েছে */}
+//             {/* ================= BRIEF DESCRIPTION ================= */}
 //             <div className="pt-2 border-t border-gray-100 w-full max-w-full overflow-hidden">
 //               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Brief Description</p>
 //               <div 
@@ -403,6 +424,7 @@
 //   );
 // }
 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -410,7 +432,7 @@ import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react"; 
 import Image from "next/image"; 
-import { Heart, ArrowLeft, Plus, Minus, Loader2 } from "lucide-react";
+import { Heart, Plus, Minus, Loader2 } from "lucide-react";
 import { ProductShade } from "@/Types/types";
 import { useGetSingleProductForCustomer } from "@/hooks/useCustomerData";
 import { useWishlist } from "@/hooks/useWishlist"; 
@@ -421,7 +443,6 @@ import ProductReviews from "@/components/ProductReviews";
 import RelatedProducts from "./components/RelatedProducts";
 import RecommendedProducts from "./components/RecommendedProducts";
 import Breadcrumb from "@/components/Shared/Breadcrumb/Breadcrumb";
-
 
 type TabType = "desc" | "howToUse" | "reviews";
 
@@ -442,6 +463,8 @@ export default function ProductDetailsPage() {
   // Local State Management 
   const [userSelectedShade, setUserSelectedShade] = useState<ProductShade | null>(null);
   const [userSelectedImg, setUserSelectedImg] = useState<string>("");
+  // অ্যানিমেশন ট্রিগার করার জন্য স্টেট
+  const [animateKey, setAnimateKey] = useState(0);
 
   if (isLoading) {
     return (
@@ -476,10 +499,18 @@ export default function ProductDetailsPage() {
 
   const selectedImg = userSelectedImg || defaultImg;
 
+  // ইমেজ পরিবর্তনের জন্য কমন হ্যান্ডলার (রাইট টু লেফট মসৃণ অ্যানিমেশন সহ)
+  const handleImageChange = (img: string) => {
+    if (selectedImg !== img) {
+      setUserSelectedImg(img);
+      setAnimateKey(prev => prev + 1); // অ্যানিমেশন পুনরায় ট্রিগার করার জন্য কাইনেটিক কী পরিবর্তন
+    }
+  };
+
   const handleShadeSelect = (shade: ProductShade) => {
     setUserSelectedShade(shade);
     if (shade.shadeImage) {
-      setUserSelectedImg(shade.shadeImage);
+      handleImageChange(shade.shadeImage);
     }
   };
 
@@ -538,29 +569,43 @@ export default function ProductDetailsPage() {
     router.push(`/shop?${queryKey}=${encodeURIComponent(finalValue)}`);
   };
 
-// 📋 ডাইনামিক ব্রেডক্রাম্ব অ্যারে (টাইপ ডিফাইন করে দেওয়া হলো যাতে link অপশনাল হতে পারে)
-const productBreadcrumbs: { name: string; link?: string }[] = [
-  { name: "Home", link: "/" },
-  { name: "Shop", link: "/shop" },
-];
+  const productBreadcrumbs: { name: string; link?: string }[] = [
+    { name: "Home", link: "/" },
+    { name: "Shop", link: "/shop" },
+  ];
 
-if (categoryName) {
-  productBreadcrumbs.push({ 
-    name: categoryName, 
-    link: `/shop?category=${categoryId || categoryName}` 
-  });
-}
+  if (categoryName) {
+    productBreadcrumbs.push({ 
+      name: categoryName, 
+      link: `/shop?category=${categoryId || categoryName}` 
+    });
+  }
 
-if (product.name) {
-  // 🎯 এখন আর টাইপস্ক্রিপ্ট এরর দেবে না, কারণ link?: string ডিফাইন করা আছে
-  productBreadcrumbs.push({ name: product.name });
-}
+  if (product.name) {
+    productBreadcrumbs.push({ name: product.name });
+  }
 
   return (
     <div className="min-h-screen pt-16 md:pt-28 pb-16 px-4 md:px-12 text-[#2C3E35]">
+      {/* গ্যালারির মসৃণ অ্যানিমেশনের জন্য কাস্টম স্টাইল যোগ করা হয়েছে */}
+      <style jsx global>{`
+        @keyframes slideInFromRight {
+          0% {
+            transform: translateX(12px);
+            opacity: 0.85;
+          }
+          100% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-left {
+          animation: slideInFromRight 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+      `}</style>
+
       <div className="container mx-auto p-6 md:p-10 rounded-[32px]">
         
-        {/* 🎯 ব্রেডক্রাম্ব এখানে বসানো হলো */}
         <div className="mb-2 md:mb-4">
           <Breadcrumb customItems={productBreadcrumbs} />
         </div>
@@ -568,29 +613,35 @@ if (product.name) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           {/* ================= LEFT GALLERY ================= */}
           <div className="flex flex-col items-center lg:items-start w-full">
-            <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
-              <Image 
-                src={selectedImg || "/placeholder.png"} 
-                alt={product.name || "Product Image"} 
-                fill
-                priority
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover transition-all duration-300" 
-              />
+            {/* বড় ইমেজের কন্টেইনার */}
+            <div className="aspect-square w-full max-w-md rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
+              <div key={animateKey} className="w-full h-full relative animate-slide-left">
+                <Image 
+                  src={selectedImg || "/placeholder.png"} 
+                  alt={product.name || "Product Image"} 
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover" 
+                />
+              </div>
             </div>
             
-            <div className="grid grid-cols-4 gap-3 w-full max-w-lg">
+            {/* ছোট থাম্বনেইল ইমেজ গ্যালারি (আকার কিছুটা ছোট করা হয়েছে) */}
+            <div className="grid grid-cols-5 gap-2.5 w-full max-w-md">
               {product.commonImages?.map((img: string, idx: number) => (
                 <div 
                   key={idx} 
-                  onClick={() => setUserSelectedImg(img)}
-                  className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all relative ${selectedImg === img ? "border-[#E92C66]" : "border-transparent opacity-70 hover:opacity-100"}`}
+                  onMouseEnter={() => handleImageChange(img)}
+                  onClick={() => handleImageChange(img)}
+                  onTouchStart={() => handleImageChange(img)}
+                  className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all relative ${selectedImg === img ? "border-[#1A2E22] scale-95" : "border-transparent opacity-70 hover:opacity-100"}`}
                 >
                   <Image 
                     src={img} 
                     alt={`view-${idx}`} 
                     fill
-                    sizes="25vw"
+                    sizes="20vw"
                     className="object-cover" 
                   />
                 </div>
@@ -772,21 +823,25 @@ if (product.name) {
           </div>
         </div>
 
-        {/* ================= BOTTOM TABS DETAILS ================= */}
-        <div className="mt-16 border-t border-gray-100 pt-10">
-          <div className="flex justify-center gap-4 mb-8">
+        {/* ================= BOTTOM TABS DETAILS (ছবি অনুযায়ী পরিবর্তিত স্টাইল) ================= */}
+        <div className="mt-16 border-t border-gray-200 pt-6">
+          <div className="flex justify-start gap-8 border-b border-gray-200 pb-0 mb-8 overflow-x-auto whitespace-nowrap">
             {([ "desc", "howToUse", "reviews" ] as TabType[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2.5 rounded-xl font-sans font-bold text-xs uppercase tracking-wide transition-all ${activeTab === tab ? "bg-[#1A2E22] text-white shadow-sm" : "bg-white text-black hover:bg-gray-200"}`}
+                className={`pb-3 font-sans font-medium text-sm transition-all relative ${
+                  activeTab === tab 
+                    ? "text-[#1A2E22] font-semibold after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#1A2E22]" 
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
               >
-                {tab === "desc" ? "Full Description" : tab === "howToUse" ? "Features & Details" : `Reviews (${product.ratingCount || 0})`}
+                {tab === "desc" ? "Description" : tab === "howToUse" ? "Additional Information" : `Review (${product.ratingCount || 0})`}
               </button>
             ))}
           </div>
 
-          <div className="w-full max-w-5xl mx-auto bg-white p-6 rounded-2xl border border-gray-100 overflow-hidden text-left">
+          <div className="w-full max-w-5xl mx-auto bg-white py-2 overflow-hidden text-left">
             {activeTab === "desc" && (
               <div className="w-full max-w-full overflow-hidden">
                 <div 
@@ -826,5 +881,3 @@ if (product.name) {
     </div>
   );
 }
-
-
