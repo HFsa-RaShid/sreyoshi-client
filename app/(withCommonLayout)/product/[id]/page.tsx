@@ -463,7 +463,6 @@ export default function ProductDetailsPage() {
   // Local State Management 
   const [userSelectedShade, setUserSelectedShade] = useState<ProductShade | null>(null);
   const [userSelectedImg, setUserSelectedImg] = useState<string>("");
-  // অ্যানিমেশন ট্রিগার করার জন্য স্টেট
   const [animateKey, setAnimateKey] = useState(0);
 
   if (isLoading) {
@@ -499,11 +498,11 @@ export default function ProductDetailsPage() {
 
   const selectedImg = userSelectedImg || defaultImg;
 
-  // ইমেজ পরিবর্তনের জন্য কমন হ্যান্ডলার (রাইট টু লেফট মসৃণ অ্যানিমেশন সহ)
+  // আলতো এবং মসৃণ রাইট-টু-লেফট ট্রানজিশন হ্যান্ডলার
   const handleImageChange = (img: string) => {
     if (selectedImg !== img) {
       setUserSelectedImg(img);
-      setAnimateKey(prev => prev + 1); // অ্যানিমেশন পুনরায় ট্রিগার করার জন্য কাইনেটিক কী পরিবর্তন
+      setAnimateKey(prev => prev + 1);
     }
   };
 
@@ -587,20 +586,20 @@ export default function ProductDetailsPage() {
 
   return (
     <div className="min-h-screen pt-16 md:pt-28 pb-16 px-4 md:px-12 text-[#2C3E35]">
-      {/* গ্যালারির মসৃণ অ্যানিমেশনের জন্য কাস্টম স্টাইল যোগ করা হয়েছে */}
+      {/* গ্লোবাল সিএসএস দিয়ে আলতো স্লাইড ও ফেড-ইন ট্রানজিশন ডিফাইন করা হলো */}
       <style jsx global>{`
-        @keyframes slideInFromRight {
+        @keyframes smoothSlideLeft {
           0% {
-            transform: translateX(12px);
-            opacity: 0.85;
+            transform: translateX(15px);
+            opacity: 0.4;
           }
           100% {
             transform: translateX(0);
             opacity: 1;
           }
         }
-        .animate-slide-left {
-          animation: slideInFromRight 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        .animate-gallery-slide {
+          animation: smoothSlideLeft 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
       `}</style>
 
@@ -613,9 +612,9 @@ export default function ProductDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           {/* ================= LEFT GALLERY ================= */}
           <div className="flex flex-col items-center lg:items-start w-full">
-            {/* বড় ইমেজের কন্টেইনার */}
-            <div className="aspect-square w-full max-w-md rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
-              <div key={animateKey} className="w-full h-full relative animate-slide-left">
+            {/* বড় ইমেজ সাইজ আগের মতোই max-w-lg রাখা হয়েছে, যা ডিভাইস অনুযায়ী রেসপনসিভলি সংকুচিত হবে */}
+            <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
+              <div key={animateKey} className="w-full h-full relative animate-gallery-slide">
                 <Image 
                   src={selectedImg || "/placeholder.png"} 
                   alt={product.name || "Product Image"} 
@@ -627,21 +626,21 @@ export default function ProductDetailsPage() {
               </div>
             </div>
             
-            {/* ছোট থাম্বনেইল ইমেজ গ্যালারি (আকার কিছুটা ছোট করা হয়েছে) */}
-            <div className="grid grid-cols-5 gap-2.5 w-full max-w-md">
+            {/* ছোট থাম্বনেইল কন্টেইনার, এটিও ডিভাইস সাইজ অনুযায়ী ছোট হতে থাকবে */}
+            <div className="grid grid-cols-4 gap-3 w-full max-w-lg">
               {product.commonImages?.map((img: string, idx: number) => (
                 <div 
                   key={idx} 
                   onMouseEnter={() => handleImageChange(img)}
                   onClick={() => handleImageChange(img)}
                   onTouchStart={() => handleImageChange(img)}
-                  className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all relative ${selectedImg === img ? "border-[#1A2E22] scale-95" : "border-transparent opacity-70 hover:opacity-100"}`}
+                  className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all duration-300 relative ${selectedImg === img ? "border-[#E92C66] scale-[0.98]" : "border-transparent opacity-70 hover:opacity-100"}`}
                 >
                   <Image 
                     src={img} 
                     alt={`view-${idx}`} 
                     fill
-                    sizes="20vw"
+                    sizes="25vw"
                     className="object-cover" 
                   />
                 </div>
@@ -823,7 +822,7 @@ export default function ProductDetailsPage() {
           </div>
         </div>
 
-        {/* ================= BOTTOM TABS DETAILS (ছবি অনুযায়ী পরিবর্তিত স্টাইল) ================= */}
+        {/* ================= BOTTOM TABS DETAILS ================= */}
         <div className="mt-16 border-t border-gray-200 pt-6">
           <div className="flex justify-start gap-8 border-b border-gray-200 pb-0 mb-8 overflow-x-auto whitespace-nowrap">
             {([ "desc", "howToUse", "reviews" ] as TabType[]).map((tab) => (
@@ -881,3 +880,4 @@ export default function ProductDetailsPage() {
     </div>
   );
 }
+//
