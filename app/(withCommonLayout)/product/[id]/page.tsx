@@ -651,10 +651,10 @@ export default function ProductDetailsPage() {
           height: 100%;
         }
         .animate-incoming {
-          animation: slideInFromRight 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: slideInFromRight 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
         .animate-outgoing {
-          animation: slideOutToLeft 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: slideOutToLeft 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
         @keyframes slideInFromRight {
           0% {
@@ -678,7 +678,7 @@ export default function ProductDetailsPage() {
         }
       `}</style>
 
-      <div className="container mx-auto p-6 md:p-10 rounded-[32px]">
+      <div className="container mx-auto p-6 rounded-[32px]">
         
         <div className="mb-2 md:mb-4">
           <Breadcrumb customItems={productBreadcrumbs} />

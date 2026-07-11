@@ -1147,7 +1147,7 @@ function ShopContent() {
   const showSkeleton = isCategoriesLoading || isProductsLoading;
 
   return (
-    <div className="bg-[#FAF9F6] min-h-screen pt-36 md:pt-28 pb-12 px-4 md:px-12 text-[#2C3E35]">
+    <div className="bg-[#FAF9F6] min-h-screen p-6 text-[#2C3E35]">
       <div className="container mx-auto">
         <div className="mb-2 md:mb-6">
           <Breadcrumb />
@@ -1523,7 +1523,7 @@ function ShopContent() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <p className="text-sm text-gray-600 font-medium">
                 {showSkeleton ? (
-                  <span className="inline-block h-4 bg-slate-200 rounded w-28 animate-pulse" />
+                  <span className="inline-block md:h-4 bg-slate-200 rounded w-28 animate-pulse" />
                 ) : (
                   `Showing 1-${filteredProducts.length} of ${filteredProducts.length} results`
                 )}
