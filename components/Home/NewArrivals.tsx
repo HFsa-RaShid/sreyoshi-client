@@ -282,7 +282,7 @@ export default function NewArrivals() {
               <div 
                 key={productId}
                 onClick={() => router.push(`/product/${product.productCode}`)}
-                className="flex flex-col bg-white rounded-2xl border border-gray-100 p-2.5 group cursor-pointer transition-all duration-300 w-full hover:shadow-md"
+                className="flex flex-col bg-white rounded-2xl border border-gray-100  group cursor-pointer transition-all duration-300 w-full hover:shadow-md"
               >
                 {/* Product Image Box */}
                 <div className="w-full aspect-[1.1/1] sm:aspect-square bg-[#F5F5F5] rounded-xl relative overflow-hidden shrink-0">
@@ -321,7 +321,7 @@ export default function NewArrivals() {
                 </div>
 
                 {/* Info Area (❌ রেটিং রিমুভড) */}
-                <div className="mt-3 flex flex-col grow justify-between text-center items-center px-1">
+                <div className="mt-3 flex flex-col grow justify-between text-center items-center p-2.5">
                   <h3 className="font-sans text-xs md:text-[13px] font-semibold text-gray-800 line-clamp-1 mb-2 w-full">
                     {product.name}
                   </h3>
