@@ -232,7 +232,6 @@ const slides = [
 
 export default function HeroSection() {
   return (
-    // ⚡ ফিক্সড: মোবাইলের জন্য রেসপন্সিভ হাইট (h-[460px]) সেট করা হয়েছে
     <section className="relative w-full h-[460px] md:h-175 overflow-hidden">
       <Swiper
         modules={[Autoplay, EffectFade, Pagination]}
@@ -257,26 +256,24 @@ export default function HeroSection() {
 
             {/* FOREGROUND CONTENT LAYER */}
             <div className="container mx-auto h-full grid grid-cols-1 lg:grid-cols-12 items-center px-4 relative z-10">
-              {/* ⚡ ফিক্সড: মোবাইল মার্জিন অ্যাডজাস্ট করা হয়েছে (mt-2 lg:mt-0) */}
               <div className="col-span-1 lg:col-span-6 flex flex-col justify-center mt-2 lg:mt-0">
                 {/* Brand Tag */}
                 <span className="text-[10px] md:text-xs uppercase tracking-[0.2em] text-[#727E75] font-semibold mb-1.5 md:mb-3">
                   {slide.brand} Essentials
                 </span>
 
-                {/* Main Heading (⚡ ফিক্সড: মোবাইলে টেক্সট সাইজ text-2xl করা হয়েছে) */}
+                {/* Main Heading */}
                 <h1 className="font-serif text-2xl sm:text-3xl md:text-5xl lg:text-6xl text-[#1E2E24] leading-[1.2] lg:leading-[1.15] font-light tracking-tight max-w-[520px]">
                   {slide.title}
                 </h1>
 
-                {/* Subtitle (⚡ ফিক্সড: মোবাইলে সাইট text-xs এবং মার্জিন কমানো হয়েছে) */}
+                {/* Subtitle */}
                 <p className="mt-3 md:mt-6 text-[#5E6A60] font-sans text-xs sm:text-sm md:text-lg max-w-[460px] leading-relaxed">
                   {slide.subtitle}
                 </p>
 
                 {/* Button Group */}
                 <div className="mt-5 md:mt-8 flex items-center gap-6">
-                  {/* 🎯 একমাত্র বাটন (২ নম্বর বাটনটি সব ডিভাইসের জন্য রিমুভড) */}
                   <Link 
                     href={slide.primaryLink}
                     className="bg-[#354536] hover:bg-[#263327] text-white font-sans text-xs md:text-base font-medium px-6 md:px-8 py-2.5 md:py-3.5 rounded-lg shadow-sm transition-all duration-300 text-center cursor-pointer"
@@ -285,39 +282,46 @@ export default function HeroSection() {
                   </Link>
                 </div>
 
-                {/* BOTTOM TRUST BADGES (⚡ ফিক্সড: মোবাইলে গ্যাপ এবং মার্জিন কমপ্যাক্ট করা হয়েছে) */}
-                <div className="mt-4 pt-4 md:pt-8 grid grid-cols-4 gap-1.5 md:gap-4 max-w-[370px] text-[#354536]">
-                  <div className="flex flex-col">
+                {/* BOTTOM TRUST BADGES */}
+                {/* ⚡ ফিক্সড: মোবাইলের জন্য flex ও tight gap ব্যবহার করা হয়েছে যাতে দূরে দূরে না যায় */}
+                <div className="mt-5 pt-4 md:pt-8 flex flex-wrap gap-x-4 gap-y-3 md:grid md:grid-cols-4 md:gap-4 max-w-sm md:max-w-[370px] text-[#354536]">
+                  
+                  {/* Item 1 */}
+                  <div className="flex flex-col items-start max-w-[70px] md:max-w-none">
                     <div className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-[#354536] mb-1 md:mb-2 shadow-sm">
                       <Leaf className="w-3.5 h-3.5 md:w-[18px] md:h-[18px]" strokeWidth={1.5} />
                     </div>
-                    <span className="text-[9px] md:text-xs font-semibold">Clean</span>
-                    <span className="text-[8px] md:text-[10px] text-[#727E75] -mt-0.5">Ingredients</span>
+                    <span className="text-[9px] md:text-xs font-semibold leading-tight">Clean</span>
+                    <span className="text-[8px] md:text-[10px] text-[#727E75] -mt-0.5 leading-tight truncate w-full">Ingredients</span>
                   </div>
 
-                  <div className="flex flex-col">
+                  {/* Item 2 */}
+                  <div className="flex flex-col items-start max-w-[70px] md:max-w-none">
                     <div className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-[#354536] mb-1 md:mb-2 shadow-sm">
                       <Heart className="w-3.5 h-3.5 md:w-[18px] md:h-[18px]" strokeWidth={1.5} />
                     </div>
-                    <span className="text-[9px] md:text-xs font-semibold">Visible</span>
-                    <span className="text-[8px] md:text-[10px] text-[#727E75] -mt-0.5">Results</span>
+                    <span className="text-[9px] md:text-xs font-semibold leading-tight">Visible</span>
+                    <span className="text-[8px] md:text-[10px] text-[#727E75] -mt-0.5 leading-tight truncate w-full">Results</span>
                   </div>
 
-                  <div className="flex flex-col">
+                  {/* Item 3 */}
+                  <div className="flex flex-col items-start max-w-18.75 md:max-w-none">
                     <div className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-[#354536] mb-1 md:mb-2 shadow-sm">
                       <Shield className="w-3.5 h-3.5 md:w-[18px] md:h-[18px]" strokeWidth={1.5} />
                     </div>
-                    <span className="text-[9px] md:text-xs font-semibold">Safe for</span>
-                    <span className="text-[8px] md:text-[10px] text-[#727E75] -mt-0.5">Sensitive Skin</span>
+                    <span className="text-[9px] md:text-xs font-semibold leading-tight">Safe for</span>
+                    <span className="text-[8px] md:text-[10px] text-[#727E75] -mt-0.5 leading-tight break-words md:break-normal">Sensitive Skin</span>
                   </div>
 
-                  <div className="flex flex-col">
+                  {/* Item 4 */}
+                  <div className="flex flex-col items-start max-w-[75px] md:max-w-none">
                     <div className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-[#354536] mb-1 md:mb-2 shadow-sm">
                       <RotateCw className="w-3 h-3 md:w-4 md:h-4" strokeWidth={1.5} />
                     </div>
-                    <span className="text-[9px] md:text-xs font-semibold">Sustainable</span>
-                    <span className="text-[8px] md:text-[10px] text-[#727E75] -mt-0.5">Packaging</span>
+                    <span className="text-[9px] md:text-xs font-semibold leading-tight">Sustainable</span>
+                    <span className="text-[8px] md:text-[10px] text-[#727E75] -mt-0.5 leading-tight break-words md:break-normal">Packaging</span>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -338,6 +342,7 @@ export default function HeroSection() {
           opacity: 1;
           transition: all 0.3s ease;
           border-radius: 9999px;
+          cursor: pointer;
         }
         @media (min-width: 768px) {
           .custom-swiper-pagination .swiper-pagination-bullet {
