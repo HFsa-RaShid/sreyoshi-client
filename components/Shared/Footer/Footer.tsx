@@ -276,14 +276,7 @@ export default function Footer() {
                   Contact Us
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/points"
-                  className="hover:text-white transition-colors"
-                >
-                  Points
-                </Link>
-              </li>
+              
               <li>
                 <Link
                   href="/faqs"
@@ -292,14 +285,7 @@ export default function Footer() {
                   Faqs
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/shipping-delivery"
-                  className="hover:text-white transition-colors"
-                >
-                  Shipping & Delivery
-                </Link>
-              </li>
+              
               <li>
                 <Link
                   href="/terms-conditions"
@@ -308,14 +294,7 @@ export default function Footer() {
                   Terms & Conditions
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/refund-policy"
-                  className="hover:text-white transition-colors"
-                >
-                  Refund & Return Policy
-                </Link>
-              </li>
+              
               <li>
                 <Link
                   href="/trade-license"
@@ -383,12 +362,7 @@ export default function Footer() {
             >
               Privacy Policy
             </Link>
-            <Link
-              href="/refund-policy"
-              className="hover:text-white transition-colors"
-            >
-              Refund & Return Policy
-            </Link>
+            
             <Link href="/faqs" className="hover:text-white transition-colors">
               Faqs
             </Link>

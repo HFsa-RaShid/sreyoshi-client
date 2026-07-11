@@ -354,7 +354,7 @@ function ShopContent() {
   const showSkeleton = isCategoriesLoading || isProductsLoading;
 
   return (
-    <div className="bg-[#FAF9F6] min-h-screen pt-28 pb-12 px-4 md:px-12 text-[#2C3E35]">
+    <div className="bg-[#FAF9F6] min-h-screen pt-16 md:pt-28 pb-12 px-4 md:px-12 text-[#2C3E35]">
       <div className="container mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* ================= LEFT SIDEBAR (DESKTOP) ================= */}
         <div className="hidden lg:block bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit sticky top-24 max-h-[85vh] overflow-y-auto scrollbar-none">
