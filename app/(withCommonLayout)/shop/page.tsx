@@ -1147,7 +1147,7 @@ function ShopContent() {
   const showSkeleton = isCategoriesLoading || isProductsLoading;
 
   return (
-    <div className="bg-[#FAF9F6] min-h-screen pt-16 md:pt-28 pb-12 px-4 md:px-12 text-[#2C3E35]">
+    <div className="bg-[#FAF9F6] min-h-screen pt-20 md:pt-28 pb-12 px-4 md:px-12 text-[#2C3E35]">
       <div className="container mx-auto">
         <div className="mb-2 md:mb-6 md:pl-2">
           <Breadcrumb />
@@ -1520,7 +1520,7 @@ function ShopContent() {
           {/* ================= RIGHT SIDE: PRODUCT GRID & TOPBAR ================= */}
           <div className="lg:col-span-3">
             {/* TOPBAR */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 md:gap-4 mb-6">
               <p className="text-sm text-gray-600 font-medium">
                 {showSkeleton ? (
                   <span className="inline-block md:h-4 bg-slate-200 rounded w-28 animate-pulse" />
