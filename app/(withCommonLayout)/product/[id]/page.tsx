@@ -934,7 +934,7 @@ export default function ProductDetailsPage() {
             ))}
           </div>
 
-          <div className="w-full container mx-auto bg-white py-2 overflow-hidden text-left">
+          <div className="w-full container mx-auto py-2 overflow-hidden text-left">
             {activeTab === "desc" && (
               <div className="w-full max-w-full overflow-hidden">
                 <div 
