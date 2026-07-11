@@ -313,60 +313,12 @@ export default function Footer() {
               </li>
             </ul>
 
-            {/* Accepted Payments Grid */}
-            <div className="border-t border-[#2D4A3E] pt-4">
-              <span className="text-[10px] uppercase font-semibold text-[#728A79] tracking-widest block mb-2.5">
-                Payments Accepted
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {/* bKash */}
-                <div className="bg-white rounded px-2 py-1 text-[10px] font-bold text-pink-600 flex items-center justify-center h-6 w-11 shadow-sm">
-                  bkash
-                </div>
-                {/* Amex */}
-                <div className="bg-blue-600 text-white rounded px-1 text-[8px] font-bold flex flex-col items-center justify-center leading-none h-6 w-11 shadow-sm">
-                  <span>AMEX</span>
-                </div>
-                {/* Mastercard */}
-                <div className="bg-[#1A1A1A] rounded px-1 flex items-center justify-center gap-0.5 h-6 w-11 shadow-sm">
-                  <span className="w-2 h-2 rounded-full bg-[#FF5F00] block"></span>
-                  <span className="w-2 h-2 rounded-full bg-[#EB001B] block -ml-1"></span>
-                </div>
-                {/* Visa */}
-                <div className="bg-white rounded px-1 text-[10px] font-bold text-blue-800 italic flex items-center justify-center h-6 w-11 shadow-sm">
-                  VISA
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
         {/* BOTTOM SECTION: COMPACT IN-LINE LINKS & COPYRIGHT */}
         <div className="mt-6 pt-6 flex flex-col items-center gap-4 text-[11px] text-[#728A79] tracking-wider">
-          <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 uppercase font-medium">
-            <Link
-              href="/authenticity"
-              className="hover:text-white transition-colors"
-            >
-              Authenticity
-            </Link>
-            <Link
-              href="/terms-conditions"
-              className="hover:text-white transition-colors"
-            >
-              Terms & Conditions
-            </Link>
-            <Link
-              href="/privacy-policy"
-              className="hover:text-white transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            
-            <Link href="/faqs" className="hover:text-white transition-colors">
-              Faqs
-            </Link>
-          </div>
+          
           <p className="text-center text-[#728A79] mt-2 font-light">
             Copyright © 2026 Sreyoshi Limited. All Right Reserved
           </p>
