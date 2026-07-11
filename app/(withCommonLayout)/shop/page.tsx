@@ -732,7 +732,7 @@
 //               )}
 //             </p>
 //             <div className="flex items-center gap-2 self-start sm:self-auto">
-              
+
 //               {/* <span className="text-sm text-gray-500">Sort by :</span> */}
 //               <div className="relative bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-sm font-medium flex items-center gap-4 shadow-sm">
 //                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="appearance-none bg-transparent pr-6 outline-none cursor-pointer font-sans text-xs">
@@ -790,8 +790,6 @@
 //   );
 // }
 
-
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
@@ -811,7 +809,6 @@ import ShopFilterDrawer from "./ShopFilterDrawer";
 import ShopProductCard from "./ShopProductCard";
 import { ShopProductSkeleton } from "@/components/Shared/ShopProductSkeleton/ShopProductSkeleton";
 import Breadcrumb from "@/components/Shared/Breadcrumb/Breadcrumb";
-
 
 function ShopContent() {
   const { addToCart } = useApp();
@@ -1152,11 +1149,11 @@ function ShopContent() {
   return (
     <div className="bg-[#FAF9F6] min-h-screen pt-16 md:pt-28 pb-12 px-4 md:px-12 text-[#2C3E35]">
       <div className="container mx-auto">
-        
-        {/* 🎯 ব্রেডক্রাম্ব এখানে রেন্ডার করা হলো */}
-        <Breadcrumb />
+        <div className="mb-2 md:mb-6">
+          <Breadcrumb />
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8">
           {/* ================= LEFT SIDEBAR (DESKTOP) ================= */}
           <div className="hidden lg:block bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit sticky top-24 max-h-[85vh] overflow-y-auto scrollbar-none">
             <div className="flex justify-between items-center mb-6">
@@ -1229,7 +1226,8 @@ function ShopContent() {
                                 "subGroup",
                                 sub.title,
                               );
-                              const isSubOpen = openSubCategoryMenu === sub.title;
+                              const isSubOpen =
+                                openSubCategoryMenu === sub.title;
 
                               return (
                                 <div key={sIdx} className="flex flex-col">
@@ -1258,10 +1256,8 @@ function ShopContent() {
                                         const isItemActive =
                                           selectedSubCategory?.toLowerCase() ===
                                           item?.name?.toLowerCase();
-                                        const totalItemProducts = getProductCount(
-                                          "item",
-                                          item?.name,
-                                        );
+                                        const totalItemProducts =
+                                          getProductCount("item", item?.name);
 
                                         return (
                                           <li
@@ -1333,7 +1329,7 @@ function ShopContent() {
                             checked={isBrandChecked}
                             onChange={() => handleBrandToggle(brandIdentifier)}
                             className="w-4 h-4 rounded border-slate-300 text-[#2D4A3E] focus:ring-[#2D4A3E] accent-[#2D4A3E]"
-                        />
+                          />
                           <span className="text-sm font-medium capitalize">
                             {brand.name}
                           </span>
@@ -1534,14 +1530,21 @@ function ShopContent() {
               </p>
               <div className="flex items-center gap-2 self-start sm:self-auto">
                 <div className="relative bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-sm font-medium flex items-center gap-4 shadow-sm">
-                  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="appearance-none bg-transparent pr-6 outline-none cursor-pointer font-sans text-xs">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="appearance-none bg-transparent pr-6 outline-none cursor-pointer font-sans text-xs"
+                  >
                     <option value="latest">Latest Arrivals (Default)</option>
                     <option value="popularity">Popularity (Sales)</option>
                     <option value="low-to-high">Price: Low to High</option>
                     <option value="high-to-low">Price: High to Low</option>
                     <option value="rating">Highest Rating</option>
                   </select>
-                  <ChevronDown size={14} className="absolute right-3 pointer-events-none text-gray-500" />
+                  <ChevronDown
+                    size={14}
+                    className="absolute right-3 pointer-events-none text-gray-500"
+                  />
                 </div>
               </div>
             </div>
@@ -1554,7 +1557,9 @@ function ShopContent() {
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="bg-white text-center py-20 rounded-2xl border border-dashed border-gray-200">
-                <p className="text-gray-500 font-medium">No products found matching the criteria.</p>
+                <p className="text-gray-500 font-medium">
+                  No products found matching the criteria.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -1577,7 +1582,7 @@ function ShopContent() {
 export default function ShopPage() {
   return (
     <Suspense
-      fallback = {
+      fallback={
         <div className="min-h-screen flex items-center justify-center bg-[#FAF9F6]">
           <div className="animate-pulse text-[#2D4A3E] font-medium">
             Loading Shop...

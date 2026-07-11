@@ -557,17 +557,13 @@ if (product.name) {
 }
 
   return (
-    <div className="min-h-screen pt-28 pb-16 px-4 md:px-12 text-[#2C3E35]">
+    <div className="min-h-screen pt-16 md:pt-28 pb-16 px-4 md:px-12 text-[#2C3E35]">
       <div className="container mx-auto p-6 md:p-10 rounded-[32px]">
         
         {/* 🎯 ব্রেডক্রাম্ব এখানে বসানো হলো */}
-        <div className="mb-4">
+        <div className="mb-2 md:mb-4">
           <Breadcrumb customItems={productBreadcrumbs} />
         </div>
-
-        <button onClick={() => router.back()} className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider opacity-60 hover:opacity-100 mb-8 transition-opacity">
-          <ArrowLeft size={14} /> Back
-        </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           {/* ================= LEFT GALLERY ================= */}
