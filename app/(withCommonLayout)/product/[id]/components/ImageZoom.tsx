@@ -14,7 +14,7 @@ export default function ImageZoom({
   src,
   alt,
   zoomScale = 3.5, // জুম অনেক বাড়ানো হলো (3.5x)
-  lensSize = 200,  // সার্কেল লেন্স বড় করা হলো (200px)
+  lensSize = 400,  // সার্কেল লেন্স বড় করা হলো (200px)
 }: ImageZoomProps) {
   const [showZoom, setShowZoom] = useState(false);
   const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
