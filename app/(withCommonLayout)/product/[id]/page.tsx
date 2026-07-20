@@ -278,38 +278,38 @@ export default function ProductDetailsPage() {
               ))}
             </div>
           </div> */}
-          {/* ================= LEFT GALLERY WITH CIRCLE ZOOM ================= */}
+          {/* ================= LEFT GALLERY WITH BIG CIRCLE ZOOM ================= */}
 <div className="flex flex-col items-center lg:items-start w-full">
-  <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
-    <div className="gallery-viewport">
-      {/* আউটগোয়িং ইমেজ লেয়ার (পুরানো ইমেজ বামে চলে যাবে) */}
+  <div className="aspect-square w-full max-w-lg rounded-2xl bg-[#F1EFE9] mb-4 shadow-inner relative">
+    <div className="gallery-viewport rounded-2xl">
+      {/* আউটগোয়িং ইমেজ লেয়ার */}
       {isAnimating && (
-        <div className="slide-layer animate-outgoing">
+        <div className="slide-layer animate-outgoing z-10">
           <ImageZoom 
             src={prevImg || "/placeholder.png"} 
             alt="Previous Image"
-            zoomScale={2.5}
-            lensSize={150}
+            zoomScale={3.5}
+            lensSize={200}
           />
         </div>
       )}
       
-      {/* ইনকামিং নতুন ইমেজ লেয়ার (ডান দিক থেকে স্লাইড করে আসবে + জুম ফিচার সহ) */}
+      {/* ইনকামিং নতুন ইমেজ লেয়ার (ডান দিক থেকে স্লাইড করে আসবে) */}
       <div 
-        className={`slide-layer ${isAnimating ? "animate-incoming" : ""}`}
+        className={`slide-layer z-20 ${isAnimating ? "animate-incoming" : ""}`}
         onAnimationEnd={handleAnimationEnd}
       >
         <ImageZoom 
           src={currentImg || "/placeholder.png"} 
           alt={product.name || "Product Image"}
-          zoomScale={2.5}
-          lensSize={150}
+          zoomScale={3.5}
+          lensSize={200}
         />
       </div>
     </div>
   </div>
   
-  {/* ছোট থাম্বনেইল কন্টেইনার (এটি আগের মতোই থাকবে) */}
+  {/* ছোট থাম্বনেইল কন্টেইনার */}
   <div className="grid grid-cols-4 gap-3 w-full max-w-lg">
     {product.commonImages?.map((img: string, idx: number) => (
       <div 
