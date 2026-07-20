@@ -17,6 +17,7 @@ import RelatedProducts from "./components/RelatedProducts";
 import RecommendedProducts from "./components/RecommendedProducts";
 import Breadcrumb from "@/components/Shared/Breadcrumb/Breadcrumb";
 import ProductDetailsSkeleton from "./components/ProductDetailsSkeleton";
+import ImageZoom from "./components/ImageZoom";
 
 type TabType = "desc" | "howToUse" | "reviews";
 
@@ -222,11 +223,11 @@ export default function ProductDetailsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           {/* ================= LEFT GALLERY ================= */}
-          <div className="flex flex-col items-center lg:items-start w-full">
-            {/* বড় ইমেজ সাইজ আগের মতোই max-w-lg যা রেসপনসিভলি সংকুচিত হবে */}
+          {/* <div className="flex flex-col items-center lg:items-start w-full">
+    
             <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
               <div className="gallery-viewport">
-                {/* আউটগোয়িং ইমেজ লেয়ার (পুরানো ইমেজ বামে চলে যাবে) */}
+            
                 {isAnimating && (
                   <div className="slide-layer animate-outgoing">
                     <Image 
@@ -239,7 +240,7 @@ export default function ProductDetailsPage() {
                   </div>
                 )}
                 
-                {/* ইনকামিং নতুন ইমেজ লেয়ার (ডান দিক থেকে স্লাইড করে আসবে) */}
+              
                 <div 
                   className={`slide-layer ${isAnimating ? "animate-incoming" : ""}`}
                   onAnimationEnd={handleAnimationEnd}
@@ -256,7 +257,7 @@ export default function ProductDetailsPage() {
               </div>
             </div>
             
-            {/* ছোট থাম্বনেইল কন্টেইনার, এটিও স্ক্রিন অনুযায়ী ছোট হবে */}
+         
             <div className="grid grid-cols-4 gap-3 w-full max-w-lg">
               {product.commonImages?.map((img: string, idx: number) => (
                 <div 
@@ -276,7 +277,59 @@ export default function ProductDetailsPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
+          {/* ================= LEFT GALLERY WITH CIRCLE ZOOM ================= */}
+<div className="flex flex-col items-center lg:items-start w-full">
+  <div className="aspect-square w-full max-w-lg rounded-2xl overflow-hidden bg-[#F1EFE9] mb-4 shadow-inner relative">
+    <div className="gallery-viewport">
+      {/* আউটগোয়িং ইমেজ লেয়ার (পুরানো ইমেজ বামে চলে যাবে) */}
+      {isAnimating && (
+        <div className="slide-layer animate-outgoing">
+          <ImageZoom 
+            src={prevImg || "/placeholder.png"} 
+            alt="Previous Image"
+            zoomScale={2.5}
+            lensSize={150}
+          />
+        </div>
+      )}
+      
+      {/* ইনকামিং নতুন ইমেজ লেয়ার (ডান দিক থেকে স্লাইড করে আসবে + জুম ফিচার সহ) */}
+      <div 
+        className={`slide-layer ${isAnimating ? "animate-incoming" : ""}`}
+        onAnimationEnd={handleAnimationEnd}
+      >
+        <ImageZoom 
+          src={currentImg || "/placeholder.png"} 
+          alt={product.name || "Product Image"}
+          zoomScale={2.5}
+          lensSize={150}
+        />
+      </div>
+    </div>
+  </div>
+  
+  {/* ছোট থাম্বনেইল কন্টেইনার (এটি আগের মতোই থাকবে) */}
+  <div className="grid grid-cols-4 gap-3 w-full max-w-lg">
+    {product.commonImages?.map((img: string, idx: number) => (
+      <div 
+        key={idx} 
+        onMouseEnter={() => handleImageChange(img)}
+        onClick={() => handleImageChange(img)}
+        onTouchStart={() => handleImageChange(img)}
+        className={`aspect-square rounded-xl overflow-hidden bg-[#F1EFE9] cursor-pointer border-2 transition-all duration-300 relative ${selectedImg === img ? "border-[#E92C66] scale-[0.98]" : "border-transparent opacity-70 hover:opacity-100"}`}
+      >
+        <Image 
+          src={img} 
+          alt={`view-${idx}`} 
+          fill
+          sizes="25vw"
+          className="object-cover" 
+        />
+      </div>
+    ))}
+  </div>
+</div>
 
           {/* ================= RIGHT DETAILS INFO ================= */}
           <div className="flex flex-col justify-between space-y-6 overflow-visible w-full max-w-full">
