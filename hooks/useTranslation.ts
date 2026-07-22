@@ -19,17 +19,23 @@ export function useTranslation() {
     if (typeof window !== "undefined") {
       localStorage.setItem("app_lang", nextLang);
 
-      // 🎯 গুগলের কুকিতে অটো ল্যাঙ্গুয়েজ সেট করে দেওয়া (যাতে ব্যানার ছাড়া অনুবাদ স্থায়ী হয়)
-      document.cookie = `googtrans=/en/${nextLang}; path=/;`;
-      document.cookie = `googtrans=/en/${nextLang}; domain=${window.location.hostname}; path=/;`;
+      // ১. গুগলের কুকিতে নতুন ভাষা ফোরস করা
+      const targetLang = nextLang === "bn" ? "/en/bn" : "/en/en";
+      document.cookie = `googtrans=${targetLang}; path=/;`;
+      document.cookie = `googtrans=${targetLang}; domain=${window.location.hostname}; path=/;`;
 
-      // গুগল ড্রপডাউন ব্যাকগ্রাউন্ডে ট্রিপগার
+      // ২. গুগলের সিলেক্টর এলিমেন্টটি ড্রপডাউনে খুঁজে সাথে সাথে ফায়ার করা
       const googleSelect = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+
       if (googleSelect) {
         googleSelect.value = nextLang;
-        googleSelect.dispatchEvent(new Event("change"));
+        
+        // Change event ফায়ার করা
+        const event = document.createEvent("HTMLEvents");
+        event.initEvent("change", true, true);
+        googleSelect.dispatchEvent(event);
       } else {
-        // যদি সিলেক্টর না পাওয়া যায়, পেজ রিফ্রেশ ছাড়াই কুকি দিয়ে রিলোড
+        // যদি সিলেক্টর লোড না হয়ে থাকে, তবে ১ ক্লিকেই পেজ রিফ্রেশ করে কুকি অ্যাপ্লাই করা
         window.location.reload();
       }
     }
