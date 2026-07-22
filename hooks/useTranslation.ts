@@ -14,30 +14,24 @@ export function useTranslation() {
 
   const toggleLanguage = () => {
     const nextLang = lang === "en" ? "bn" : "en";
-    setLang(nextLang);
 
     if (typeof window !== "undefined") {
+      // ১. লোকাল স্টোরেজে সেভ করা
       localStorage.setItem("app_lang", nextLang);
 
-      // ১. গুগলের কুকিতে নতুন ভাষা ফোরস করা
-      const targetLang = nextLang === "bn" ? "/en/bn" : "/en/en";
-      document.cookie = `googtrans=${targetLang}; path=/;`;
-      document.cookie = `googtrans=${targetLang}; domain=${window.location.hostname}; path=/;`;
+      // ২. গুগল ট্র্যান্সলেটের কুকি একদম ক্লিন করে নতুন ভাষা সেট করা
+      const googleCookieValue = nextLang === "bn" ? "/en/bn" : "/en/en";
 
-      // ২. গুগলের সিলেক্টর এলিমেন্টটি ড্রপডাউনে খুঁজে সাথে সাথে ফায়ার করা
-      const googleSelect = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+      // পুরোনো কুকি রিমুভ করা
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=${window.location.hostname}; path=/;`;
 
-      if (googleSelect) {
-        googleSelect.value = nextLang;
-        
-        // Change event ফায়ার করা
-        const event = document.createEvent("HTMLEvents");
-        event.initEvent("change", true, true);
-        googleSelect.dispatchEvent(event);
-      } else {
-        // যদি সিলেক্টর লোড না হয়ে থাকে, তবে ১ ক্লিকেই পেজ রিফ্রেশ করে কুকি অ্যাপ্লাই করা
-        window.location.reload();
-      }
+      // নতুন কুকি রাইট করা
+      document.cookie = `googtrans=${googleCookieValue}; path=/;`;
+      document.cookie = `googtrans=${googleCookieValue}; domain=${window.location.hostname}; path=/;`;
+
+      // ৩. ১ ক্লিকেই সাথে সাথে পেজ রিলোড করে কুকি অ্যাপ্লাই করা
+      window.location.reload();
     }
   };
 
