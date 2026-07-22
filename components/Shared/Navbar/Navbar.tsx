@@ -26,6 +26,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useTranslation } from "@/hooks/useTranslation";
+import { FaShoppingBag } from "react-icons/fa";
 
 export default function Navbar() {
   const router = useRouter();
@@ -345,12 +346,6 @@ export default function Navbar() {
 
         {/* MOBILE ACTIONS */}
         <div className="flex items-center gap-3 lg:hidden">
-          <button
-            onClick={toggleLanguage}
-            className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-300 hover:border-[#1A2E22] bg-white/60 transition-all text-[#1A2E22] cursor-pointer"
-          >
-            🌐 {lang === "en" ? "BN" : "EN"}
-          </button>
           <Link
             href="/wishlist"
             onClick={(e: any) => {
@@ -395,35 +390,59 @@ export default function Navbar() {
       {/* MOBILE DROP-DOWN MENU PANEL */}
       {isOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 px-6 py-5 flex flex-col gap-3 shadow-xl max-h-[80vh] overflow-y-auto transition-all z-50">
+          {/* AUTH / DASHBOARD & LANGUAGE (Side by Side) */}
           {session ? (
             <div className="flex flex-col gap-1.5 border-b border-gray-100 pb-3 mb-1 font-sans">
-              <Link
-                href="/dashboard"
-                onClick={() => setIsOpen(false)}
-                className="w-full flex items-center gap-2 px-4 py-3 bg-[#1A2E22] text-white text-sm font-semibold rounded-xl active:scale-[0.98] transition-all"
-              >
-                <LayoutDashboard size={18} strokeWidth={2} />
-                Go to Dashboard
-              </Link>
+              {/* Dashboard + Language Switcher পাশে পাশে */}
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#1A2E22] text-white text-sm font-semibold rounded-xl active:scale-[0.98] transition-all"
+                >
+                  <LayoutDashboard size={18} strokeWidth={2} />
+                  Dashboard
+                </Link>
+
+                {/* 🌐 ল্যাঙ্গুয়েজ বাটন পাশে */}
+                <button
+                  onClick={toggleLanguage}
+                  className="px-3.5 py-3 border border-gray-200 bg-gray-50 hover:bg-gray-100 text-[#1A2E22] text-xs font-bold rounded-xl active:scale-95 transition-all flex items-center justify-center gap-1 shrink-0"
+                >
+                  🌐 {lang === "en" ? "BN" : "EN"}
+                </button>
+              </div>
+
               <button
                 onClick={() => {
                   setIsOpen(false);
                   signOut();
                 }}
-                className="w-full flex items-center gap-2 px-4 py-2.5 text-rose-600 bg-rose-50 hover:bg-rose-100 text-xs font-medium rounded-xl transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-rose-600 bg-rose-50 hover:bg-rose-100 text-xs font-medium rounded-xl transition-colors"
               >
                 <LogOut size={16} />
                 Sign Out
               </button>
             </div>
           ) : (
-            <Link
-              href="/signin"
-              onClick={() => setIsOpen(false)}
-              className="w-full text-center block px-4 py-3 bg-gray-100 text-[#1A2E22] text-sm font-bold rounded-xl mb-1"
-            >
-              SIGN IN
-            </Link>
+            /* Sign In + Language Switcher পাশে পাশে */
+            <div className="flex items-center gap-2 mb-1">
+              <Link
+                href="/signin"
+                onClick={() => setIsOpen(false)}
+                className="flex-1 text-center block px-4 py-3 bg-gray-100 text-[#1A2E22] text-sm font-bold rounded-xl"
+              >
+                SIGN IN
+              </Link>
+
+              {/* 🌐 ল্যাঙ্গুয়েজ বাটন পাশে */}
+              <button
+                onClick={toggleLanguage}
+                className="px-4 py-3 border border-gray-200 bg-gray-50 hover:bg-gray-100 text-[#1A2E22] text-xs font-bold rounded-xl active:scale-95 transition-all flex items-center justify-center gap-1 shrink-0"
+              >
+                🌐 {lang === "en" ? "BN" : "EN"}
+              </button>
+            </div>
           )}
 
           {/* MOBILE SEARCH */}
@@ -449,7 +468,7 @@ export default function Navbar() {
               onClick={() => setIsOpen(false)}
               className="w-full text-left font-bold py-3 px-3 bg-rose-50 text-rose-600 rounded-xl text-sm transition-colors block border border-dashed border-rose-200 mb-1"
             >
-              🛍️ All Products
+              <FaShoppingBag /> All Products
             </Link>
 
             {(categoriesData || []).map((category: any) => {
