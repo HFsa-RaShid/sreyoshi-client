@@ -1,9 +1,8 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link"; 
+import Link from "next/link";
 import Image from "next/image";
 
 import {
@@ -15,7 +14,7 @@ import {
   Heart,
   User,
   LayoutDashboard,
-  LogOut
+  LogOut,
 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import {
@@ -25,23 +24,21 @@ import {
 import { Category, Product, SubCategoryGroup } from "@/Types/types";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useWishlist } from "@/hooks/useWishlist"; 
-import { useAutoTranslate } from "@/context/AutoTranslateContext";
-
-
+import { useWishlist } from "@/hooks/useWishlist";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function Navbar() {
   const router = useRouter();
   const { cart } = useApp();
   const { data: session } = useSession();
 
-  const { wishlistItems = [] } = useWishlist()
-  const { lang, toggleLanguage } = useAutoTranslate();
+  const { wishlistItems = [] } = useWishlist();
+  const { lang, toggleLanguage } = useTranslation();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  
+
   // ⚡ ফিক্সড: ডেক্সটপ ড্রপডাউন কন্ট্রোল করার জন্য নতুন স্টেট
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -49,11 +46,15 @@ export default function Navbar() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
-  const mobileSearchRef = useRef<HTMLDivElement>(null); 
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  const { data: categoriesData = [] } = useGetCategoriesForCustomer() as { data: Category[] };
-  const { data: productsData = [] } = useGetProductsForCustomer() as { data: Product[] };
+  const { data: categoriesData = [] } = useGetCategoriesForCustomer() as {
+    data: Category[];
+  };
+  const { data: productsData = [] } = useGetProductsForCustomer() as {
+    data: Product[];
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -104,8 +105,8 @@ export default function Navbar() {
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     if (!session) {
-      e.preventDefault(); 
-      router.push("/signin"); 
+      e.preventDefault();
+      router.push("/signin");
     }
   };
 
@@ -146,8 +147,8 @@ export default function Navbar() {
             const isCurrentOpen = activeDropdown === categoryId;
 
             return (
-              <div 
-                key={categoryId} 
+              <div
+                key={categoryId}
                 className="static py-5"
                 // ⚡ ফিক্সড: মাউস ড্রপডাউন কন্ডিশনাল হ্যান্ডেলিং
                 onMouseEnter={() => setActiveDropdown(categoryId)}
@@ -168,8 +169,8 @@ export default function Navbar() {
                 {subCategories.length > 0 && (
                   <div
                     className={`absolute left-0 right-0 mx-auto top-22 bg-white shadow-xl rounded-2xl p-8 grid transition-all duration-300 z-50 before:content-[''] before:absolute before:-top-7.5 before:left-0 before:right-0 before:h-7.5 ${
-                      isCurrentOpen 
-                        ? "opacity-100 translate-y-0 pointer-events-auto" 
+                      isCurrentOpen
+                        ? "opacity-100 translate-y-0 pointer-events-auto"
                         : "opacity-0 translate-y-4 pointer-events-none"
                     }`}
                     style={{
@@ -212,11 +213,11 @@ export default function Navbar() {
         {/* SEARCH BAR, WISHLIST, USER PROFILE & CART (DESKTOP) */}
         <div className="hidden md:flex items-center gap-4 grow max-w-lg justify-end">
           <button
-      onClick={toggleLanguage}
-      className="px-3 py-1 text-xs font-semibold rounded-full border bg-white/80"
-    >
-      🌐 {lang === "en" ? "BN" : "EN"}
-    </button>
+            onClick={toggleLanguage}
+            className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-300 hover:border-[#1A2E22] bg-white/60 transition-all text-[#1A2E22] cursor-pointer"
+          >
+            🌐 {lang === "en" ? "BN" : "EN"}
+          </button>
           <div ref={searchRef} className="relative w-full max-w-64">
             <input
               type="text"
@@ -344,12 +345,18 @@ export default function Navbar() {
 
         {/* MOBILE ACTIONS */}
         <div className="flex items-center gap-3 lg:hidden">
+          <button
+            onClick={toggleLanguage}
+            className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-300 hover:border-[#1A2E22] bg-white/60 transition-all text-[#1A2E22] cursor-pointer"
+          >
+            🌐 {lang === "en" ? "BN" : "EN"}
+          </button>
           <Link
             href="/wishlist"
             onClick={(e: any) => {
               handleWishlistClick(e);
               setIsOpen(false);
-            }} 
+            }}
             className="relative p-1 text-gray-700 shrink-0 cursor-pointer"
           >
             <Heart
@@ -363,7 +370,11 @@ export default function Navbar() {
             )}
           </Link>
 
-          <Link href="/cart" onClick={() => setIsOpen(false)} className="relative p-1 text-gray-700 shrink-0 cursor-pointer">
+          <Link
+            href="/cart"
+            onClick={() => setIsOpen(false)}
+            className="relative p-1 text-gray-700 shrink-0 cursor-pointer"
+          >
             <ShoppingBag strokeWidth={1.5} className="w-6 h-6" />
             {totalCartItems > 0 && (
               <span className="absolute top-0 right-0 bg-[#2D4A3E] text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center translate-x-1 -translate-y-1">
@@ -384,7 +395,6 @@ export default function Navbar() {
       {/* MOBILE DROP-DOWN MENU PANEL */}
       {isOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 px-6 py-5 flex flex-col gap-3 shadow-xl max-h-[80vh] overflow-y-auto transition-all z-50">
-          
           {session ? (
             <div className="flex flex-col gap-1.5 border-b border-gray-100 pb-3 mb-1 font-sans">
               <Link
