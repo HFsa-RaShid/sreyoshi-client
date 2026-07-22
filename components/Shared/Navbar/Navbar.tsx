@@ -26,7 +26,9 @@ import { Category, Product, SubCategoryGroup } from "@/Types/types";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useWishlist } from "@/hooks/useWishlist"; 
-import { useTranslation } from "@/hooks/useTranslation";
+import { useAutoTranslate } from "@/context/AutoTranslateContext";
+
+
 
 export default function Navbar() {
   const router = useRouter();
@@ -34,7 +36,7 @@ export default function Navbar() {
   const { data: session } = useSession();
 
   const { wishlistItems = [] } = useWishlist()
-  const { lang, toggleLanguage } = useTranslation();; 
+  const { lang, toggleLanguage } = useAutoTranslate();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -210,11 +212,11 @@ export default function Navbar() {
         {/* SEARCH BAR, WISHLIST, USER PROFILE & CART (DESKTOP) */}
         <div className="hidden md:flex items-center gap-4 grow max-w-lg justify-end">
           <button
-          onClick={toggleLanguage}
-          className="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-300 hover:border-[#1A2E22] bg-white/60 transition-all text-[#1A2E22] cursor-pointer"
-        >
-          🌐 {lang === "en" ? "BN" : "EN"}
-        </button>
+      onClick={toggleLanguage}
+      className="px-3 py-1 text-xs font-semibold rounded-full border bg-white/80"
+    >
+      🌐 {lang === "en" ? "BN" : "EN"}
+    </button>
           <div ref={searchRef} className="relative w-full max-w-64">
             <input
               type="text"
