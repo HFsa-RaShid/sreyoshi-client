@@ -273,3 +273,30 @@ body {
 .animate-flow {
   animation: flowDown 1.8s linear infinite;
 }
+
+
+
+
+/* 🚫 গুগল ট্র্যান্সলেটের টপ ব্যানার পুরোপুরি হাইড করার জন্য */
+.goog-te-banner-frame, 
+iframe.goog-te-banner-frame {
+  display: none !important;
+}
+
+/* গুগলের কারণে বডি টপে যেন অতিরিক্ত স্পেস (40px) না আসে */
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+/* মাউস হোভার করলে গুগল টেক্সট হাইলাইট বন্ধ করার জন্য */
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* গুগলের অরিজিনাল সিলেক্টর সম্পূর্ণ হাইড থাকবে */
+#google_translate_element, 
+.skiptranslate {
+  display: none !important;
+}
