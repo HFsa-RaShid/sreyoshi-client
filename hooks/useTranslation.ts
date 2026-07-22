@@ -14,24 +14,30 @@ export function useTranslation() {
 
   const toggleLanguage = () => {
     const nextLang = lang === "en" ? "bn" : "en";
+    setLang(nextLang);
 
     if (typeof window !== "undefined") {
-      // ১. লোকাল স্টোরেজে সেভ করা
       localStorage.setItem("app_lang", nextLang);
 
-      // ২. গুগল ট্র্যান্সলেটের কুকি একদম ক্লিন করে নতুন ভাষা সেট করা
+      // ১. কুকি আপডেট (রিলোড ছাড়া ব্যাকগ্রাউন্ড সিংকের জন্য)
       const googleCookieValue = nextLang === "bn" ? "/en/bn" : "/en/en";
-
-      // পুরোনো কুকি রিমুভ করা
-      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=${window.location.hostname}; path=/;`;
-
-      // নতুন কুকি রাইট করা
       document.cookie = `googtrans=${googleCookieValue}; path=/;`;
       document.cookie = `googtrans=${googleCookieValue}; domain=${window.location.hostname}; path=/;`;
 
-      // ৩. ১ ক্লিকেই সাথে সাথে পেজ রিলোড করে কুকি অ্যাপ্লাই করা
-      window.location.reload();
+      // ২. ড্রপডাউন সিলেক্টর খুঁজে রিয়েল-টাইমে ইভেন্ট ট্রিগার করা (স্মুথ চেঞ্জ)
+      const triggerGoogleTranslate = () => {
+        const googleSelect = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+        
+        if (googleSelect) {
+          googleSelect.value = nextLang;
+          // Modern Event Trigger
+          googleSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      };
+
+      // গুগল ড্রপডাউন রেডি হতে মাঝে মাঝে কয়েক মিলি-সেকেন্ড সময় নেয়, তাই Instant + Micro-delay কম্বো
+      triggerGoogleTranslate();
+      setTimeout(triggerGoogleTranslate, 100);
     }
   };
 
