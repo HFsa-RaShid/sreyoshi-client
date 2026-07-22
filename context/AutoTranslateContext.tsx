@@ -10,6 +10,11 @@ interface AutoTranslateContextType {
   toggleLanguage: () => void;
 }
 
+// Custom Text Node Type to hold original text
+interface CustomTextNode extends Node {
+  originalText?: string;
+}
+
 const AutoTranslateContext = createContext<AutoTranslateContextType | undefined>(
   undefined
 );
@@ -23,7 +28,6 @@ export const AutoTranslateProvider = ({
 }) => {
   const { i18n } = useTranslation();
 
-  // 🎯 ১. Lazy State Initializer: useEffect ছাড়াই সরাসরি প্রাথমিক ভাষা লোড করা
   const [lang, setLang] = useState<"en" | "bn">((): "en" | "bn" => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("app_lang") as "en" | "bn";
@@ -32,7 +36,6 @@ export const AutoTranslateProvider = ({
     return "en";
   });
 
-  // 🎯 ২. প্রাথমিক লোডে i18n সিনক্রোনাইজ করা
   useEffect(() => {
     if (lang) {
       i18n.changeLanguage(lang);
@@ -48,16 +51,30 @@ export const AutoTranslateProvider = ({
     }
   };
 
-  // 🎯 ৩. পুরো ওয়েবসাইটের Text Node অটো অনুবাদ করার লজিক
+  // 🎯 টগল হ্যান্ডলিং: EN এবং BN উভয়ের জন্য টেক্সট নোড রিম্যাপ করা
   useEffect(() => {
-    if (lang === "en") return;
-
-    const translateNode = async (node: Node) => {
+    const processNode = async (node: CustomTextNode) => {
       if (node.nodeType === Node.TEXT_NODE && node.nodeValue?.trim()) {
         const text = node.nodeValue.trim();
         if (/^[0-9\s\W]+$/.test(text)) return; // শুধু সংখ্যা বা চিহ্ন হলে স্কিপ
 
-        const cacheKey = `bn_${text}`;
+        // ১. অরিজিনাল টেক্সট ব্যাকআপে রাখা
+        if (!node.originalText) {
+          node.originalText = node.nodeValue;
+        }
+
+        // ২. যদি ইউজার English চয়েস করে, তবে অরিজিনাল ব্যাকআপ টেক্সট ফিরিয়ে দেবে
+        if (lang === "en") {
+          if (node.originalText) {
+            node.nodeValue = node.originalText;
+          }
+          return;
+        }
+
+        // ৩. যদি Bangla চয়েস করে, তবে অনুবাদ করবে
+        const sourceText = node.originalText || text;
+        const cacheKey = `bn_${sourceText}`;
+
         if (translationCache[cacheKey]) {
           node.nodeValue = translationCache[cacheKey];
           return;
@@ -66,28 +83,28 @@ export const AutoTranslateProvider = ({
         try {
           const res = await fetch(
             `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=bn&dt=t&q=${encodeURIComponent(
-              text
+              sourceText
             )}`
           );
           const data = await res.json();
-          const translatedText = data?.[0]?.[0]?.[0] || text;
+          const translatedText = data?.[0]?.[0]?.[0] || sourceText;
           translationCache[cacheKey] = translatedText;
           node.nodeValue = translatedText;
         } catch (err) {
           // Error handling
         }
       } else {
-        node.childNodes.forEach(translateNode);
+        node.childNodes.forEach(processNode);
       }
     };
 
     // পুরো পেজ স্ক্যান করা
-    translateNode(document.body);
+    processNode(document.body);
 
     // ডাইনামিকলি নতুন লোড হওয়া ডাটা স্ক্যান করা
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach(translateNode);
+        mutation.addedNodes.forEach(processNode);
       });
     });
 
